@@ -3,146 +3,338 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>家庭留言板 · 实时在线</title>
+  <title>家庭留言板（密码登录 + 实时在线 + 48小时自动清除）</title>
   <style>
-    body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,'PingFang SC','Noto Sans SC',sans-serif;margin:0;background:#f7f7fb;color:#222;}
-    .wrap{max-width:760px;margin:24px auto;padding:16px;}
-    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
-    .online{font-size:14px;color:#444;}
-    .card{background:#fff;border:1px solid #eee;border-radius:12px;padding:12px;margin:12px 0;box-shadow:0 1px 2px rgba(0,0,0,.04);}
-    #messageList{list-style:none;padding:0;margin:0;max-height:320px;overflow:auto;}
-    #messageList li{padding:8px 10px;border-bottom:1px dashed #eee;word-break:break-word;}
-    .meta{color:#666;font-size:12px;margin-right:8px;}
-    form{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
-    input[type=text]{flex:1;min-width:220px;padding:10px;border:1px solid #ddd;border-radius:8px;outline:none;}
-    button{padding:10px 16px;border:0;border-radius:8px;background:#4f46e5;color:#fff;cursor:pointer;}
-    button:disabled{opacity:.5;cursor:not-allowed;}
-    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
-    .tip{font-size:12px;color:#777;margin-left:4px;}
+    :root{ --bg:#f7f7fb; --card:#fff; --line:#eaeaea; --text:#222; --muted:#666; --accent:#4f46e5; }
+    *{ box-sizing:border-box; }
+    body{ font-family: system-ui,-apple-system,'Segoe UI',Roboto,'PingFang SC','Noto Sans SC',sans-serif; margin:0; background:var(--bg); color:var(--text); }
+    .wrap{ max-width:840px; margin:24px auto; padding:16px; }
+    .card{ background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; box-shadow:0 1px 2px rgba(0,0,0,.04); }
+    header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+    h2{ margin:0; font-size:20px; }
+    .userbox{ display:flex; align-items:center; gap:10px; }
+    .avatar{ width:40px; height:40px; border-radius:10px; display:grid; place-items:center; font-size:22px; background:#eef2ff; }
+    .name{ font-weight:700; }
+    .muted{ color:var(--muted); font-size:12px; }
+    .row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .presence{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .presence .pill{ display:flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid var(--line); border-radius:999px; background:#fff; }
+    .presence .pill .dot{ width:8px; height:8px; border-radius:50%; background:#22c55e; }
+    .composer{ display:flex; gap:8px; }
+    textarea{ flex:1; min-height:80px; padding:10px; border:1px solid var(--line); border-radius:10px; outline:none; font-size:15px; background:#fff; }
+    button{ padding:10px 16px; border:0; border-radius:10px; background:var(--accent); color:#fff; cursor:pointer; white-space:nowrap; }
+    button:disabled{ opacity:.6; cursor:not-allowed; }
+    ul#list{ list-style:none; padding:0; margin:12px 0 0 0; }
+    li.msg{ display:flex; gap:10px; padding:10px; border:1px solid var(--line); border-radius:12px; background:#fff; margin-bottom:10px; }
+    .bubble{ flex:1; }
+    .meta{ font-size:12px; color:var(--muted); margin:4px 0 0; display:flex; gap:8px; flex-wrap:wrap; }
+    /* 登录框 */
+    .login{ max-width:360px; margin:100px auto; }
+    .login h3{ margin:0 0 12px; text-align:center; }
+    .login .field{ display:flex; gap:8px; }
+    input[type=password]{ flex:1; padding:10px; border:1px solid var(--line); border-radius:10px; outline:none; }
+    .error{ color:#e11d48; font-size:12px; margin-top:8px; min-height:16px; }
+    .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .actions{ display:flex; gap:8px; }
+    .logout{ background:#fff; color:#444; border:1px solid var(--line); }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <h2 style="margin:0">家庭留言板</h2>
-      <div class="online" id="onlineList">当前无人在线</div>
-    </header>
 
-    <div class="card">
-      <div class="row">
-        <label>昵称</label>
-        <input id="nameInput" type="text" placeholder="输入你的昵称" />
-        <span class="tip">留空将使用默认昵称</span>
-      </div>
-      <ul id="messageList" class="card" style="margin:12px 0 0 0"></ul>
-      <form id="sendForm" autocomplete="off">
-        <input id="messageInput" type="text" maxlength="500" placeholder="说点什么…" />
-        <button id="sendBtn" type="submit">发送</button>
-      </form>
+<!-- 登录视图 -->
+<div id="loginView" class="wrap">
+  <div class="card login">
+    <h3>家庭留言板 · 密码登录</h3>
+    <div class="muted" style="margin-bottom:10px;">输入家庭成员的专属密码进入（每个密码代表一位家人）</div>
+    <div class="field">
+      <input id="pwd" type="password" placeholder="输入密码，例如 ma123" />
+      <button id="loginBtn">进入</button>
     </div>
+    <div id="loginErr" class="error"></div>
+  </div>
+</div>
 
-    <div class="tip">提示：同时打开两个浏览器页面测试，发言和在线人数会实时同步。</div>
+<!-- 主视图 -->
+<div id="mainView" class="wrap" style="display:none;">
+  <div class="card">
+    <div class="topbar">
+      <div class="userbox">
+        <div id="meAvatar" class="avatar">🙂</div>
+        <div>
+          <div id="meName" class="name">未知</div>
+          <div class="muted">留言会在 48 小时后自动清除</div>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="logoutBtn" class="logout">退出</button>
+      </div>
+    </div>
   </div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  <script>
-    // 你的 Firebase 配置（已替换为你给的）
-    const firebaseConfig = {
-      apiKey: "AIzaSyDTsjNPdZntfabyVn0q-9y39l9a1ur_cEw",
-      authDomain: "jiatingliuyanban-635f9.firebaseapp.com",
-      databaseURL: "https://jiatingliuyanban-635f9-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "jiatingliuyanban-635f9",
-      storageBucket: "jiatingliuyanban-635f9.firebasestorage.app",
-      messagingSenderId: "196518556157",
-      appId: "1:196518556157:web:f710ec71f8acb4eb79a994"
-    };
+  <div class="card">
+    <div class="row" style="justify-content:space-between;">
+      <div class="name">当前在线</div>
+      <div class="muted">1 分钟内活跃视为在线</div>
+    </div>
+    <div id="presence" class="presence" style="margin-top:8px;"></div>
+  </div>
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+  <div class="card">
+    <form id="form" class="composer" autocomplete="off">
+      <textarea id="text" placeholder="写下你想说的话（不限制字数）"></textarea>
+      <button id="send" type="submit">发送</button>
+    </form>
+  </div>
 
-    // 身份和昵称
-    const uid = localStorage.getItem('uid') || (Date.now().toString(36) + Math.random().toString(36).slice(2));
-    localStorage.setItem('uid', uid);
-    const nameInput = document.getElementById('nameInput');
-    const savedName = localStorage.getItem('nickname');
-    if (savedName) nameInput.value = savedName;
-    const getName = () => {
-      const v = (nameInput.value || '').trim();
-      const n = v || ('游客' + uid.slice(-4));
-      if (v) localStorage.setItem('nickname', v);
-      return n;
-    };
+  <ul id="list"></ul>
+</div>
 
-    // 数据库引用
-    const messagesRef = db.ref('messages');
-    const statusRef   = db.ref('status/' + uid);
-    const onlineRef   = db.ref('status');
-    const connectedRef= db.ref('.info/connected');
+<!-- Firebase SDK（Compat 版，适合静态站） -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script>
+  // 用户与密码映射（按你的要求）
+  const USERS = {
+    horse:  { id:'horse',  name:'马',   avatar:'🐎' },
+    sheep:  { id:'sheep',  name:'羊',   avatar:'🐑' },
+    mouse:  { id:'mouse',  name:'老鼠', avatar:'🐭' },
+    rabbit: { id:'rabbit', name:'兔子', avatar:'🐇' },
+    monkey: { id:'monkey', name:'猴子', avatar:'🐒' },
+    snake:  { id:'snake',  name:'蛇',   avatar:'🐍' } // 如需启用蛇，对应密码 she123
+  };
+  const PASSWORDS = {
+    'ma123':'horse',
+    'yang123':'sheep',
+    'shu123':'mouse',
+    'tu123':'rabbit',
+    'hou123':'monkey',
+    'she123':'snake' // 你之前也提过“蛇”，保留映射；不用可忽略
+  };
 
-    // 发送消息
-    const form = document.getElementById('sendForm');
-    const input = document.getElementById('messageInput');
-    const btn = document.getElementById('sendBtn');
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const text = (input.value || '').trim();
-      if (!text) return;
-      btn.disabled = true;
-      try {
-        await messagesRef.push({
-          uid,
-          name: getName(),
-          text,
-          ts: firebase.database.ServerValue.TIMESTAMP
-        });
-        input.value = '';
-      } finally {
-        btn.disabled = false;
-      }
-    });
+  // Firebase 配置（使用你的项目）
+  const firebaseConfig = {
+    apiKey: "AIzaSyDTsjNPdZntfabyVn0q-9y39l9a1ur_cEw",
+    authDomain: "jiatingliuyanban-635f9.firebaseapp.com",
+    databaseURL: "https://jiatingliuyanban-635f9-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "jiatingliuyanban-635f9",
+    storageBucket: "jiatingliuyanban-635f9.firebasestorage.app",
+    messagingSenderId: "196518556157",
+    appId: "1:196518556157:web:f710ec71f8acb4eb79a994"
+  };
 
-    // 实时渲染消息
-    const list = document.getElementById('messageList');
-    messagesRef.limitToLast(200).on('child_added', snap => {
-      const m = snap.val();
-      const li = document.createElement('li');
-      const time = new Date(m.ts || Date.now());
-      li.innerHTML = `<span class="meta">${time.toLocaleString()}</span><strong>${escapeHtml(m.name)}：</strong> ${linkify(escapeHtml(m.text))}`;
-      list.appendChild(li);
-      list.scrollTop = list.scrollHeight;
-    });
+  // 常量
+  const EXP_MS = 48 * 3600 * 1000;       // 48 小时
+  const ONLINE_WINDOW = 60 * 1000;       // 1 分钟判定在线
+  const COUNTDOWN_INTERVAL = 60000;      // 倒计时刷新：每分钟
 
-    // 在线状态
-    connectedRef.on('value', (snap) => {
+  // DOM
+  const loginView = document.getElementById('loginView');
+  const mainView  = document.getElementById('mainView');
+  const pwdInput  = document.getElementById('pwd');
+  const loginBtn  = document.getElementById('loginBtn');
+  const loginErr  = document.getElementById('loginErr');
+  const meAvatar  = document.getElementById('meAvatar');
+  const meName    = document.getElementById('meName');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const form      = document.getElementById('form');
+  const textInput = document.getElementById('text');
+  const sendBtn   = document.getElementById('send');
+  const listEl    = document.getElementById('list');
+  const presenceEl= document.getElementById('presence');
+
+  // 状态
+  let currentUser = null;
+  let db, messagesRef, statusRef, statusAllRef, connectedRef;
+  let countdownTimer = null;
+
+  // 登录逻辑
+  const savedRole = sessionStorage.getItem('roleId');
+  if (savedRole && USERS[savedRole]) {
+    currentUser = USERS[savedRole];
+    showMain();
+  }
+
+  loginBtn.addEventListener('click', () => {
+    const pwd = (pwdInput.value || '').trim();
+    const roleId = PASSWORDS[pwd];
+    if (!roleId || !USERS[roleId]) {
+      loginErr.textContent = '密码错误，请重试';
+      return;
+    }
+    currentUser = USERS[roleId];
+    sessionStorage.setItem('roleId', currentUser.id);
+    showMain();
+  });
+
+  logoutBtn.addEventListener('click', () => {
+    // 清除在线标记
+    try { statusRef && statusRef.remove(); } catch(e){}
+    sessionStorage.removeItem('roleId');
+    // 回到登录页
+    mainView.style.display = 'none';
+    loginView.style.display = 'block';
+    // 停止倒计时刷新
+    if (countdownTimer) clearInterval(countdownTimer);
+  });
+
+  function showMain(){
+    // UI
+    loginView.style.display = 'none';
+    mainView.style.display = 'block';
+    meAvatar.textContent = currentUser.avatar;
+    meName.textContent = currentUser.name;
+
+    // Firebase 初始化
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+
+    messagesRef   = db.ref('messages');
+    statusRef     = db.ref('status/' + currentUser.id);
+    statusAllRef  = db.ref('status');
+    connectedRef  = db.ref('.info/connected');
+
+    // 在线状态：连接与心跳
+    connectedRef.on('value', snap => {
       if (snap.val() === true) {
         statusRef.onDisconnect().remove();
-        statusRef.set({ name: getName(), lastSeen: firebase.database.ServerValue.TIMESTAMP });
+        statusRef.set({
+          uid: currentUser.id,
+          name: currentUser.name,
+          avatar: currentUser.avatar,
+          lastSeen: firebase.database.ServerValue.TIMESTAMP
+        });
       }
     });
     setInterval(() => {
-      statusRef.update({ name: getName(), lastSeen: firebase.database.ServerValue.TIMESTAMP });
+      statusRef.update({ lastSeen: firebase.database.ServerValue.TIMESTAMP });
     }, 30000);
 
-    const onlineEl = document.getElementById('onlineList');
-    onlineRef.on('value', (snap) => {
+    // 渲染在线名单
+    statusAllRef.on('value', snap => {
       const now = Date.now();
-      const alive = [];
+      const online = [];
       snap.forEach(child => {
         const v = child.val();
-        if (v && v.lastSeen && (now - v.lastSeen) < 45000) alive.push(v.name);
+        if (v && v.lastSeen && (now - v.lastSeen) < ONLINE_WINDOW) {
+          online.push(v);
+        }
       });
-      onlineEl.textContent = alive.length ? `在线（${alive.length}）：` + alive.join('、') : '当前无人在线';
+      presenceEl.innerHTML = online.length
+        ? online.map(v => `<span class="pill"><span class="dot"></span><span>${escapeHtml(v.avatar || '')}</span><b>${escapeHtml(v.name || '')}</b></span>`).join('')
+        : '<span class="muted">当前无人在线</span>';
     });
 
-    // 工具函数
-    function escapeHtml(s){
-      return s.replace(/[&<>"'`=\/]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'}[c]));
+    // 发送消息（不限制字数；仅空内容拦截）
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = (textInput.value || '').trim();
+      if (!text) return;
+      sendBtn.disabled = true;
+      try {
+        await messagesRef.push({
+          userId: currentUser.id,
+          text,
+          ts: firebase.database.ServerValue.TIMESTAMP
+        });
+        textInput.value = '';
+      } finally {
+        sendBtn.disabled = false;
+      }
+    });
+
+    // 初次清理过期消息，并定时清理
+    cleanupExpired();
+    setInterval(cleanupExpired, 10 * 60 * 1000); // 每 10 分钟清理一次
+
+    // 监听并渲染消息（仅展示 48 小时内）
+    const since = Date.now() - EXP_MS;
+    messagesRef.orderByChild('ts').startAt(since).limitToLast(500).on('child_added', snap => {
+      const m = snap.val();
+      renderMessage(snap.key, m);
+    });
+    messagesRef.on('child_changed', snap => {
+      // 不需要处理
+    });
+    messagesRef.on('child_removed', snap => {
+      const el = document.getElementById('msg-' + snap.key);
+      if (el) el.remove();
+    });
+
+    // 倒计时刷新
+    countdownTimer = setInterval(updateCountdowns, COUNTDOWN_INTERVAL);
+  }
+
+  // 渲染单条消息
+  function renderMessage(id, m){
+    if (!m || !m.ts) return;
+    const age = Date.now() - m.ts;
+    if (age >= EXP_MS) return; // 过期不显示
+    const u = USERS[m.userId] || { name:'未知', avatar:'🙂' };
+
+    let li = document.getElementById('msg-' + id);
+    if (!li) {
+      li = document.createElement('li');
+      li.className = 'msg';
+      li.id = 'msg-' + id;
+      li.innerHTML = `
+        <div class="avatar">${u.avatar}</div>
+        <div class="bubble">
+          <div><strong>${escapeHtml(u.name)}：</strong><span class="content"></span></div>
+          <div class="meta">
+            <span class="time"></span>
+            <span class="remain"></span>
+          </div>
+        </div>
+      `;
+      listEl.prepend(li);
     }
-    function linkify(s){
-      return s.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+    li.querySelector('.content').innerHTML = linkify(escapeHtml(m.text));
+    li.dataset.ts = m.ts;
+    li.querySelector('.time').textContent = new Date(m.ts).toLocaleString();
+    updateOneCountdown(li);
+  }
+
+  // 更新所有倒计时
+  function updateCountdowns(){
+    document.querySelectorAll('li.msg').forEach(updateOneCountdown);
+  }
+  function updateOneCountdown(li){
+    const ts = Number(li.dataset.ts || 0);
+    if (!ts) return;
+    const remain = ts + EXP_MS - Date.now();
+    if (remain <= 0) {
+      // 到期：让 UI 移除，实际删除由 cleanupExpired 负责兜底
+      li.remove();
+      return;
     }
-  </script>
+    const txt = formatRemain(remain);
+    const el = li.querySelector('.remain');
+    if (el) el.textContent = `剩余 ${txt}`;
+  }
+  function formatRemain(ms){
+    const s = Math.floor(ms/1000);
+    const h = Math.floor(s/3600);
+    const m = Math.floor((s%3600)/60);
+    const hh = String(h).padStart(2,'0');
+    const mm = String(m).padStart(2,'0');
+    return `${hh}小时${mm}分钟`;
+  }
+
+  // 清理过期消息（简单客户端清理）
+  function cleanupExpired(){
+    const cutoff = Date.now() - EXP_MS;
+    messagesRef.orderByChild('ts').endAt(cutoff).once('value', snap => {
+      snap.forEach(child => child.ref.remove());
+    });
+  }
+
+  // 工具函数
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"'`=\/]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'}[c]));
+  }
+  function linkify(s){
+    return s.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+  }
+</script>
 </body>
 </html>

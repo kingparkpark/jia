@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>家庭留言板</title>
+<style>
+  :root { --bg:#f7f7f7; --card:#ffffff; --text:#222; --muted:#666; --line:#e5e5e5; --accent:#2b8aef; --ok:#22c55e; --off:#9aa0a6; }
+  body { font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",Arial,sans-serif; max-width: 720px; margin: auto; background: var(--bg); color: var(--text); padding: 24px 16px; }
+  h1 { text-align: center; margin: 0 0 12px; }
+  .card { background: var(--card); border:1px solid var(--line); border-radius: 12px; padding: 12px; margin: 10px 0; }
+  input, button { padding: 10px; font-size: 16px; }
+  input[type="password"], input[type="text"] { width: 100%; border:1px solid var(--line); border-radius:10px; }
+  button { border:0; border-radius: 10px; background: var(--accent); color: #fff; cursor: pointer; }
+  #msgForm { display:flex; gap: 8px; }
+  #msgInput { flex: 1; }
+  ul { list-style: none; padding: 0; margin: 0; }
+  li.msg { background: var(--card); border:1px solid var(--line); border-radius: 12px; padding: 10px; display:flex; gap:10px; margin-bottom: 8px; }
+  .avatar { width: 40px; height: 40px; border-radius: 10px; display:grid; place-items:center; font-size: 22px; background:#f0f4ff; }
+  .meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .presence-item { display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid var(--line); }
+  .presence-item:first-child { border-top: 0; }
+  .name { font-weight: 600; }
+  .dot { width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:6px; vertical-align: middle; }
+  .online { background: var(--ok); }
+  .offline { background: var(--off); }
+  .header-row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .muted { color: var(--muted); font-size: 12px; }
+  .status { display:flex; align-items:center; gap:6px; }
+  .pill { border:1px solid var(--line); border-radius: 999px; padding: 6px 10px; }
+</style>
+</head>
+<body>
+
+<h1>家庭留言板</h1>
+
+<div id="loginArea" class="card">
+  <div style="margin-bottom:8px;" class="muted">输入你的专属密码进入（不同密码代表不同的人）</div>
+  <form id="loginForm">
+    <input type="password" id="pwd" placeholder="输入密码" required>
+    <div style="margin-top:10px; display:flex; gap:8px;">
+      <button type="submit" style="flex:1;">登录</button>
+    </div>
+  </form>
+</div>
+
+<div id="boardArea" style="display:none;">
+  <div class="card">
+    <div class="header-row">
+      <div class="status">
+        <div id="meAvatar" class="avatar">🙂</div>
+        <div>
+          <div id="meName" class="name">我</div>
+          <div class="muted">留言自动在 48 小时后销毁</div>
+        </div>
+      </div>
+      <div class="pill muted" id="netStatus"><span class="dot offline"></span>网络离线</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="font-weight:600; margin-bottom:8px;">家庭在线状态</div>
+    <div id="presenceList"></div>
+  </div>
+
+  <div class="card">
+    <form id="msgForm">
+      <input type="text" id="msgInput" placeholder="写下你的留言..." required>
+      <button type="submit">发送</button>
+    </form>
+  </div>
+
+  <ul id="msgList"></ul>
+</div>
+
+<script>
+  // ---- 配置：用户与密码 ----
+  const USERS = {
+    horse:  { id:'horse',  name:'马',   avatar:'🐎' },
+    sheep:  { id:'sheep',  name:'羊',   avatar:'🐑' },
+    mouse:  { id:'mouse',  name:'老鼠', avatar:'🐭' },
+    rabbit: { id:'rabbit', name:'兔子', avatar:'🐇' },
+    monkey: { id:'monkey', name:'猴子', avatar:'🐒' },
+    snake:  { id:'snake',  name:'蛇',   avatar:'🐍' }
+  };
+  const PASSWORDS = {
+    'ma123':'horse', 'yang123':'sheep', 'shu123':'mouse',
+    'tu123':'rabbit','hou123':'monkey','she123':'snake'
+  };
+
+  // ---- 常量与状态 ----
+  const MSG_KEY = 'familyMsgs';
+  const PRESENCE_KEY = 'familyPresence';
+  const EXPIRY_HOURS = 48;
+  const ONLINE_WINDOW_MS = 60 * 1000; // 1 分钟内有心跳判定为在线
+  let currentUser = null;
+
+  // ---- 工具函数 ----
+  const now = () => Date.now();
+  const safeParse = (s, fallback) => { try { return JSON.parse(s); } catch { return fallback; } };
+
+  function loadMessages() {
+    const ts = now();
+    let msgs = safeParse(localStorage.getItem(MSG_KEY), []);
+    msgs = msgs.filter(m => ts - m.time <= EXPIRY_HOURS * 3600 * 1000);
+    localStorage.setItem(MSG_KEY, JSON.stringify(msgs));
+    return msgs;
+  }
+
+  function saveMessage(text) {
+    const msgs = loadMessages();
+    msgs.unshift({ text, time: now(), userId: currentUser.id });
+    localStorage.setItem(MSG_KEY, JSON.stringify(msgs));
+  }
+
+  function formatRemaining(ms) {
+    const totalSec = Math.max(0, Math.floor(ms / 1000));
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const hh = String(h).padStart(2, '0');
+    const mm = String(m).padStart(2, '0');
+    return `${hh}小时${mm}分钟`;
+  }
+
+  function timeAgo(ms) {
+    const sec = Math.floor(ms / 1000);
+    if (sec < 60) return '刚刚';
+    const min = Math.floor(sec / 60);
+    if (min < 60) return `${min} 分钟前`;
+    const h = Math.floor(min / 60);
+    if (h < 24) return `${h} 小时前`;
+    const d = Math.floor(h / 24);
+    return `${d} 天前`;
+  }
+
+  // ---- 渲染消息 ----
+  function renderMessages() {
+    const list = document.getElementById('msgList');
+    list.innerHTML = '';
+    const ts = now();
+    loadMessages().forEach(m => {
+      const u = USERS[m.userId] || { name:'未知', avatar:'🙂' };
+      const remainMs = (m.time + EXPIRY_HOURS * 3600 * 1000) - ts;
+
+      const li = document.createElement('li');
+      li.className = 'msg';
+      li.innerHTML = `
+        <div class="avatar">${u.avatar}</div>
+        <div>
+          <div><strong>${u.name}：</strong>${m.text}</div>
+          <div class="meta">剩余 ${formatRemaining(remainMs)}</div>
+        </div>
+      `;
+      list.appendChild(li);
+    });
+  }
+
+  // ---- 在线状态：心跳 + 渲染 ----
+  function readPresence() {
+    return safeParse(localStorage.getItem(PRESENCE_KEY), {});
+  }
+
+  function writePresence(p) {
+    localStorage.setItem(PRESENCE_KEY, JSON.stringify(p));
+  }
+
+  function heartbeat() {
+    if (!currentUser) return;
+    const p = readPresence();
+    p[currentUser.id] = now();
+    writePresence(p);
+  }
+
+  function renderPresence() {
+    const p = readPresence();
+    const container = document.getElementById('presenceList');
+    container.innerHTML = '';
+    const ts = now();
+
+    Object.values(USERS).forEach(u => {
+      const last = p[u.id] || 0;
+      const online = ts - last <= ONLINE_WINDOW_MS;
+      const div = document.createElement('div');
+      div.className = 'presence-item';
+      div.innerHTML = `
+        <div class="avatar">${u.avatar}</div>
+        <div style="flex:1;">
+          <div class="name"><span class="dot ${online ? 'online' : 'offline'}"></span>${u.name} · ${online ? '在线' : '离线'}</div>
+          <div class="muted">${last ? '上次活跃：' + timeAgo(ts - last) : '尚未上线'}</div>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  // ---- 网络状态 ----
+  function updateNetwork() {
+    const el = document.getElementById('netStatus');
+    const online = navigator.onLine;
+    el.innerHTML = `<span class="dot ${online ? 'online' : 'offline'}"></span>${online ? '网络正常' : '网络离线'}`;
+  }
+
+  // ---- 登录与事件 ----
+  document.getElementById('loginForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const pwd = document.getElementById('pwd').value.trim();
+    const uid = PASSWORDS[pwd];
+    if (!uid) return alert('密码错误');
+    currentUser = USERS[uid];
+
+    // 切换界面
+    document.getElementById('loginArea').style.display = 'none';
+    document.getElementById('boardArea').style.display = 'block';
+    document.getElementById('meAvatar').textContent = currentUser.avatar;
+    document.getElementById('meName').textContent = currentUser.name;
+
+    // 初次渲染
+    updateNetwork();
+    renderPresence();
+    renderMessages();
+
+    // 心跳：告知“我在线”
+    heartbeat();
+    setInterval(heartbeat, 15000);     // 每 15 秒更新一次在线状态
+    setInterval(renderPresence, 15000);// 同步刷新在线列表
+    setInterval(renderMessages, 60000);// 每分钟刷新倒计时
+  });
+
+  document.getElementById('msgForm')?.addEventListener('submit', e => {
+    e.preventDefault();
+    const input = document.getElementById('msgInput');
+    const text = input.value.trim();
+    if (!text) return;
+    saveMessage(text);
+    input.value = '';
+    renderMessages();
+  });
+
+  // 网络变化事件
+  window.addEventListener('online', updateNetwork);
+  window.addEventListener('offline', updateNetwork);
+
+  // 跨标签页同步（同一浏览器的不同标签页）
+  window.addEventListener('storage', (ev) => {
+    if (ev.key === PRESENCE_KEY) renderPresence();
+    if (ev.key === MSG_KEY) renderMessages();
+  });
+</script>
+
+</body>
+</html>

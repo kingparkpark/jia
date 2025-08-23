@@ -3,15 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>玛卡巴卡留言板</title>
+  <title>玛卡巴卡留言板 + 开奖资讯</title>
   <style>
     :root{ --bg:#f7f7fb; --card:#fff; --line:#eaeaea; --text:#222; --muted:#666; --accent:#4f46e5; }
     *{ box-sizing:border-box; }
     body{ font-family: system-ui,-apple-system,'Segoe UI',Roboto,'PingFang SC','Noto Sans SC',sans-serif; margin:0; background:var(--bg); color:var(--text); }
     .wrap{ max-width:840px; margin:24px auto; padding:16px; }
-    .card{ background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; box-shadow:0 1px 2px rgba(0,0,0,.04); }
+    .card{ background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; box-shadow:0 1px 2px rgba(0,0,0,.04); margin-bottom:20px; }
     header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
-    h2{ margin:0; font-size:20px; }
+    h2,h3{ margin:0; }
     .userbox{ display:flex; align-items:center; gap:10px; }
     .avatar{ width:40px; height:40px; border-radius:10px; display:grid; place-items:center; font-size:22px; background:#eef2ff; }
     .name{ font-weight:700; }
@@ -28,6 +28,7 @@
     li.msg{ display:flex; gap:10px; padding:10px; border:1px solid var(--line); border-radius:12px; background:#fff; margin-bottom:10px; }
     .bubble{ flex:1; }
     .meta{ font-size:12px; color:var(--muted); margin:4px 0 0; display:flex; gap:8px; flex-wrap:wrap; }
+
     /* 登录框 */
     .login{ max-width:360px; margin:100px auto; }
     .login h3{ margin:0 0 12px; text-align:center; }
@@ -37,310 +38,358 @@
     .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
     .actions{ display:flex; gap:8px; }
     .logout{ background:#fff; color:#444; border:1px solid var(--line); }
+
+    /* 开奖模块 */
+    select { padding:6px; font-size:14px; margin-bottom:10px; }
+    .zodiac { font-size:18px; margin-top:4px; }
+    .countdown { font-weight:bold; color:#d00; margin-top:6px; }
   </style>
 </head>
 <body>
 
-<!-- 登录视图 -->
-<div id="loginView" class="wrap">
-  <div class="card login">
-    <h3>玛卡巴卡留言板 · 密码登录</h3>
-    <div class="muted" style="margin-bottom:10px;">⭐=⭐=⭐=⭐=⭐=⭐=⭐=⭐=⭐=⭐=⭐=⭐=⭐</div>
-    <div class="field">
-      <input id="pwd" type="password" placeholder="输入密码，例如：天上有几颗星星？" />
-      <button id="loginBtn">进入</button>
-    </div>
-    <div id="loginErr" class="error"></div>
-  </div>
-</div>
-
-<!-- 主视图 -->
-<div id="mainView" class="wrap" style="display:none;">
-  <div class="card">
-    <div class="topbar">
-      <div class="userbox">
-        <div id="meAvatar" class="avatar">🙂</div>
-        <div>
-          <div id="meName" class="name">未知</div>
-          <div class="muted">留言会在 48 小时后自动清除</div>
-        </div>
+  <!-- 登录视图 -->
+  <div id="loginView" class="wrap">
+    <div class="card login">
+      <h3>玛卡巴卡留言板 · 密码登录</h3>
+      <div class="muted" style="margin-bottom:10px;">⭐=⭐=⭐=⭐=⭐=⭐=⭐=⭐=⭐=⭐=⭐=⭐=⭐</div>
+      <div class="field">
+        <input id="pwd" type="password" placeholder="输入密码，例如：天上有几颗星星？" />
+        <button id="loginBtn">进入</button>
       </div>
-      <div class="actions">
-        <button id="logoutBtn" class="logout">退出</button>
-      </div>
+      <div id="loginErr" class="error"></div>
     </div>
   </div>
 
-  <div class="card">
-    <div class="row" style="justify-content:space-between;">
-      <div class="name">当前在线</div>
-      <div class="muted">1 分钟内活跃视为在线</div>
-    </div>
-    <div id="presence" class="presence" style="margin-top:8px;"></div>
-  </div>
-
-  <div class="card">
-    <form id="form" class="composer" autocomplete="off">
-      <textarea id="text" placeholder="写下你想说的话（不限制字数）"></textarea>
-      <button id="send" type="submit">发送</button>
-    </form>
-  </div>
-
-  <ul id="list"></ul>
-</div>
-
-<!-- Firebase SDK（Compat 版，适合静态站） -->
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-<script>
-  // 用户与密码映射（按你的要求）
-  const USERS = {
-    horse:  { id:'horse',  name:'马',   avatar:'🐎' },
-    sheep:  { id:'sheep',  name:'羊',   avatar:'🐑' },
-    mouse:  { id:'mouse',  name:'老鼠', avatar:'🐭' },
-    rabbit: { id:'rabbit', name:'兔子', avatar:'🐇' },
-    monkey: { id:'monkey', name:'猴子', avatar:'🐒' },
-    snake:  { id:'snake',  name:'蛇',   avatar:'🐍' } // 如需启用蛇，对应密码 she123
-  };
-  const PASSWORDS = {
-    'ma123':'horse',
-    'yang123':'sheep',
-    'shu123':'mouse',
-    'tu123':'rabbit',
-    'hou123':'monkey',
-    'she123':'snake' // 你之前也提过“蛇”，保留映射；不用可忽略
-  };
-
-  // Firebase 配置（使用你的项目）
-  const firebaseConfig = {
-    apiKey: "AIzaSyDTsjNPdZntfabyVn0q-9y39l9a1ur_cEw",
-    authDomain: "jiatingliuyanban-635f9.firebaseapp.com",
-    databaseURL: "https://jiatingliuyanban-635f9-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "jiatingliuyanban-635f9",
-    storageBucket: "jiatingliuyanban-635f9.firebasestorage.app",
-    messagingSenderId: "196518556157",
-    appId: "1:196518556157:web:f710ec71f8acb4eb79a994"
-  };
-
-  // 常量
-  const EXP_MS = 48 * 3600 * 1000;       // 48 小时
-  const ONLINE_WINDOW = 60 * 1000;       // 1 分钟判定在线
-  const COUNTDOWN_INTERVAL = 60000;      // 倒计时刷新：每分钟
-
-  // DOM
-  const loginView = document.getElementById('loginView');
-  const mainView  = document.getElementById('mainView');
-  const pwdInput  = document.getElementById('pwd');
-  const loginBtn  = document.getElementById('loginBtn');
-  const loginErr  = document.getElementById('loginErr');
-  const meAvatar  = document.getElementById('meAvatar');
-  const meName    = document.getElementById('meName');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const form      = document.getElementById('form');
-  const textInput = document.getElementById('text');
-  const sendBtn   = document.getElementById('send');
-  const listEl    = document.getElementById('list');
-  const presenceEl= document.getElementById('presence');
-
-  // 状态
-  let currentUser = null;
-  let db, messagesRef, statusRef, statusAllRef, connectedRef;
-  let countdownTimer = null;
-
-  // 登录逻辑
-  const savedRole = sessionStorage.getItem('roleId');
-  if (savedRole && USERS[savedRole]) {
-    currentUser = USERS[savedRole];
-    showMain();
-  }
-
-  loginBtn.addEventListener('click', () => {
-    const pwd = (pwdInput.value || '').trim();
-    const roleId = PASSWORDS[pwd];
-    if (!roleId || !USERS[roleId]) {
-      loginErr.textContent = '密码错误，请重试';
-      return;
-    }
-    currentUser = USERS[roleId];
-    sessionStorage.setItem('roleId', currentUser.id);
-    showMain();
-  });
-
-  logoutBtn.addEventListener('click', () => {
-    // 清除在线标记
-    try { statusRef && statusRef.remove(); } catch(e){}
-    sessionStorage.removeItem('roleId');
-    // 回到登录页
-    mainView.style.display = 'none';
-    loginView.style.display = 'block';
-    // 停止倒计时刷新
-    if (countdownTimer) clearInterval(countdownTimer);
-  });
-
-  function showMain(){
-    // UI
-    loginView.style.display = 'none';
-    mainView.style.display = 'block';
-    meAvatar.textContent = currentUser.avatar;
-    meName.textContent = currentUser.name;
-
-    // Firebase 初始化
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    db = firebase.database();
-
-    messagesRef   = db.ref('messages');
-    statusRef     = db.ref('status/' + currentUser.id);
-    statusAllRef  = db.ref('status');
-    connectedRef  = db.ref('.info/connected');
-
-    // 在线状态：连接与心跳
-    connectedRef.on('value', snap => {
-      if (snap.val() === true) {
-        statusRef.onDisconnect().remove();
-        statusRef.set({
-          uid: currentUser.id,
-          name: currentUser.name,
-          avatar: currentUser.avatar,
-          lastSeen: firebase.database.ServerValue.TIMESTAMP
-        });
-      }
-    });
-    setInterval(() => {
-      statusRef.update({ lastSeen: firebase.database.ServerValue.TIMESTAMP });
-    }, 30000);
-
-    // 渲染在线名单
-    statusAllRef.on('value', snap => {
-      const now = Date.now();
-      const online = [];
-      snap.forEach(child => {
-        const v = child.val();
-        if (v && v.lastSeen && (now - v.lastSeen) < ONLINE_WINDOW) {
-          online.push(v);
-        }
-      });
-      presenceEl.innerHTML = online.length
-        ? online.map(v => `<span class="pill"><span class="dot"></span><span>${escapeHtml(v.avatar || '')}</span><b>${escapeHtml(v.name || '')}</b></span>`).join('')
-        : '<span class="muted">当前无人在线</span>';
-    });
-
-    // 发送消息（不限制字数；仅空内容拦截）
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const text = (textInput.value || '').trim();
-      if (!text) return;
-      sendBtn.disabled = true;
-      try {
-        await messagesRef.push({
-          userId: currentUser.id,
-          text,
-          ts: firebase.database.ServerValue.TIMESTAMP
-        });
-        textInput.value = '';
-      } finally {
-        sendBtn.disabled = false;
-      }
-    });
-
-    // 初次清理过期消息，并定时清理
-    cleanupExpired();
-    setInterval(cleanupExpired, 10 * 60 * 1000); // 每 10 分钟清理一次
-
-    // 监听并渲染消息（仅展示 48 小时内）
-    const since = Date.now() - EXP_MS;
-    messagesRef.orderByChild('ts').startAt(since).limitToLast(500).on('child_added', snap => {
-      const m = snap.val();
-      renderMessage(snap.key, m);
-    });
-    messagesRef.on('child_changed', snap => {
-      // 不需要处理
-    });
-    messagesRef.on('child_removed', snap => {
-      const el = document.getElementById('msg-' + snap.key);
-      if (el) el.remove();
-    });
-
-    // 倒计时刷新
-    countdownTimer = setInterval(updateCountdowns, COUNTDOWN_INTERVAL);
-  }
-
-  // 渲染单条消息
-  function renderMessage(id, m){
-    if (!m || !m.ts) return;
-    const age = Date.now() - m.ts;
-    if (age >= EXP_MS) return; // 过期不显示
-    const u = USERS[m.userId] || { name:'未知', avatar:'🙂' };
-
-    let li = document.getElementById('msg-' + id);
-    if (!li) {
-      li = document.createElement('li');
-      li.className = 'msg';
-      li.id = 'msg-' + id;
-      li.innerHTML = `
-        <div class="avatar">${u.avatar}</div>
-        <div class="bubble">
-          <div><strong>${escapeHtml(u.name)}：</strong><span class="content"></span></div>
-          <div class="meta">
-            <span class="time"></span>
-            <span class="remain"></span>
+  <!-- 主视图 -->
+  <div id="mainView" class="wrap" style="display:none;">
+    <!-- 用户信息 -->
+    <div class="card">
+      <div class="topbar">
+        <div class="userbox">
+          <div id="meAvatar" class="avatar">🙂</div>
+          <div>
+            <div id="meName" class="name">未知</div>
+            <div class="muted">留言会在 48 小时后自动清除</div>
           </div>
         </div>
-      `;
-      listEl.prepend(li);
-    }
-    li.querySelector('.content').innerHTML = linkify(escapeHtml(m.text));
-    li.dataset.ts = m.ts;
-    li.querySelector('.time').textContent = new Date(m.ts).toLocaleString();
-    updateOneCountdown(li);
-  }
+        <div class="actions">
+          <button id="logoutBtn" class="logout">退出</button>
+        </div>
+      </div>
+    </div>
 
-  // 更新所有倒计时
-  function updateCountdowns(){
-    document.querySelectorAll('li.msg').forEach(updateOneCountdown);
-  }
-  function updateOneCountdown(li){
-    const ts = Number(li.dataset.ts || 0);
-    if (!ts) return;
-    const remain = ts + EXP_MS - Date.now();
-    if (remain <= 0) {
-      // 到期：让 UI 移除，实际删除由 cleanupExpired 负责兜底
-      li.remove();
-      return;
-    }
-    const txt = formatRemain(remain);
-    const el = li.querySelector('.remain');
-    if (el) el.textContent = `剩余 ${txt}`;
-  }
-  function formatRemain(ms){
-    const s = Math.floor(ms/1000);
-    const h = Math.floor(s/3600);
-    const m = Math.floor((s%3600)/60);
-    const hh = String(h).padStart(2,'0');
-    const mm = String(m).padStart(2,'0');
-    return `${hh}小时${mm}分钟`;
-  }
+    <!-- 在线列表 -->
+    <div class="card">
+      <div class="row" style="justify-content:space-between;">
+        <div class="name">当前在线</div>
+        <div class="muted">1 分钟内活跃视为在线</div>
+      </div>
+      <div id="presence" class="presence" style="margin-top:8px;"></div>
+    </div>
 
-  // 清理过期消息（简单客户端清理）
-  function cleanupExpired(){
-    const cutoff = Date.now() - EXP_MS;
-    messagesRef.orderByChild('ts').endAt(cutoff).once('value', snap => {
-      snap.forEach(child => child.ref.remove());
+    <!-- 开奖资讯模块 -->
+    <div class="card">
+      <h3>🧧 开奖资讯</h3>
+      <label for="gameSelect">选择游戏：</label>
+      <select id="gameSelect">
+        <option value="1">香港</option>
+        <option value="2">台湾</option>
+        <option value="3">老澳门</option>
+        <option value="4">新澳门</option>
+        <option value="5">排列5</option>
+      </select>
+      <div id="lotteryInfo">载入中...</div>
+      <div id="countdown" class="countdown"></div>
+    </div>
+
+    <!-- 留言输入 -->
+    <div class="card">
+      <form id="form" class="composer" autocomplete="off">
+        <textarea id="text" placeholder="写下你想说的话（不限制字数）"></textarea>
+        <button id="send" type="submit">发送</button>
+      </form>
+    </div>
+
+    <!-- 留言列表 -->
+    <ul id="list"></ul>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script>
+    // —— 用户 & 密码映射 ——
+    const USERS = {
+      horse:  { id:'horse',  name:'马',   avatar:'🐎' },
+      sheep:  { id:'sheep',  name:'羊',   avatar:'🐑' },
+      mouse:  { id:'mouse',  name:'老鼠', avatar:'🐭' },
+      rabbit: { id:'rabbit', name:'兔子', avatar:'🐇' },
+      monkey: { id:'monkey', name:'猴子', avatar:'🐒' },
+      snake:  { id:'snake',  name:'蛇',   avatar:'🐍' }
+    };
+    const PASSWORDS = {
+      'ma123':'horse',
+      'yang123':'sheep',
+      'shu123':'mouse',
+      'tu123':'rabbit',
+      'hou123':'monkey',
+      'she123':'snake'
+    };
+
+    // —— Firebase 配置 ——
+    const firebaseConfig = {
+      apiKey: "AIzaSyDTsjNPdZntfabyVn0q-9y39l9a1ur_cEw",
+      authDomain: "jiatingliuyanban-635f9.firebaseapp.com",
+      databaseURL: "https://jiatingliuyanban-635f9-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "jiatingliuyanban-635f9",
+      storageBucket: "jiatingliuyanban-635f9.appspot.com",
+      messagingSenderId: "196518556157",
+      appId: "1:196518556157:web:f710ec71f8acb4eb79a994"
+    };
+
+    // —— 常量 ——
+    const EXP_MS = 48 * 3600 * 1000;       // 留言过期 48h
+    const ONLINE_WINDOW = 60 * 1000;      // 在线判定 1min
+    const COUNTDOWN_INTERVAL = 60000;     // 留言倒计时刷新 1min
+
+    // —— 生肖 emoji 映射 —— 
+    const zodiacEmoji = {
+      "鼠":"🐭","牛":"🐮","虎":"🐯","兔":"🐰",
+      "龍":"🐲","蛇":"🐍","馬":"🐴","羊":"🐑",
+      "猴":"🐵","雞":"🐔","狗":"🐶","豬":"🐷"
+    };
+
+    // —— DOM 引用 ——
+    const loginView  = document.getElementById('loginView');
+    const mainView   = document.getElementById('mainView');
+    const pwdInput   = document.getElementById('pwd');
+    const loginBtn   = document.getElementById('loginBtn');
+    const loginErr   = document.getElementById('loginErr');
+    const meAvatar   = document.getElementById('meAvatar');
+    const meName     = document.getElementById('meName');
+    const logoutBtn  = document.getElementById('logoutBtn');
+    const form       = document.getElementById('form');
+    const textInput  = document.getElementById('text');
+    const sendBtn    = document.getElementById('send');
+    const listEl     = document.getElementById('list');
+    const presenceEl = document.getElementById('presence');
+    const gameSelect = document.getElementById('gameSelect');
+    const lotteryInfo= document.getElementById('lotteryInfo');
+    const countdownEl= document.getElementById('countdown');
+
+    // —— 状态变量 ——
+    let currentUser = null;
+    let db, messagesRef, statusRef, statusAllRef, connectedRef;
+    let messageTimer = null;
+
+    // —— 自动登录检测 ——
+    const savedRole = sessionStorage.getItem('roleId');
+    if (savedRole && USERS[savedRole]) {
+      currentUser = USERS[savedRole];
+      showMain();
+    }
+
+    // —— 登录事件 ——
+    loginBtn.addEventListener('click', () => {
+      const pwd = (pwdInput.value || '').trim();
+      const roleId = PASSWORDS[pwd];
+      if (!roleId || !USERS[roleId]) {
+        loginErr.textContent = '密码错误，请重试';
+        return;
+      }
+      currentUser = USERS[roleId];
+      sessionStorage.setItem('roleId', currentUser.id);
+      showMain();
     });
-  }
 
-  // 工具函数
-  function escapeHtml(s){
-    return String(s).replace(/[&<>"'`=\/]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'}[c]));
-  }
-  function linkify(s){
-    return s.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
-  }
-</script>
+    // —— 退出事件 ——
+    logoutBtn.addEventListener('click', () => {
+      try { statusRef && statusRef.remove(); } catch(e){}
+      sessionStorage.removeItem('roleId');
+      mainView.style.display = 'none';
+      loginView.style.display = 'block';
+      if (messageTimer) clearInterval(messageTimer);
+    });
+
+    // —— 显示主界面 & 初始化 Firebase & 监听消息 & 在线 & 开奖 —— 
+    function showMain(){
+      loginView.style.display = 'none';
+      mainView.style.display = 'block';
+      meAvatar.textContent = currentUser.avatar;
+      meName.textContent   = currentUser.name;
+
+      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+      db            = firebase.database();
+      messagesRef   = db.ref('messages');
+      statusRef     = db.ref('status/' + currentUser.id);
+      statusAllRef  = db.ref('status');
+      connectedRef  = db.ref('.info/connected');
+
+      // —— 在线状态心跳 ——
+      connectedRef.on('value', snap => {
+        if (snap.val() === true) {
+          statusRef.onDisconnect().remove();
+          statusRef.set({ uid:currentUser.id, name:currentUser.name,
+                          avatar:currentUser.avatar,
+                          lastSeen:firebase.database.ServerValue.TIMESTAMP });
+        }
+      });
+      setInterval(() => {
+        statusRef.update({ lastSeen: firebase.database.ServerValue.TIMESTAMP });
+      }, 30000);
+
+      // —— 渲染在线用户 ——
+      statusAllRef.on('value', snap => {
+        const now = Date.now();
+        const online = [];
+        snap.forEach(ch => {
+          const v = ch.val();
+          if (v.lastSeen && (now - v.lastSeen) < ONLINE_WINDOW) {
+            online.push(v);
+          }
+        });
+        presenceEl.innerHTML = online.length
+          ? online.map(v => `<span class="pill"><span class="dot"></span><span>${v.avatar}</span><b>${v.name}</b></span>`).join('')
+          : '<span class="muted">当前无人在线</span>';
+      });
+
+      // —— 发送消息 ——
+      form.addEventListener('submit', async e => {
+        e.preventDefault();
+        const txt = (textInput.value||'').trim();
+        if (!txt) return;
+        sendBtn.disabled = true;
+        try {
+          await messagesRef.push({ userId:currentUser.id,
+                                   text:txt,
+                                   ts:firebase.database.ServerValue.TIMESTAMP });
+          textInput.value = '';
+        } finally {
+          sendBtn.disabled = false;
+        }
+      });
+
+      // —— 清理 & 监听 & 渲染留言 ——
+      cleanupExpired();
+      messageTimer = setInterval(cleanupExpired, 10*60*1000);
+
+      const since = Date.now() - EXP_MS;
+      messagesRef.orderByChild('ts').startAt(since).limitToLast(500)
+        .on('child_added', snap => renderMessage(snap.key, snap.val()));
+      messagesRef.on('child_removed', snap => {
+        const el = document.getElementById('msg-'+snap.key);
+        if(el) el.remove();
+      });
+
+      // —— 留言倒计时更新 ——
+      setInterval(updateAllMessageCountdowns, COUNTDOWN_INTERVAL);
+
+      // —— 初始化 & 监听开奖模块 ——
+      gameSelect.addEventListener('change', () => loadLottery(gameSelect.value));
+      loadLottery(gameSelect.value);
+    }
+
+    // —— 渲染单条留言 ——
+    function renderMessage(id, m){
+      if(!m || !m.ts) return;
+      const age = Date.now() - m.ts;
+      if(age >= EXP_MS) return;
+      let li = document.getElementById('msg-'+id);
+      if(!li){
+        li = document.createElement('li');
+        li.id = 'msg-'+id; li.className='msg';
+        li.innerHTML = `
+          <div class="avatar">${USERS[m.userId]?.avatar||'🙂'}</div>
+          <div class="bubble">
+            <div><strong>${USERS[m.userId]?.name||'未知'}：</strong><span class="content"></span></div>
+            <div class="meta"><span class="time"></span> <span class="remain"></span></div>
+          </div>`;
+        listEl.prepend(li);
+      }
+      li.querySelector('.content').textContent = m.text;
+      li.dataset.ts = m.ts;
+      li.querySelector('.time').textContent = new Date(m.ts).toLocaleString();
+      updateMessageCountdown(li);
+    }
+
+    // —— 更新所有留言剩余时长 ——
+    function updateAllMessageCountdowns(){
+      document.querySelectorAll('li.msg').forEach(updateMessageCountdown);
+    }
+    function updateMessageCountdown(li){
+      const ts = Number(li.dataset.ts);
+      const remain = ts + EXP_MS - Date.now();
+      if(remain <= 0){ li.remove(); return; }
+      const s = Math.floor(remain/1000);
+      const h = String(Math.floor(s/3600)).padStart(2,'0');
+      const m = String(Math.floor((s%3600)/60)).padStart(2,'0');
+      li.querySelector('.remain').textContent = `剩余 ${h}小时${m}分钟`;
+    }
+
+    // —— 客户端清理过期留言 ——
+    function cleanupExpired(){
+      const cutoff = Date.now() - EXP_MS;
+      messagesRef.orderByChild('ts').endAt(cutoff)
+        .once('value', snap => snap.forEach(ch => ch.ref.remove()));
+    }
+
+    // —— 加载开奖数据 & 渲染 ——
+    async function loadLottery(gameid){
+      lotteryInfo.textContent = '载入中...';
+      try {
+        const res = await fetch(`https://api.166001.com/lottery/get/${gameid}`);
+        const json = await res.json();
+        const d = json.data;
+        if(!d){ lotteryInfo.textContent='获取失败'; return; }
+
+        const zodiacHtml = d.currentZodiac
+          ? d.currentZodiac.split(',').map(z => `${zodiacEmoji[z]||''}${z}`).join(', ')
+          : '';
+        const last3 = d.resultsOfLastThreeIssues.map(r => {
+          const zs = r.zodiac
+            ? r.zodiac.split(',').map(z => `${zodiacEmoji[z]||''}${z}`).join(', ')
+            : '';
+          return `<li>
+            <strong>${r.issue}</strong>：${r.result}
+            ${zs?`<div class="zodiac">${zs}</div>`:''}
+            <div class="muted">${r.creatTime}</div>
+          </li>`;
+        }).join('');
+
+        lotteryInfo.innerHTML = `
+          <div>期号：${d.currentIssue||'—'}</div>
+          <div>开奖：${d.currentResult||'—'}</div>
+          ${zodiacHtml?`<div class="zodiac">生肖：${zodiacHtml}</div>`:''}
+          <div>下一期：${d.nextIssue}（${d.nextTime}）</div>
+          <hr>
+          <div>最近三期：</div>
+          <ul style="padding-left:16px;">${last3}</ul>
+        `;
+        startLotteryCountdown(d.nextTime);
+      } catch(e){
+        console.error(e);
+        lotteryInfo.textContent = '载入失败';
+      }
+    }
+
+    // —— 开奖倒计时 ——
+    let lotteryTimer = null;
+    function startLotteryCountdown(nextTimeStr){
+      if(lotteryTimer) clearTimeout(lotteryTimer);
+      function tick(){
+        const target = new Date(nextTimeStr.replace(/-/g,'/')).getTime();
+        const diff = target - Date.now();
+        if(diff <= 0){
+          countdownEl.textContent = '🎉 正在开奖或已开奖！';
+        } else {
+          const m = Math.floor(diff/60000);
+          const s = Math.floor((diff%60000)/1000);
+          countdownEl.textContent = `⏳ 距离下期开奖：${m}分${s}秒`;
+          lotteryTimer = setTimeout(tick, 1000);
+        }
+      }
+      tick();
+    }
+  </script>
 </body>
 </html>
-
-
-
-
-
-

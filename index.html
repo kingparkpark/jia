@@ -5,44 +5,527 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>玛卡巴卡留言板</title>
   <style>
-    :root{ --bg:#f7f7fb; --card:#fff; --line:#eaeaea; --text:#222; --muted:#666; --accent:#4f46e5; }
-    *{ box-sizing:border-box; }
-    body{ font-family: system-ui,-apple-system,'Segoe UI',Roboto,'PingFang SC','Noto Sans SC',sans-serif; margin:0; background:var(--bg); color:var(--text); }
-    .wrap{ max-width:840px; margin:24px auto; padding:16px; }
-    .card{ background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; box-shadow:0 1px 2px rgba(0,0,0,.04); margin-bottom:20px; }
-    header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
-    h2,h3{ margin:0; }
-    .userbox{ display:flex; align-items:center; gap:10px; }
-    .avatar{ width:40px; height:40px; border-radius:10px; display:grid; place-items:center; font-size:22px; background:#eef2ff; }
-    .name{ font-weight:700; }
-    .muted{ color:var(--muted); font-size:12px; }
-    .row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-    .presence{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-    .presence .pill{ display:flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid var(--line); border-radius:999px; background:#fff; }
-    .presence .pill .dot{ width:8px; height:8px; border-radius:50%; background:#22c55e; }
-    .composer{ display:flex; gap:8px; }
-    textarea{ flex:1; min-height:80px; padding:10px; border:1px solid var(--line); border-radius:10px; outline:none; font-size:15px; background:#fff; }
-    button{ padding:10px 16px; border:0; border-radius:10px; background:var(--accent); color:#fff; cursor:pointer; white-space:nowrap; }
-    button:disabled{ opacity:.6; cursor:not-allowed; }
-    ul#list{ list-style:none; padding:0; margin:12px 0 0 0; }
-    li.msg{ display:flex; gap:10px; padding:10px; border:1px solid var(--line); border-radius:12px; background:#fff; margin-bottom:10px; }
-    .bubble{ flex:1; }
-    .meta{ font-size:12px; color:var(--muted); margin:4px 0 0; display:flex; gap:8px; flex-wrap:wrap; }
+    :root{ 
+      --bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --bg-secondary: #f8fafc;
+      --card: #ffffff; 
+      --card-hover: #ffffff;
+      --line: #e2e8f0; 
+      --text: #1e293b; 
+      --text-light: #64748b;
+      --muted: #64748b; 
+      --accent: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --accent-hover: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+      --success: #10b981;
+      --error: #ef4444;
+      --warning: #f59e0b;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    
+    * { box-sizing: border-box; }
+    
+    body { 
+      font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Noto Sans SC', sans-serif; 
+      margin: 0; 
+      background: var(--bg);
+      background-attachment: fixed;
+      color: var(--text); 
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    
+    .wrap { 
+      max-width: 900px; 
+      margin: 32px auto; 
+      padding: 20px; 
+    }
+    
+    .card { 
+      background: var(--card); 
+      border: 1px solid var(--line); 
+      border-radius: 16px; 
+      padding: 24px; 
+      box-shadow: var(--shadow); 
+      margin-bottom: 24px; 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+    
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+    
+    .card:hover::before {
+      transform: scaleX(1);
+    }
+    
+    header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    
+    h2, h3 { 
+      margin: 0; 
+      background: var(--accent);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 700;
+    }
+    
+    .userbox { display: flex; align-items: center; gap: 16px; }
+    
+    .avatar { 
+      width: 48px; 
+      height: 48px; 
+      border-radius: 12px; 
+      display: grid; 
+      place-items: center; 
+      font-size: 24px; 
+      background: linear-gradient(135deg, #fef3c7 0%, #fcd34d 100%);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease;
+    }
+    
+    .avatar:hover {
+      transform: scale(1.05);
+    }
+    
+    .name { 
+      font-weight: 600; 
+      font-size: 16px;
+      color: var(--text);
+    }
+    
+    .muted { 
+      color: var(--muted); 
+      font-size: 13px; 
+      font-weight: 400;
+    }
+    
+    .row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    
+    .presence { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    
+    .presence .pill { 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      padding: 8px 12px; 
+      border: 1px solid var(--line); 
+      border-radius: 20px; 
+      background: var(--card);
+      transition: all 0.2s ease;
+      cursor: default;
+    }
+    
+    .presence .pill:hover {
+      background: var(--bg-secondary);
+      transform: translateY(-1px);
+    }
+    
+    .presence .pill .dot { 
+      width: 8px; 
+      height: 8px; 
+      border-radius: 50%; 
+      background: var(--success);
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    
+    .composer { 
+      display: flex; 
+      gap: 12px; 
+      align-items: flex-end;
+    }
+    
+    textarea { 
+      flex: 1; 
+      min-height: 80px; 
+      max-height: 200px;
+      padding: 16px; 
+      border: 2px solid var(--line); 
+      border-radius: 12px; 
+      outline: none; 
+      font-size: 15px; 
+      background: var(--card);
+      transition: all 0.3s ease;
+      resize: none;
+      font-family: inherit;
+      line-height: 1.5;
+    }
+    
+    textarea:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      background: #fafbfc;
+    }
+    
+    button { 
+      padding: 12px 20px; 
+      border: 0; 
+      border-radius: 12px; 
+      background: var(--accent); 
+      color: #fff; 
+      cursor: pointer; 
+      white-space: nowrap;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+    
+    button:hover::before {
+      left: 100%;
+    }
+    
+    button:hover {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    button:disabled { 
+      opacity: 0.6; 
+      cursor: not-allowed; 
+      transform: none;
+      box-shadow: none;
+    }
+    
+    ul#list { list-style: none; padding: 0; margin: 20px 0 0 0; }
+    
+    li.msg { 
+      display: flex; 
+      gap: 12px; 
+      padding: 16px; 
+      border: 1px solid var(--line); 
+      border-radius: 16px; 
+      background: var(--card); 
+      margin-bottom: 12px;
+      transition: all 0.3s ease;
+      animation: slideIn 0.5s ease-out;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    li.msg:hover {
+      background: var(--bg-secondary);
+      transform: translateX(4px);
+    }
+    
+    .bubble { flex: 1; }
+    
+    .meta { 
+      font-size: 12px; 
+      color: var(--muted); 
+      margin: 8px 0 0; 
+      display: flex; 
+      gap: 12px; 
+      flex-wrap: wrap; 
+    }
 
-    /* 登录框 */
-    .login{ max-width:360px; margin:100px auto; }
-    .login h3{ margin:0 0 12px; text-align:center; }
-    .login .field{ display:flex; gap:8px; }
-    input[type=password]{ flex:1; padding:10px; border:1px solid var(--line); border-radius:10px; outline:none; }
-    .error{ color:#e11d48; font-size:12px; margin-top:8px; min-height:16px; }
-    .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
-    .actions{ display:flex; gap:8px; }
-    .logout{ background:#fff; color:#444; border:1px solid var(--line); }
+    /* 登录框优化 */
+    .login { 
+      max-width: 400px; 
+      margin: 100px auto;
+      animation: fadeInUp 0.8s ease-out;
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .login .card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .login h3 { 
+      margin: 0 0 20px; 
+      text-align: center; 
+      font-size: 24px;
+      font-weight: 700;
+    }
+    
+    .login .field { display: flex; gap: 12px; align-items: stretch; }
+    
+    input[type=password] { 
+      flex: 1; 
+      padding: 14px 16px; 
+      border: 2px solid var(--line); 
+      border-radius: 12px; 
+      outline: none;
+      font-size: 15px;
+      transition: all 0.3s ease;
+      background: var(--card);
+    }
+    
+    input[type=password]:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .error { 
+      color: var(--error); 
+      font-size: 13px; 
+      margin-top: 12px; 
+      min-height: 20px; 
+      font-weight: 500;
+    }
+    
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .actions { display: flex; gap: 12px; }
+    
+    .logout { 
+      background: var(--card); 
+      color: var(--text); 
+      border: 2px solid var(--line);
+    }
+    
+    .logout:hover {
+      background: var(--bg-secondary);
+      border-color: var(--error);
+      color: var(--error);
+    }
 
-    /* 开奖模块 */
-    select { padding:6px; font-size:14px; margin-bottom:10px; }
-    .zodiac { font-size:18px; margin-top:4px; }
-    .countdown { font-weight:bold; color:#d00; margin-top:6px; }
+    /* 开奖模块优化 */
+    select { 
+      padding: 10px 12px; 
+      font-size: 14px; 
+      margin-bottom: 16px;
+      border: 2px solid var(--line);
+      border-radius: 8px;
+      background: var(--card);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    select:focus {
+      border-color: #667eea;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    /* 开奖信息布局 */
+    .lottery-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .lottery-main {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 16px;
+      color: white;
+      box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+    }
+    
+    .lottery-issue {
+      font-size: 16px;
+      font-weight: 500;
+      opacity: 0.9;
+      margin-bottom: 8px;
+    }
+    
+    .lottery-numbers {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      margin: 8px 0;
+      line-height: 1.2;
+    }
+    
+    .lottery-numbers .number {
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      padding: 8px 12px;
+      margin: 0 4px;
+      border-radius: 12px;
+      min-width: 50px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+    
+    .lottery-zodiac {
+      font-size: 18px;
+      margin-top: 12px;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+    }
+    
+    .lottery-next {
+      font-size: 14px;
+      opacity: 0.8;
+      margin-top: 8px;
+    }
+    
+    .lottery-history {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 16px;
+      border: 2px solid var(--line);
+    }
+    
+    .lottery-history h4 {
+      margin: 0 0 12px 0;
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .lottery-history ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .lottery-history li {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .lottery-history li:last-child {
+      border-bottom: none;
+    }
+    
+    .history-issue {
+      font-weight: 600;
+      color: var(--accent);
+    }
+    
+    .history-numbers {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 1px;
+    }
+    
+    .zodiac { 
+      font-size: 16px; 
+      margin-top: 6px;
+    }
+    
+    .countdown { 
+      font-weight: 600; 
+      color: var(--error); 
+      margin-top: 12px;
+      padding: 12px;
+      background: rgba(239, 68, 68, 0.1);
+      border-radius: 8px;
+      border-left: 4px solid var(--error);
+    }
+    
+    /* 响应式优化 */
+    @media (max-width: 768px) {
+      .lottery-numbers {
+        font-size: 24px;
+      }
+      
+      .lottery-numbers .number {
+        padding: 6px 8px;
+        margin: 0 2px;
+        min-width: 40px;
+      }
+      
+      .lottery-main {
+        padding: 16px;
+      }
+    }
+
+    /* Toast 通知样式 */
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 16px 20px;
+      border-radius: 12px;
+      color: white;
+      font-weight: 500;
+      z-index: 1000;
+      transform: translateX(400px);
+      transition: transform 0.3s ease;
+      box-shadow: var(--shadow-lg);
+    }
+    
+    .toast.show {
+      transform: translateX(0);
+    }
+    
+    .toast.success { background: var(--success); }
+    .toast.error { background: var(--error); }
+    .toast.warning { background: var(--warning); }
+
+    /* 响应式优化 */
+    @media (max-width: 768px) {
+      .wrap { margin: 16px; padding: 16px; }
+      .card { padding: 16px; margin-bottom: 16px; }
+      .composer { flex-direction: column; align-items: stretch; }
+      .login { margin: 60px auto; }
+      .userbox { gap: 12px; }
+      .avatar { width: 40px; height: 40px; font-size: 20px; }
+    }
   </style>
 </head>
 <body>
@@ -93,10 +576,7 @@
       <label for="gameSelect">选择游戏：</label>
       <select id="gameSelect">
         <option value="1">香港</option>
-        <option value="2">台湾</option>
-        <option value="3">老澳门</option>
         <option value="4">新澳门</option>
-        <option value="5">排列5</option>
       </select>
       <div id="lotteryInfo">载入中...</div>
       <div id="countdown" class="countdown"></div>
@@ -136,6 +616,27 @@
       'she123':'snake'
     };
 
+    // Toast 组件
+    function showToast(msg, type='success', duration=2000){
+      const t = document.createElement('div');
+      t.className = `toast ${type}`;
+      t.textContent = msg;
+      document.body.appendChild(t);
+      requestAnimationFrame(() => t.classList.add('show'));
+      setTimeout(() => {
+        t.classList.remove('show');
+        setTimeout(() => t.remove(), 300);
+      }, duration);
+    }
+
+    // 自适应文本域高度
+    function autoResizeTextarea(el){
+      if(!el) return;
+      const resize = () => { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 200) + 'px'; };
+      el.addEventListener('input', resize);
+      resize();
+    }
+
     // —— Firebase 配置 ——
     const firebaseConfig = {
       apiKey: "AIzaSyDTsjNPdZntfabyVn0q-9y39l9a1ur_cEw",
@@ -152,11 +653,78 @@
     const ONLINE_WINDOW = 60 * 1000;      // 在线判定 1min
     const COUNTDOWN_INTERVAL = 60000;     // 留言倒计时刷新 1min
 
+    // —— 开奖API配置 ——
+    const LOTTERY_APIS = [
+      {
+        name: '香港API',
+        url: (gameid) => `https://api.166001.com/lottery/get/${gameid}`,
+        parser: (json) => json.data
+      },
+      {
+        name: '新澳门API',
+        url: (gameid) => `https://macaumarksix.com/api/macaujc2.com`,
+        parser: (json) => {
+          if (!json || !Array.isArray(json) || json.length === 0) return null;
+          const data = json[0];
+          return {
+            currentIssue: data.expect,
+            currentResult: data.openCode,
+            currentZodiac: data.zodiac,
+            nextIssue: '',
+            nextTime: '',
+            resultsOfLastThreeIssues: []
+          };
+        }
+      },
+      {
+        name: '备用API1', 
+        url: (gameid) => `https://api.jisuapi.com/caipiao/query?appkey=demo&caipiaoid=${gameid}`,
+        parser: (json) => {
+          if(json.status !== 0) return null;
+          const r = json.result;
+          return {
+            currentIssue: r.issueno,
+            currentResult: r.number,
+            currentZodiac: '',
+            nextIssue: '',
+            nextTime: '',
+            resultsOfLastThreeIssues: []
+          };
+        }
+      },
+      {
+        name: '备用API2',
+        url: (gameid) => `https://open.liupai.net/lottery/query?appkey=demo&cpid=${gameid}`,
+        parser: (json) => {
+          if(json.status !== '200') return null;
+          const r = json.result;
+          return {
+            currentIssue: r.issueno,
+            currentResult: r.number,
+            currentZodiac: '',
+            nextIssue: '',
+            nextTime: '',
+            resultsOfLastThreeIssues: []
+          };
+        }
+      }
+    ];
+
     // —— 生肖 emoji 映射 —— 
     const zodiacEmoji = {
-      "鼠":"🐭","牛":"🐮","虎":"🐯","兔":"🐰",
-      "龍":"🐲","蛇":"🐍","馬":"🐴","羊":"🐑",
-      "猴":"🐵","雞":"🐔","狗":"🐶","豬":"🐷"
+      // 十二生肖完整映射（支持繁简体及常见变体）
+      "鼠":"🐭","老鼠":"🐭","子鼠":"🐭",
+      "牛":"🐮","丑牛":"🐮","水牛":"🐮","黄牛":"🐮",
+      "虎":"🐯","寅虎":"🐯","老虎":"🐯","白虎":"🐯",
+      "兔":"🐰","卯兔":"🐰","兔子":"🐰","玉兔":"🐰",
+      "龙":"🐲","龍":"🐲","辰龙":"🐲","辰龍":"🐲","青龙":"🐲","青龍":"🐲",
+      "蛇":"🐍","巳蛇":"🐍","长蛇":"🐍","青蛇":"🐍",
+      "马":"🐴","馬":"🐴","午马":"🐴","午馬":"🐴","白马":"🐴","白馬":"🐴",
+      "羊":"🐑","未羊":"🐑","山羊":"🐑","绵羊":"🐑",
+      "猴":"🐵","申猴":"🐵","猴子":"🐵","金猴":"🐵",
+      "鸡":"🐔","雞":"🐔","酉鸡":"🐔","酉雞":"🐔","公鸡":"🐔","公雞":"🐔",
+      "狗":"🐶","戌狗":"🐶","小狗":"🐶","黄狗":"🐶",
+      "猪":"🐷","豬":"🐷","亥猪":"🐷","亥豬":"🐷","野猪":"🐷","野豬":"🐷"
     };
 
     // —— DOM 引用 ——
@@ -195,11 +763,21 @@
       const roleId = PASSWORDS[pwd];
       if (!roleId || !USERS[roleId]) {
         loginErr.textContent = '密码错误，请重试';
+        showToast('密码错误', 'error');
         return;
       }
       currentUser = USERS[roleId];
       sessionStorage.setItem('roleId', currentUser.id);
       showMain();
+      showToast('登录成功', 'success');
+    });
+
+    // 支持回车键登录
+    pwdInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        loginBtn.click();
+      }
     });
 
     // —— 退出事件 ——
@@ -209,6 +787,7 @@
       mainView.style.display = 'none';
       loginView.style.display = 'block';
       if (messageTimer) clearInterval(messageTimer);
+      showToast('已退出登录', 'warning');
     });
 
     // —— 显示主界面 & 初始化 Firebase & 监听消息 & 在线 & 开奖 —— 
@@ -217,6 +796,9 @@
       mainView.style.display = 'block';
       meAvatar.textContent = currentUser.avatar;
       meName.textContent   = currentUser.name;
+
+      // UI 初始化
+      autoResizeTextarea(textInput);
 
       if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
       db            = firebase.database();
@@ -259,13 +841,28 @@
         const txt = (textInput.value||'').trim();
         if (!txt) return;
         sendBtn.disabled = true;
+        sendBtn.textContent = '发送中...';
         try {
           await messagesRef.push({ userId:currentUser.id,
                                    text:txt,
                                    ts:firebase.database.ServerValue.TIMESTAMP });
           textInput.value = '';
+          textInput.dispatchEvent(new Event('input'));
+          showToast('发送成功', 'success');
+        } catch (err) {
+          console.error(err);
+          showToast('发送失败，请重试', 'error');
         } finally {
           sendBtn.disabled = false;
+          sendBtn.textContent = '发送';
+        }
+      });
+
+      // Ctrl/Cmd + Enter 发送
+      textInput.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+          e.preventDefault();
+          form.requestSubmit();
         }
       });
 
@@ -333,63 +930,153 @@
         .once('value', snap => snap.forEach(ch => ch.ref.remove()));
     }
 
-    // —— 加载开奖数据 & 渲染 ——
+    // —— 带超时的fetch请求 ——
+    async function fetchWithTimeout(url, timeout = 8000) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+      try {
+        const response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        return response;
+      } catch (error) {
+        clearTimeout(timeoutId);
+        throw error;
+      }
+    }
+
+    // —— 加载开奖数据 & 渲染（增强版）——
     async function loadLottery(gameid){
       lotteryInfo.textContent = '载入中...';
-      try {
-        const res = await fetch(`https://api.166001.com/lottery/get/${gameid}`);
-        const json = await res.json();
-        const d = json.data;
-        if(!d){ lotteryInfo.textContent='获取失败'; return; }
+      
+      // 尝试所有API源
+      for (let i = 0; i < LOTTERY_APIS.length; i++) {
+        const api = LOTTERY_APIS[i];
+        try {
+          showToast(`正在尝试${api.name}...`, 'warning', 1500);
+          
+          const res = await fetchWithTimeout(api.url(gameid));
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          
+          const json = await res.json();
+          const d = api.parser(json);
+          
+          if (!d) {
+            throw new Error('数据解析失败');
+          }
 
-        const zodiacHtml = d.currentZodiac
-          ? d.currentZodiac.split(',').map(z => `${zodiacEmoji[z]||''}${z}`).join(', ')
-          : '';
-        const last3 = d.resultsOfLastThreeIssues.map(r => {
-          const zs = r.zodiac
-            ? r.zodiac.split(',').map(z => `${zodiacEmoji[z]||''}${z}`).join(', ')
+          // 渲染成功的数据
+          const zodiacHtml = d.currentZodiac
+            ? d.currentZodiac.split(',').map(z => `${zodiacEmoji[z]||''}${z}`).join(', ')
             : '';
-          return `<li>
-            <strong>${r.issue}</strong>：${r.result}
-            ${zs?`<div class="zodiac">${zs}</div>`:''}
-            <div class="muted">${r.creatTime}</div>
-          </li>`;
-        }).join('');
+          
+          // 格式化开奖号码，为每个数字添加样式
+          const formatNumbers = (numbers) => {
+            if (!numbers || numbers === '—') return '—';
+            return numbers.split(/[,，+]/).map(num => 
+              `<span class="number">${num.trim()}</span>`
+            ).join('');
+          };
+          
+          const last3 = (d.resultsOfLastThreeIssues || []).map(r => {
+            const zs = r.zodiac
+              ? r.zodiac.split(',').map(z => `${zodiacEmoji[z]||''}${z}`).join(', ')
+              : '';
+            return `<li>
+              <div>
+                <div class="history-issue">${r.issue}</div>
+                <div class="history-numbers">${formatNumbers(r.result)}</div>
+                ${zs?`<div class="zodiac">${zs}</div>`:''}
+              </div>
+              <div class="muted">${r.creatTime}</div>
+            </li>`;
+          }).join('');
 
-        lotteryInfo.innerHTML = `
-          <div>期号：${d.currentIssue||'—'}</div>
-          <div>开奖：${d.currentResult||'—'}</div>
-          ${zodiacHtml?`<div class="zodiac">生肖：${zodiacHtml}</div>`:''}
-          <div>下一期：${d.nextIssue}（${d.nextTime}）</div>
-          <hr>
-          <div>最近三期：</div>
-          <ul style="padding-left:16px;">${last3}</ul>
-        `;
-        startLotteryCountdown(d.nextTime);
-      } catch(e){
-        console.error(e);
-        lotteryInfo.textContent = '载入失败';
+          lotteryInfo.innerHTML = `
+            <div class="lottery-container">
+              <div class="lottery-main">
+                <div style="flex: 1;">
+                  <div class="lottery-issue">第 ${d.currentIssue||'—'} 期</div>
+                  <div class="lottery-numbers">${formatNumbers(d.currentResult)}</div>
+                  ${zodiacHtml?`<div class="lottery-zodiac">${zodiacHtml}</div>`:''}
+                  <div class="lottery-next">下期：${d.nextIssue||'—'}${d.nextTime?` • ${d.nextTime}`:''}</div>
+                </div>
+              </div>
+              ${last3?`
+                <div class="lottery-history">
+                  <h4>📊 最近三期开奖</h4>
+                  <ul>${last3}</ul>
+                </div>
+              `:''}
+              <div class="muted" style="text-align: center; margin-top: 8px;">数据来源：${api.name}</div>
+            </div>
+          `;
+          
+          // 启动倒计时（固定每晚21:30开奖）
+          startLotteryCountdown();
+          
+          showToast(`${api.name}加载成功`, 'success');
+          return; // 成功后退出循环
+          
+        } catch(e) {
+          console.warn(`${api.name}失败:`, e.message);
+          
+          // 如果是最后一个API也失败了
+          if (i === LOTTERY_APIS.length - 1) {
+            lotteryInfo.innerHTML = `
+              <div class="error">⚠️ 所有数据源均无法访问</div>
+              <div class="muted">可能的原因：</div>
+              <ul style="padding-left:16px; margin:8px 0;">
+                <li>网络连接问题</li>
+                <li>API服务暂时不可用</li>
+                <li>跨域访问限制</li>
+              </ul>
+              <button onclick="loadLottery(${gameid})" style="margin-top:8px;">🔄 重新加载</button>
+            `;
+            showToast('所有数据源加载失败', 'error', 3000);
+          }
+        }
       }
     }
 
     // —— 开奖倒计时 ——
     let lotteryTimer = null;
-    function startLotteryCountdown(nextTimeStr){
+    function startLotteryCountdown(){
       if(lotteryTimer) clearTimeout(lotteryTimer);
       function tick(){
-        const target = new Date(nextTimeStr.replace(/-/g,'/')).getTime();
-        const diff = target - Date.now();
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 21, 30, 0); // 今天21:30
+        let target = today;
+        
+        // 如果今天21:30已过，则计算明天21:30
+        if (now > today) {
+          target = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 21, 30, 0);
+        }
+        
+        const diff = target.getTime() - now.getTime();
         if(diff <= 0){
-          countdownEl.textContent = '🎉 正在开奖或已开奖！';
+          countdownEl.textContent = '🎉 正在开奖中！';
+          // 开奖后1分钟重新计算下期时间
+          lotteryTimer = setTimeout(tick, 60000);
         } else {
-          const m = Math.floor(diff/60000);
-          const s = Math.floor((diff%60000)/1000);
-          countdownEl.textContent = `⏳ 距离下期开奖：${m}分${s}秒`;
+          const h = Math.floor(diff / 3600000);
+          const m = Math.floor((diff % 3600000) / 60000);
+          const s = Math.floor((diff % 60000) / 1000);
+          
+          if (h > 0) {
+            countdownEl.textContent = `⏳ 距离开奖：${h}小时${m}分${s}秒`;
+          } else {
+            countdownEl.textContent = `⏳ 距离开奖：${m}分${s}秒`;
+          }
           lotteryTimer = setTimeout(tick, 1000);
         }
       }
       tick();
     }
+    
+    // 页面加载完成后启动倒计时
+    window.addEventListener('DOMContentLoaded', function() {
+      startLotteryCountdown();
+    });
   </script>
 </body>
 </html>

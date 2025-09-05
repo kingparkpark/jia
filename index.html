@@ -2081,7 +2081,7 @@
         } catch (parseError) {
           // 如果JSON解析失败，使用智能预测算法
           console.warn('AI返回格式解析失败，使用智能预测算法:', parseError);
-          return generateIntelligentPrediction('1');
+          return generateIntelligentPrediction('1', 'ai_fallback');
         }
     }
     
@@ -2089,6 +2089,11 @@
     function generateStatisticalPrediction(gameType) {
       const history = historicalData[gameType] || [];
       const frequency = {};
+      
+      // 初始化频率统计
+      for (let i = 1; i <= 49; i++) {
+        frequency[i] = 0;
+      }
       
       // 统计号码出现频率
       history.forEach(draw => {
@@ -2102,45 +2107,53 @@
         .map(num => ({ num: parseInt(num), freq: frequency[num] }))
         .sort((a, b) => b.freq - a.freq)
         .slice(0, 7)
-        .map(item => item.num);
+        .map(item => item.num)
+        .sort((a, b) => a - b);
+      
+      console.log(`统计学策略(${gameType}):`, sortedNumbers);
       
       return {
         numbers: sortedNumbers.length >= 7 ? sortedNumbers : generateRandomNumbers(),
         zodiac: getRandomZodiac(),
         confidence: "68%",
-        analysis: "基于历史数据频率统计分析"
+        analysis: `基于历史数据频率统计分析 - 最高频号码: ${sortedNumbers.slice(0,3).join(',')}`
       };
     }
     
     // 趋势分析预测算法
     function generateTrendPrediction(gameType) {
       const history = historicalData[gameType] || [];
-      const recentDraws = history.slice(-5); // 最近5期
-      const trendNumbers = [];
+      const recentDraws = history.slice(-3); // 最近3期
+      const trendFreq = {};
       
-      // 分析最近趋势
-      recentDraws.forEach(draw => {
+      // 初始化
+      for (let i = 1; i <= 49; i++) {
+        trendFreq[i] = 0;
+      }
+      
+      // 分析最近趋势，给近期号码更高权重
+      recentDraws.forEach((draw, index) => {
+        const weight = recentDraws.length - index; // 越近期权重越高
         draw.forEach(num => {
-          if (!trendNumbers.includes(num)) {
-            trendNumbers.push(num);
-          }
+          trendFreq[num] += weight;
         });
       });
       
-      // 选择7个趋势号码
-      const selectedNumbers = trendNumbers.slice(0, 7);
-      while (selectedNumbers.length < 7) {
-        const randomNum = Math.floor(Math.random() * 49) + 1;
-        if (!selectedNumbers.includes(randomNum)) {
-          selectedNumbers.push(randomNum);
-        }
-      }
+      // 选择趋势权重最高的7个号码
+      const selectedNumbers = Object.keys(trendFreq)
+        .map(num => ({ num: parseInt(num), weight: trendFreq[num] }))
+        .sort((a, b) => b.weight - a.weight)
+        .slice(0, 7)
+        .map(item => item.num)
+        .sort((a, b) => a - b);
+      
+      console.log(`趋势分析策略(${gameType}):`, selectedNumbers);
       
       return {
-        numbers: selectedNumbers.sort((a, b) => a - b),
+        numbers: selectedNumbers,
         zodiac: getRandomZodiac(),
         confidence: "72%",
-        analysis: "基于最近期数趋势分析"
+        analysis: `基于最近${recentDraws.length}期趋势分析 - 热门趋势: ${selectedNumbers.slice(0,3).join(',')}`
       };
     }
     
@@ -2153,11 +2166,15 @@
       // 模拟机器学习权重计算
       for (let i = 1; i <= 49; i++) {
         let score = 0;
-        history.slice(-4).forEach((draw, index) => {
+        const recentHistory = history.slice(-4);
+        recentHistory.forEach((draw, index) => {
           if (draw.includes(i)) {
-            score += weights[index];
+            score += weights[3 - index]; // 修正权重顺序，最近的权重最高
           }
         });
+        
+        // 添加随机因子模拟ML的复杂性
+        score += Math.random() * 0.1;
         prediction.push({ num: i, score });
       }
       
@@ -2165,13 +2182,16 @@
       const selectedNumbers = prediction
         .sort((a, b) => b.score - a.score)
         .slice(0, 7)
-        .map(item => item.num);
+        .map(item => item.num)
+        .sort((a, b) => a - b);
+      
+      console.log(`机器学习策略(${gameType}):`, selectedNumbers);
       
       return {
         numbers: selectedNumbers,
         zodiac: getRandomZodiac(),
         confidence: "76%",
-        analysis: "基于机器学习权重算法"
+        analysis: `基于机器学习权重算法 - 高分号码: ${selectedNumbers.slice(0,3).join(',')}`
       };
     }
     
@@ -2183,11 +2203,17 @@
         generateMLPrediction(gameType)
       ];
       
+      console.log(`混合策略调用结果(${gameType}):`, {
+        statistical: strategies[0].numbers,
+        trend: strategies[1].numbers,
+        ml: strategies[2].numbers
+      });
+      
       const hybridNumbers = [];
       const numberCounts = {};
       
       // 统计各策略推荐的号码
-      strategies.forEach(strategy => {
+      strategies.forEach((strategy, index) => {
         strategy.numbers.forEach(num => {
           numberCounts[num] = (numberCounts[num] || 0) + 1;
         });
@@ -2213,11 +2239,14 @@
         }
       }
       
+      const finalNumbers = hybridNumbers.sort((a, b) => a - b);
+      console.log(`混合策略最终结果(${gameType}):`, finalNumbers);
+      
       return {
-        numbers: hybridNumbers.sort((a, b) => a - b),
+        numbers: finalNumbers,
         zodiac: getRandomZodiac(),
         confidence: "80%",
-        analysis: "综合多种算法的混合策略预测"
+        analysis: `综合多种算法的混合策略预测 - 热门组合: ${finalNumbers.slice(0,3).join(',')}`
       };
     }
     
@@ -2277,41 +2306,53 @@
     }
 
     // 计算号码权重（基于多种因素）
-    function calculateNumberWeights(gameType) {
+    function calculateNumberWeights(gameType, strategy = 'intelligent') {
       const data = gameType === '1' ? historicalData.hk : historicalData.macau;
       const frequency = analyzeNumberFrequency(data);
       const weights = {};
       
-      // 获取最近10期数据进行趋势分析
-      const recentData = data.slice(-10);
+      // 根据策略类型调整分析参数
+      const recentPeriods = strategy === 'ai_fallback' ? 8 : strategy === 'validation_fix' ? 12 : 10;
+      const recentData = data.slice(-recentPeriods);
       const recentFreq = analyzeNumberFrequency(recentData);
       
       for (let i = 1; i <= 49; i++) {
         let weight = 0;
         
-        // 1. 历史频率权重（30%）
+        // 根据策略调整权重分配
         const avgFreq = data.length * 7 / 49; // 理论平均频率
         const freqScore = frequency[i] / avgFreq;
-        weight += freqScore * 0.3;
-        
-        // 2. 冷热号分析（25%）
         const isHot = frequency[i] > avgFreq * 1.1;
         const isCold = frequency[i] < avgFreq * 0.9;
-        if (isHot) weight += 0.15;
-        if (isCold) weight += 0.25; // 冷号反弹权重更高
-        
-        // 3. 近期趋势（20%）
         const recentScore = recentFreq[i] / (recentData.length * 7 / 49);
-        weight += (1 / (recentScore + 0.1)) * 0.2; // 近期少出现的号码权重更高
-        
-        // 4. 号码分布平衡（15%）
         const isOdd = i % 2 === 1;
         const isSmall = i <= 24;
-        weight += (isOdd ? 0.075 : 0.075); // 奇偶平衡
-        weight += (isSmall ? 0.075 : 0.075); // 大小平衡
-        
-        // 5. 生肖权重（10%）
         const zodiacIndex = (i - 1) % 12;
+        
+        if (strategy === 'ai_fallback') {
+          // AI策略：更注重历史频率和近期趋势
+          weight += freqScore * 0.4; // 历史频率权重40%
+          if (isHot) weight += 0.2;
+          if (isCold) weight += 0.1;
+          weight += recentScore * 0.25; // 近期趋势25%
+          weight += (isOdd ? 0.075 : 0.075) + (isSmall ? 0.075 : 0.075); // 分布15%
+        } else if (strategy === 'validation_fix') {
+          // 验证策略：平衡各种因素
+          weight += freqScore * 0.25; // 历史频率25%
+          if (isHot) weight += 0.1;
+          if (isCold) weight += 0.3; // 更偏向冷号
+          weight += (1 / (recentScore + 0.1)) * 0.25; // 反向趋势25%
+          weight += (isOdd ? 0.1 : 0.1) + (isSmall ? 0.1 : 0.1); // 分布20%
+        } else {
+          // 默认智能策略
+          weight += freqScore * 0.3; // 历史频率30%
+          if (isHot) weight += 0.15;
+          if (isCold) weight += 0.25;
+          weight += (1 / (recentScore + 0.1)) * 0.2; // 近期趋势20%
+          weight += (isOdd ? 0.075 : 0.075) + (isSmall ? 0.075 : 0.075); // 分布15%
+        }
+        
+        // 生肖权重（所有策略共用）
         const zodiacWeight = Math.sin((zodiacIndex / 12) * Math.PI * 2) * 0.05 + 0.05;
         weight += zodiacWeight;
         
@@ -2332,20 +2373,21 @@
     };
 
     // 智能预测算法
-    function generateIntelligentPrediction(type = 'hk') {
-      const cacheKey = type;
+    function generateIntelligentPrediction(type = 'hk', strategy = 'intelligent') {
+      // 为不同策略使用不同的缓存键，避免策略间结果相同
+      const cacheKey = `${type}_${strategy}_${Math.floor(Date.now() / (60 * 1000))}`; // 每分钟更新
       const now = Date.now();
-      const cacheExpiry = 5 * 60 * 1000; // 5分钟缓存
+      const cacheExpiry = 1 * 60 * 1000; // 缩短为1分钟缓存
       
-      // 检查缓存是否有效
-      if (predictionCache[cacheKey] && 
+      // 检查缓存是否有效（为不同策略提供不同结果）
+      if (strategy === 'intelligent' && predictionCache[cacheKey] && 
           (now - predictionCache.timestamp[cacheKey]) < cacheExpiry) {
         console.log(`使用缓存的${type === 'hk' ? '香港' : '澳门'}数字预测结果`);
         return predictionCache[cacheKey];
       }
       
       const gameType = type === 'hk' ? '1' : '2';
-      const weights = calculateNumberWeights(gameType);
+      const weights = calculateNumberWeights(gameType, strategy);
       const numbers = [];
       const usedNumbers = new Set();
       
@@ -2425,7 +2467,7 @@
     function validateAndFixPrediction(prediction, gameType) {
       // 确保numbers是数组且长度为7
       if (!Array.isArray(prediction.numbers) || prediction.numbers.length !== 7) {
-        return generateIntelligentPrediction(gameType);
+        return generateIntelligentPrediction(gameType, 'validation_fix');
       }
       
       // 确保所有号码在1-49范围内且不重复
@@ -2434,7 +2476,7 @@
       );
       
       if (validNumbers.length !== 7 || new Set(validNumbers).size !== 7) {
-        return generateIntelligentPrediction(gameType);
+        return generateIntelligentPrediction(gameType, 'validation_fix');
       }
       
       // 确保生肖有效

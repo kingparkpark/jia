@@ -1972,6 +1972,7 @@
         const strategy = currentStrategy[gameType];
         
         let prediction;
+        const dateSeed = new Date().getDate() + new Date().getMonth() * 31;
         
         // 根据选择的策略进行预测
         switch(strategy) {
@@ -1979,23 +1980,23 @@
             prediction = await generateAIPrediction(currentGame);
             break;
           case 'statistical':
-            prediction = generateStatisticalPrediction(gameType);
+            prediction = generateStatisticalPrediction(gameType, dateSeed);
             break;
           case 'trend':
-            prediction = generateTrendPrediction(gameType);
+            prediction = generateTrendPrediction(gameType, dateSeed);
             break;
           case 'ml':
-            prediction = generateMLPrediction(gameType);
+            prediction = generateMLPrediction(gameType, dateSeed);
             break;
           case 'hybrid':
-            prediction = generateHybridPrediction(gameType);
+            prediction = generateHybridPrediction(gameType, dateSeed);
             break;
           default:
             prediction = await generateAIPrediction(currentGame);
         }
         
         // 验证和修正预测结果
-        prediction = validateAndFixPrediction(prediction, gameSelect.value);
+        prediction = validateAndFixPrediction(prediction, gameSelect.value, dateSeed);
         
         // 显示预测结果
         displayPredictionResult(prediction);
@@ -2005,7 +2006,7 @@
         showToast('预测失败，请稍后重试', 'error');
         
         // 显示智能预测结果
-        const intelligentPrediction = generateIntelligentPrediction(gameSelect.value);
+        const intelligentPrediction = generateIntelligentPrediction(gameSelect.value, 'intelligent', dateSeed);
         displayPredictionResult(intelligentPrediction);
         
       } finally {
@@ -2086,7 +2087,7 @@
     }
     
     // 统计学预测算法
-    function generateStatisticalPrediction(gameType) {
+    function generateStatisticalPrediction(gameType, dateSeed = new Date().getDate() + new Date().getMonth() * 31) {
       const history = historicalData[gameType] || [];
       const frequency = {};
       
@@ -2113,15 +2114,15 @@
       console.log(`统计学策略(${gameType}):`, sortedNumbers);
       
       return {
-        numbers: sortedNumbers.length >= 7 ? sortedNumbers : generateRandomNumbers(),
-        zodiac: getRandomZodiac(),
+        numbers: sortedNumbers.length >= 7 ? sortedNumbers : generateRandomNumbers(dateSeed),
+        zodiac: getRandomZodiac(dateSeed),
         confidence: "68%",
         analysis: `基于历史数据频率统计分析 - 最高频号码: ${sortedNumbers.slice(0,3).join(',')}`
       };
     }
     
     // 趋势分析预测算法
-    function generateTrendPrediction(gameType) {
+    function generateTrendPrediction(gameType, dateSeed = new Date().getDate() + new Date().getMonth() * 31) {
       const history = historicalData[gameType] || [];
       const recentDraws = history.slice(-3); // 最近3期
       const trendFreq = {};
@@ -2151,14 +2152,14 @@
       
       return {
         numbers: selectedNumbers,
-        zodiac: getRandomZodiac(),
+        zodiac: getRandomZodiac(dateSeed),
         confidence: "72%",
         analysis: `基于最近${recentDraws.length}期趋势分析 - 热门趋势: ${selectedNumbers.slice(0,3).join(',')}`
       };
     }
     
     // 机器学习预测算法
-    function generateMLPrediction(gameType) {
+    function generateMLPrediction(gameType, dateSeed = new Date().getDate() + new Date().getMonth() * 31) {
       const history = historicalData[gameType] || [];
       const weights = [0.4, 0.3, 0.2, 0.1]; // 权重：最近期权重更高
       const prediction = [];
@@ -2174,7 +2175,6 @@
         });
         
         // 添加基于日期和号码的确定性因子模拟ML的复杂性
-        const dateSeed = new Date().getDate() + new Date().getMonth() * 31;
         score += ((dateSeed + i) % 100) * 0.001; // 0到0.099的确定性调整
         prediction.push({ num: i, score });
       }
@@ -2190,18 +2190,18 @@
       
       return {
         numbers: selectedNumbers,
-        zodiac: getRandomZodiac(),
+        zodiac: getRandomZodiac(dateSeed),
         confidence: "76%",
         analysis: `基于机器学习权重算法 - 高分号码: ${selectedNumbers.slice(0,3).join(',')}`
       };
     }
     
     // 混合策略预测算法
-    function generateHybridPrediction(gameType) {
+    function generateHybridPrediction(gameType, dateSeed = new Date().getDate() + new Date().getMonth() * 31) {
       const strategies = [
-        generateStatisticalPrediction(gameType),
-        generateTrendPrediction(gameType),
-        generateMLPrediction(gameType)
+        generateStatisticalPrediction(gameType, dateSeed),
+        generateTrendPrediction(gameType, dateSeed),
+        generateMLPrediction(gameType, dateSeed)
       ];
       
       console.log(`混合策略调用结果(${gameType}):`, {
@@ -2232,7 +2232,6 @@
           hybridNumbers.push(sortedNumbers[i]);
         } else {
           // 如果不够7个，基于日期种子确定性补充
-          const dateSeed = new Date().getDate() + new Date().getMonth() * 31;
           let randomNum;
           let attempt = 0;
           do {
@@ -2248,16 +2247,15 @@
       
       return {
         numbers: finalNumbers,
-        zodiac: getRandomZodiac(),
+        zodiac: getRandomZodiac(dateSeed),
         confidence: "80%",
         analysis: `综合多种算法的混合策略预测 - 热门组合: ${finalNumbers.slice(0,3).join(',')}`
       };
     }
     
     // 辅助函数
-    function generateRandomNumbers() {
+    function generateRandomNumbers(dateSeed = new Date().getDate() + new Date().getMonth() * 31) {
       const numbers = [];
-      const dateSeed = new Date().getDate() + new Date().getMonth() * 31;
       let attempt = 0;
       while (numbers.length < 7) {
         const num = ((dateSeed + attempt + numbers.length) % 49) + 1;
@@ -2270,10 +2268,9 @@
       return numbers.sort((a, b) => a - b);
     }
     
-    function getRandomZodiac() {
+    function getRandomZodiac(dateSeed = new Date().getDate() + new Date().getMonth() * 31) {
       const zodiacs = ['鼠', '牛', '虎', '兔', '龙', '蛇', '马', '羊', '猴', '鸡', '狗', '猪'];
       // 基于当前日期生成确定性的生肖，确保当天结果固定
-      const dateSeed = new Date().getDate() + new Date().getMonth() * 31;
       return zodiacs[dateSeed % zodiacs.length];
     }
     
@@ -2316,7 +2313,7 @@
     }
 
     // 计算号码权重（基于多种因素）
-    function calculateNumberWeights(gameType, strategy = 'intelligent') {
+    function calculateNumberWeights(gameType, strategy = 'intelligent', dateSeed = new Date().getDate() + new Date().getMonth() * 31) {
       const data = gameType === '1' ? historicalData.hk : historicalData.macau;
       const frequency = analyzeNumberFrequency(data);
       const weights = {};
@@ -2342,7 +2339,6 @@
         // 为不同彩种添加基础差异
         const gameTypeBonus = gameType === '1' ? (i % 7 === 0 ? 0.1 : 0) : (i % 5 === 0 ? 0.1 : 0);
         // 基于号码和日期的确定性因子，替代随机因子
-        const dateSeed = new Date().getDate() + new Date().getMonth() * 31;
         const deterministicFactor = ((dateSeed + i) % 21 - 10) * 0.005; // -0.05到+0.05的确定性调整
         
         if (strategy === 'ai_fallback') {
@@ -2386,7 +2382,7 @@
     const predictionTimestamp = {};
 
     // 智能预测算法
-    function generateIntelligentPrediction(type = 'hk', strategy = 'intelligent') {
+    function generateIntelligentPrediction(type = 'hk', strategy = 'intelligent', dateSeed = new Date().getDate() + new Date().getMonth() * 31) {
       // 为不同策略和彩种使用基于日期的固定缓存键
       const today = new Date().toDateString(); // 获取当前日期字符串，确保当天结果固定
       const cacheKey = `${type}_${strategy}_${today}`;
@@ -2403,7 +2399,7 @@
       console.log(`生成新的${type === 'hk' ? '香港' : '澳门'}数字预测 (策略: ${strategy}, 日期: ${today})`);
       
       const gameType = type === 'hk' ? '1' : '2';
-      const weights = calculateNumberWeights(gameType, strategy);
+      const weights = calculateNumberWeights(gameType, strategy, dateSeed);
       const numbers = [];
       const usedNumbers = new Set();
       
@@ -2412,7 +2408,6 @@
         { smallNumbers: 0.6, oddNumbers: 0.55, highWeights: 0.7 } : 
         { smallNumbers: 0.4, oddNumbers: 0.45, highWeights: 0.5 };
       // 基于日期生成固定的策略种子，确保当天结果一致
-      const dateSeed = new Date().getDate() + new Date().getMonth() * 31; // 基于日期和月份的固定种子
       const strategySeed = strategy === 'ai_fallback' ? dateSeed % 7 : strategy === 'validation_fix' ? dateSeed % 5 : dateSeed % 3;
       
       // 创建加权号码池
@@ -2563,7 +2558,6 @@
       const baseConfidence = type === 'hk' ? 75 : 72;
       const strategyBonus = strategy === 'ai_fallback' ? 8 : strategy === 'validation_fix' ? 5 : 6;
       // 基于日期的确定性调整因子，替代随机因子
-      const dateSeed = new Date().getDate() + new Date().getMonth() * 31;
       const deterministicAdjustment = (dateSeed % 8) - 4; // -4到+3的确定性调整
       
       confidence = Math.max(60, Math.min(88, baseConfidence + strategyBonus + deterministicAdjustment + Math.round(avgWeight * 10)));
@@ -2620,7 +2614,7 @@
     }
     
     // 验证和修正预测结果
-    function validateAndFixPrediction(prediction, gameType) {
+    function validateAndFixPrediction(prediction, gameType, dateSeed = new Date().getDate() + new Date().getMonth() * 31) {
       // 确保numbers是数组且长度为7
       if (!Array.isArray(prediction.numbers) || prediction.numbers.length !== 7) {
         return generateIntelligentPrediction(gameType, 'validation_fix');
@@ -2637,7 +2631,6 @@
       
       // 确保生肖有效
       if (!zodiacAnimals.includes(prediction.zodiac)) {
-        const dateSeed = new Date().getDate() + new Date().getMonth() * 31;
         prediction.zodiac = zodiacAnimals[dateSeed % 12];
       }
       
@@ -2811,7 +2804,8 @@
           prediction = generateIntelligentPrediction('hk');
         }
         
-        prediction = validateAndFixPrediction(prediction, 'hk');
+        const dateSeed = new Date().getDate() + new Date().getMonth() * 31;
+        prediction = validateAndFixPrediction(prediction, 'hk', dateSeed);
         displayPredictionResult(prediction, 'hk');
         
       } catch (error) {
@@ -2885,7 +2879,8 @@
           prediction = generateIntelligentPrediction('macau');
         }
         
-        prediction = validateAndFixPrediction(prediction, 'macau');
+        const dateSeed = new Date().getDate() + new Date().getMonth() * 31;
+        prediction = validateAndFixPrediction(prediction, 'macau', dateSeed);
         displayPredictionResult(prediction, 'macau');
         
       } catch (error) {

@@ -2329,27 +2329,34 @@
         const isSmall = i <= 24;
         const zodiacIndex = (i - 1) % 12;
         
+        // 为不同彩种添加基础差异
+        const gameTypeBonus = gameType === '1' ? (i % 7 === 0 ? 0.1 : 0) : (i % 5 === 0 ? 0.1 : 0);
+        const randomFactor = (Math.random() - 0.5) * 0.1; // 随机因子
+        
         if (strategy === 'ai_fallback') {
           // AI策略：更注重历史频率和近期趋势
-          weight += freqScore * 0.4; // 历史频率权重40%
-          if (isHot) weight += 0.2;
-          if (isCold) weight += 0.1;
-          weight += recentScore * 0.25; // 近期趋势25%
+          weight += freqScore * (gameType === '1' ? 0.4 : 0.35); // 历史频率权重
+          if (isHot) weight += (gameType === '1' ? 0.2 : 0.25);
+          if (isCold) weight += (gameType === '1' ? 0.1 : 0.15);
+          weight += recentScore * (gameType === '1' ? 0.25 : 0.3); // 近期趋势
           weight += (isOdd ? 0.075 : 0.075) + (isSmall ? 0.075 : 0.075); // 分布15%
+          weight += gameTypeBonus + randomFactor;
         } else if (strategy === 'validation_fix') {
           // 验证策略：平衡各种因素
-          weight += freqScore * 0.25; // 历史频率25%
-          if (isHot) weight += 0.1;
-          if (isCold) weight += 0.3; // 更偏向冷号
-          weight += (1 / (recentScore + 0.1)) * 0.25; // 反向趋势25%
+          weight += freqScore * (gameType === '1' ? 0.25 : 0.3); // 历史频率
+          if (isHot) weight += (gameType === '1' ? 0.1 : 0.05);
+          if (isCold) weight += (gameType === '1' ? 0.3 : 0.35); // 更偏向冷号
+          weight += (1 / (recentScore + 0.1)) * (gameType === '1' ? 0.25 : 0.2); // 反向趋势
           weight += (isOdd ? 0.1 : 0.1) + (isSmall ? 0.1 : 0.1); // 分布20%
+          weight += gameTypeBonus * 1.5 + randomFactor * 2;
         } else {
           // 默认智能策略
-          weight += freqScore * 0.3; // 历史频率30%
-          if (isHot) weight += 0.15;
-          if (isCold) weight += 0.25;
-          weight += (1 / (recentScore + 0.1)) * 0.2; // 近期趋势20%
+          weight += freqScore * (gameType === '1' ? 0.3 : 0.28); // 历史频率
+          if (isHot) weight += (gameType === '1' ? 0.15 : 0.18);
+          if (isCold) weight += (gameType === '1' ? 0.25 : 0.22);
+          weight += (1 / (recentScore + 0.1)) * (gameType === '1' ? 0.2 : 0.25); // 近期趋势
           weight += (isOdd ? 0.075 : 0.075) + (isSmall ? 0.075 : 0.075); // 分布15%
+          weight += gameTypeBonus * 0.8 + randomFactor * 1.2;
         }
         
         // 生肖权重（所有策略共用）
@@ -2363,33 +2370,36 @@
     }
 
     // 预测结果缓存
-    const predictionCache = {
-      hk: null,
-      macau: null,
-      timestamp: {
-        hk: 0,
-        macau: 0
-      }
-    };
+    const predictionCache = {};
+    const predictionTimestamp = {};
 
     // 智能预测算法
     function generateIntelligentPrediction(type = 'hk', strategy = 'intelligent') {
-      // 为不同策略使用不同的缓存键，避免策略间结果相同
-      const cacheKey = `${type}_${strategy}_${Math.floor(Date.now() / (60 * 1000))}`; // 每分钟更新
+      // 为不同策略和彩种使用完全不同的缓存键，包含时间因子
+      const timeSlot = Math.floor(Date.now() / (5 * 1000)); // 每5秒一个时间槽
+      const cacheKey = `${type}_${strategy}_${timeSlot}`;
       const now = Date.now();
-      const cacheExpiry = 1 * 60 * 1000; // 缩短为1分钟缓存
+      const cacheExpiry = 3 * 1000; // 3秒缓存，确保更快更新
       
-      // 检查缓存是否有效（为不同策略提供不同结果）
-      if (strategy === 'intelligent' && predictionCache[cacheKey] && 
-          (now - predictionCache.timestamp[cacheKey]) < cacheExpiry) {
-        console.log(`使用缓存的${type === 'hk' ? '香港' : '澳门'}数字预测结果`);
+      // 检查缓存是否有效
+      if (predictionCache[cacheKey] && predictionTimestamp[cacheKey] && 
+          (now - predictionTimestamp[cacheKey]) < cacheExpiry) {
+        console.log(`使用缓存的${type === 'hk' ? '香港' : '澳门'}数字预测结果 (策略: ${strategy}, 时间槽: ${timeSlot})`);
         return predictionCache[cacheKey];
       }
+      
+      console.log(`生成新的${type === 'hk' ? '香港' : '澳门'}数字预测 (策略: ${strategy}, 时间槽: ${timeSlot})`);
       
       const gameType = type === 'hk' ? '1' : '2';
       const weights = calculateNumberWeights(gameType, strategy);
       const numbers = [];
       const usedNumbers = new Set();
+      
+      // 为不同彩种添加选择偏好
+      const gameTypePreference = type === 'hk' ? 
+        { smallNumbers: 0.6, oddNumbers: 0.55, highWeights: 0.7 } : 
+        { smallNumbers: 0.4, oddNumbers: 0.45, highWeights: 0.5 };
+      const strategySeed = strategy === 'ai_fallback' ? timeSlot % 7 : strategy === 'validation_fix' ? timeSlot % 5 : timeSlot % 3;
       
       // 创建加权号码池
       const weightedPool = [];
@@ -2400,54 +2410,172 @@
         }
       }
       
-      // 选择7个号码，确保分布合理
-      while (numbers.length < 7) {
-        let selectedNum;
-        
-        if (numbers.length < 3) {
-          // 前3个号码：优先选择权重高的
+      // 根据策略选择不同的号码选择方法
+      if (strategy === 'ai_fallback') {
+        // AI策略：更偏向权重高的号码，但根据彩种调整
+        while (numbers.length < 7) {
           const topWeights = Object.entries(weights)
             .filter(([num]) => !usedNumbers.has(parseInt(num)))
             .sort(([,a], [,b]) => b - a)
-            .slice(0, 15)
+            .slice(0, type === 'hk' ? 15 + strategySeed : 25 + strategySeed)
             .map(([num]) => parseInt(num));
-          selectedNum = topWeights[Math.floor(Math.random() * topWeights.length)];
-        } else {
-          // 后4个号码：加权随机选择
-          do {
-            selectedNum = weightedPool[Math.floor(Math.random() * weightedPool.length)];
-          } while (usedNumbers.has(selectedNum));
+          
+          // 根据彩种偏好调整选择
+          let candidateNums = topWeights;
+          if (Math.random() < gameTypePreference.smallNumbers) {
+            candidateNums = candidateNums.filter(num => num <= 24);
+            if (candidateNums.length === 0) candidateNums = topWeights;
+          }
+          if (Math.random() < gameTypePreference.oddNumbers) {
+            const oddNums = candidateNums.filter(num => num % 2 === 1);
+            if (oddNums.length > 0) candidateNums = oddNums;
+          }
+          
+          const selectedNum = candidateNums[Math.floor((Math.random() + strategySeed * 0.1) % 1 * candidateNums.length)];
+          if (!usedNumbers.has(selectedNum)) {
+            numbers.push(selectedNum);
+            usedNumbers.add(selectedNum);
+          }
         }
-        
-        if (!usedNumbers.has(selectedNum)) {
-          numbers.push(selectedNum);
-          usedNumbers.add(selectedNum);
+      } else if (strategy === 'validation_fix') {
+        // 验证策略：更平衡的选择，但根据彩种有不同偏好
+        while (numbers.length < 7) {
+          let selectedNum;
+          const useMiddleWeights = Math.random() < (type === 'hk' ? 0.7 : 0.5);
+          
+          if (useMiddleWeights) {
+            // 选择中等权重号码，范围根据彩种调整
+            const startSlice = type === 'hk' ? 8 + strategySeed : 12 + strategySeed;
+            const endSlice = type === 'hk' ? 30 + strategySeed : 40 + strategySeed;
+            const midWeights = Object.entries(weights)
+              .filter(([num]) => !usedNumbers.has(parseInt(num)))
+              .sort(([,a], [,b]) => b - a)
+              .slice(startSlice, endSlice)
+              .map(([num]) => parseInt(num));
+            
+            // 根据彩种偏好过滤
+            let candidateNums = midWeights;
+            if (type === 'macau' && Math.random() < 0.6) {
+              candidateNums = candidateNums.filter(num => num > 24); // 澳门偏向大号
+              if (candidateNums.length === 0) candidateNums = midWeights;
+            }
+            
+            selectedNum = candidateNums[Math.floor((Math.random() + strategySeed * 0.15) % 1 * candidateNums.length)];
+          } else {
+            // 随机选择，但根据彩种调整范围
+            const minRange = type === 'hk' ? 1 : 10;
+            const maxRange = type === 'hk' ? 40 : 49;
+            do {
+              selectedNum = Math.floor(Math.random() * (maxRange - minRange + 1)) + minRange;
+            } while (usedNumbers.has(selectedNum));
+          }
+          
+          if (!usedNumbers.has(selectedNum)) {
+            numbers.push(selectedNum);
+            usedNumbers.add(selectedNum);
+          }
+        }
+      } else {
+        // 默认策略：混合选择，根据彩种有不同策略
+        while (numbers.length < 7) {
+          let selectedNum;
+          const isEarlySelection = numbers.length < (type === 'hk' ? 3 : 4);
+          
+          if (isEarlySelection) {
+            // 前几个号码：优先选择权重高的，但范围根据彩种调整
+            const topCount = type === 'hk' ? 12 + strategySeed : 18 + strategySeed;
+            const topWeights = Object.entries(weights)
+              .filter(([num]) => !usedNumbers.has(parseInt(num)))
+              .sort(([,a], [,b]) => b - a)
+              .slice(0, topCount)
+              .map(([num]) => parseInt(num));
+            
+            // 根据彩种偏好过滤
+            let candidateNums = topWeights;
+            if (type === 'hk' && Math.random() < gameTypePreference.smallNumbers) {
+              candidateNums = candidateNums.filter(num => num <= 25);
+              if (candidateNums.length === 0) candidateNums = topWeights;
+            } else if (type === 'macau' && Math.random() < 0.6) {
+              candidateNums = candidateNums.filter(num => num > 20);
+              if (candidateNums.length === 0) candidateNums = topWeights;
+            }
+            
+            selectedNum = candidateNums[Math.floor((Math.random() + strategySeed * 0.08) % 1 * candidateNums.length)];
+          } else {
+            // 后几个号码：加权随机选择，但根据彩种调整权重池
+            const adjustedPool = [];
+            const poolMultiplier = type === 'hk' ? 1.2 : 0.8;
+            
+            for (let num = 1; num <= 49; num++) {
+              if (!usedNumbers.has(num)) {
+                const weight = Math.round(weights[num] * 100 * poolMultiplier);
+                for (let i = 0; i < Math.max(1, weight); i++) {
+                  adjustedPool.push(num);
+                }
+              }
+            }
+            
+            do {
+              const randomIndex = Math.floor((Math.random() + strategySeed * 0.05) % 1 * adjustedPool.length);
+              selectedNum = adjustedPool[randomIndex];
+            } while (usedNumbers.has(selectedNum));
+          }
+          
+          if (!usedNumbers.has(selectedNum)) {
+            numbers.push(selectedNum);
+            usedNumbers.add(selectedNum);
+          }
         }
       }
       
       // 确保号码分布合理
       numbers.sort((a, b) => a - b);
       
-      // 计算预测置信度
+      // 计算预测置信度（根据彩种和策略调整）
       const avgWeight = numbers.reduce((sum, num) => sum + weights[num], 0) / 7;
       let confidence;
-      if (type === 'hk') {
-        confidence = Math.min(Math.round(avgWeight * 95), 88);
-      } else {
-        confidence = Math.min(Math.round(avgWeight * 90), 85);
-      }
       
-      // 选择最可能的生肖（基于号码分布和彩种特性）
+      // 为不同彩种和策略设置不同的置信度计算
+      const baseConfidence = type === 'hk' ? 75 : 72;
+      const strategyBonus = strategy === 'ai_fallback' ? 8 : strategy === 'validation_fix' ? 5 : 6;
+      const randomFactor = Math.floor(Math.random() * 8) - 4; // -4到+4的随机调整
+      
+      confidence = Math.max(60, Math.min(88, baseConfidence + strategyBonus + randomFactor + Math.round(avgWeight * 10)));
+      
+      // 选择最可能的生肖（基于号码分布、彩种和策略特性）
       const zodiacCounts = {};
       zodiacAnimals.forEach(z => zodiacCounts[z] = 0);
+      
+      // 根据号码分布计算生肖权重
       numbers.forEach(num => {
         const zodiacIndex = (num - 1) % 12;
         const zodiac = zodiacAnimals[zodiacIndex];
         zodiacCounts[zodiac]++;
       });
       
-      const mostLikelyZodiac = Object.entries(zodiacCounts)
-        .sort(([,a], [,b]) => b - a)[0][0];
+      // 根据策略和彩种调整生肖选择
+      let mostLikelyZodiac;
+      if (strategy === 'ai_fallback') {
+        // AI策略：偏向特定生肖
+        const preferredZodiacs = type === 'hk' ? ['龙', '虎', '马'] : ['蛇', '猴', '鸡'];
+        const hasPreferred = preferredZodiacs.some(z => zodiacCounts[z] > 0);
+        if (hasPreferred && Math.random() < 0.7) {
+          mostLikelyZodiac = preferredZodiacs.find(z => zodiacCounts[z] > 0) || 
+                           Object.entries(zodiacCounts).sort(([,a], [,b]) => b - a)[0][0];
+        } else {
+          mostLikelyZodiac = Object.entries(zodiacCounts).sort(([,a], [,b]) => b - a)[0][0];
+        }
+      } else if (strategy === 'validation_fix') {
+        // 验证策略：随机性更高
+        if (Math.random() < 0.4) {
+          mostLikelyZodiac = zodiacAnimals[Math.floor(Math.random() * 12)];
+        } else {
+          mostLikelyZodiac = Object.entries(zodiacCounts).sort(([,a], [,b]) => b - a)[0][0];
+        }
+      } else {
+        // 默认策略：基于分布
+        mostLikelyZodiac = Object.entries(zodiacCounts).sort(([,a], [,b]) => b - a)[0][0];
+      }
       
       const prediction = {
         numbers: numbers,
@@ -2458,7 +2586,7 @@
       
       // 缓存预测结果
       predictionCache[cacheKey] = prediction;
-      predictionCache.timestamp[cacheKey] = now;
+      predictionTimestamp[cacheKey] = now;
       
       return prediction;
     }

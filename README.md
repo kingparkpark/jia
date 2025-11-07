@@ -39,6 +39,18 @@
 4. 点击"🔮 开始AI预测"按钮
 5. 等待AI分析完成，查看预测结果
 
+### 🔐 配置 OpenRouter API Key（必需）
+
+由于浏览器直连需要密钥，且密钥不可硬编码在前端，已在页面中提供轻量密钥配置入口：
+
+1. 打开网站后，按下 `⚙️ 配置AI密钥`（或在控制台执行：`window.OPENROUTER_API_KEY = 'YOUR_KEY'`）
+2. 将从 OpenRouter 获取的 Key 粘贴保存（推荐使用可在浏览器使用的可公开/可限制域名的 Key）
+3. 刷新页面，再次点击预测按钮
+
+如果你不想在浏览器保存密钥，建议改为后端代理方式：将密钥保存在服务器端，通过自建 API 转发到 OpenRouter（前端只调用你的后端）。
+
+提示：当前实现会优先从 `localStorage.OPENROUTER_API_KEY` 读取，其次读取 `window.OPENROUTER_API_KEY`，最后才使用代码中的默认值（默认留空）。
+
 ## 🔧 技术栈
 
 - **前端**: HTML5, CSS3, JavaScript (ES6+)

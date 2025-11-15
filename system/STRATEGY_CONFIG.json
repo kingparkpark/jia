@@ -1,0 +1,251 @@
+{
+  "strategy_configuration": {
+    "version": "1.0.0",
+    "last_updated": "2025-11-13",
+    "description": "AI预测算法策略组合配置文件"
+  },
+
+  "prediction_strategies": {
+    "frequency_based_strategy": {
+      "name": "频率分析策略",
+      "weight": 0.25,
+      "enabled": true,
+      "parameters": {
+        "historical_window": 50,
+        "hot_threshold": 0.75,
+        "cold_threshold": 0.25,
+        "frequency_smoothing": true,
+        "trend_analysis": true
+      },
+      "sub_algorithms": [
+        "descriptive_statistics",
+        "frequency_distribution",
+        "chi_square_test",
+        "trend_analysis"
+      ]
+    },
+
+    "time_series_strategy": {
+      "name": "时间序列策略",
+      "weight": 0.20,
+      "enabled": true,
+      "parameters": {
+        "model_type": "ARIMA",
+        "seasonal_decompose": true,
+        "stationarity_test": true,
+        "forecast_horizon": 1,
+        "confidence_interval": 0.95
+      },
+      "sub_algorithms": [
+        "autoregressive_model",
+        "moving_average",
+        "exponential_smoothing",
+        "fourier_analysis"
+      ]
+    },
+
+    "pattern_recognition_strategy": {
+      "name": "模式识别策略",
+      "weight": 0.20,
+      "enabled": true,
+      "parameters": {
+        "clustering_algorithm": "DBSCAN",
+        "feature_extraction": true,
+        "pattern_window": 10,
+        "similarity_threshold": 0.8
+      },
+      "sub_algorithms": [
+        "k_means_clustering",
+        "hierarchical_clustering",
+        "neural_network_pattern",
+        "anomaly_detection"
+      ]
+    },
+
+    "probabilistic_strategy": {
+      "name": "概率模型策略",
+      "weight": 0.20,
+      "enabled": true,
+      "parameters": {
+        "bayesian_update": true,
+        "markov_chain_order": 2,
+        "monte_carlo_simulations": 1000,
+        "prior_confidence": 0.5
+      },
+      "sub_algorithms": [
+        "bayesian_inference",
+        "markov_chain_analysis",
+        "monte_carlo_simulation",
+        "hidden_markov_model"
+      ]
+    },
+
+    "ensemble_learning_strategy": {
+      "name": "集成学习策略",
+      "weight": 0.15,
+      "enabled": true,
+      "parameters": {
+        "voting_method": "weighted",
+        "base_models": ["RF", "SVM", "XGBoost"],
+        "cross_validation_folds": 5,
+        "feature_importance_analysis": true
+      },
+      "sub_algorithms": [
+        "random_forest",
+        "support_vector_machine",
+        "gradient_boosting",
+        "stacking_ensemble"
+      ]
+    }
+  },
+
+  "adaptive_mechanism": {
+    "performance_thresholds": {
+      "minimum_accuracy": 0.40,
+      "maximum_weight_drop": 0.50,
+      "weight_adjustment_factor": 0.2,
+      "evaluation_window": 20
+    },
+
+    "weight_adjustment_rules": {
+      "performance_below_threshold": {
+        "action": "decrease_weight",
+        "factor": 0.8,
+        "min_weight": 0.05
+      },
+      "performance_above_threshold": {
+        "action": "increase_weight",
+        "factor": 1.2,
+        "max_weight": 0.35
+      },
+      "consecutive_failures": {
+        "threshold": 5,
+        "action": "temporarily_disable",
+        "recovery_tries": 3
+      }
+    },
+
+    "strategy_rotation": {
+      "enabled": true,
+      "rotation_period": 10,
+      "top_strategies_count": 3,
+      "new_strategy_testing": true
+    }
+  },
+
+  "validation_framework": {
+    "cross_validation": {
+      "method": "time_series_split",
+      "n_splits": 5,
+      "test_size": 0.2
+    },
+
+    "performance_metrics": [
+      "accuracy",
+      "precision",
+      "recall",
+      "f1_score",
+      "auc_roc",
+      "calibration_error"
+    ],
+
+    "statistical_tests": [
+      "kolmogorov_smirnov",
+      "anderson_darling",
+      "shapiro_wilk",
+      "mann_whitney_u"
+    ],
+
+    "backtesting": {
+      "rolling_window": 30,
+      "step_size": 1,
+      "minimum_predictions": 50
+    }
+  },
+
+  "quality_control": {
+    "data_validation": {
+      "missing_data_threshold": 0.05,
+      "outlier_detection": true,
+      "data_consistency_check": true,
+      "minimum_data_points": 100
+    },
+
+    "model_validation": {
+      "overfitting_detection": true,
+      "concept_drift_monitoring": true,
+      "prediction_confidence_threshold": 0.6,
+      "ensemble_diversity_check": true
+    },
+
+    "output_validation": {
+      "probability_normalization": true,
+      "result_consistency_check": true,
+      "risk_assessment_inclusion": true,
+      "uncertainty_quantification": true
+    }
+  },
+
+  "monitoring_alerts": {
+    "performance_degradation": {
+      "threshold": 0.35,
+      "consecutive_periods": 3,
+      "action": "alert_and_retrain"
+    },
+
+    "strategy_failure": {
+      "threshold": 0.20,
+      "window_size": 10,
+      "action": "disable_and_replace"
+    },
+
+    "data_quality_issues": {
+      "missing_rate_threshold": 0.1,
+      "inconsistency_threshold": 0.05,
+      "action": "pause_predictions"
+    }
+  },
+
+  "optimization_settings": {
+    "hyperparameter_tuning": {
+      "method": "bayesian_optimization",
+      "max_iterations": 100,
+      "cv_folds": 3,
+      "early_stopping": true
+    },
+
+    "feature_selection": {
+      "method": "recursive_feature_elimination",
+      "max_features": 20,
+      "scoring": "accuracy"
+    },
+
+    "model_complexity": {
+      "max_depth_tree": 10,
+      "min_samples_split": 5,
+      "regularization_strength": 1.0,
+      "ensemble_size": 100
+    }
+  },
+
+  "execution_settings": {
+    "parallel_processing": {
+      "enabled": true,
+      "max_workers": 4,
+      "chunk_size": 1000
+    },
+
+    "caching": {
+      "model_cache": true,
+      "feature_cache": true,
+      "prediction_cache": true,
+      "cache_expiry_hours": 24
+    },
+
+    "resource_limits": {
+      "max_memory_gb": 8,
+      "max_execution_time_minutes": 30,
+      "max_prediction_batch_size": 1000
+    }
+  }
+}

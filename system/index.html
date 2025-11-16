@@ -2335,11 +2335,20 @@
     // 使用OpenRouter的moonshotai/kimi-k2:free模型
 
     // OpenRouter配置 - 多个API密钥轮换使用
-    const OPENROUTER_API_KEYS = [
-      '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',
-      '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',
-      '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'
-    ];
+    const OPENROUTER_API_KEYS = (() => {
+      try {
+        const arr = JSON.parse(localStorage.getItem('OPENROUTER_API_KEYS') || '[]');
+        const single = localStorage.getItem('OPENROUTER_API_KEY') || (typeof window.OPENROUTER_API_KEY === 'string' ? window.OPENROUTER_API_KEY : '');
+        const winArr = Array.isArray(window.OPENROUTER_API_KEYS) ? window.OPENROUTER_API_KEYS : [];
+        const merged = []
+          .concat(Array.isArray(arr) ? arr : [])
+          .concat(winArr)
+          .concat(single ? [single] : []);
+        return Array.from(new Set(merged.filter(k => typeof k === 'string' && k.length > 0)));
+      } catch {
+        return [];
+      }
+    })();
     const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
     const OPENROUTER_MODEL = 'mistralai/mistral-nemo:free';
 
@@ -2359,11 +2368,7 @@
     ];
     
     // API密钥列表 - 您提供的多个密钥
-    const API_KEYS = [
-      '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',
-      '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',
-      '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'
-    ];
+    
     
     // 当前模型索引
     let currentModelIndex = 0;
@@ -2490,6 +2495,9 @@
     // OpenRouter API调用函数 - 支持多密钥轮换
     async function callOpenRouterAI(prompt, model = OPENROUTER_MODEL) {
       console.log(`🤖 调用OpenRouter模型: ${model}...`);
+      if (!Array.isArray(OPENROUTER_API_KEYS) || OPENROUTER_API_KEYS.length === 0) {
+        throw new Error('未配置OpenRouter密钥');
+      }
 
       let lastError = null;
 

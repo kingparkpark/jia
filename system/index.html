@@ -2336,34 +2336,103 @@
 
     // OpenRouter配置 - 多个API密钥轮换使用
     const OPENROUTER_API_KEYS = (() => {
+      const DEFAULT_OPENROUTER_KEYS = [
+        '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',
+        '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',
+        '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',
+        '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',
+        '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'
+      ];
+      const rawList = [];
+      const pushItems = (val) => {
+        if (!val) return;
+        if (Array.isArray(val)) {
+          rawList.push(...val);
+          return;
+        }
+        if (typeof val === 'string') {
+          // 先尝试解析为 JSON 数组
+          try {
+            const parsed = JSON.parse(val);
+            if (Array.isArray(parsed)) {
+              rawList.push(...parsed);
+              return;
+            }
+          } catch {}
+          // 逐词扫描并拼接被空白切断的密钥
+          const tokens = val.split(/[\s,\n\r\t]+/).filter(Boolean);
+          for (let i = 0; i < tokens.length; i++) {
+            const t = tokens[i];
+            if (typeof t === 'string' && t.startsWith('sk-or-v1-')) {
+              let key = t;
+              let j = i + 1;
+              while (
+                j < tokens.length &&
+                !tokens[j].startsWith('sk-or-v1-') &&
+                /^[A-Za-z0-9]+$/.test(tokens[j]) &&
+                key.length < 130
+              ) {
+                key += tokens[j];
+                j++;
+              }
+              rawList.push(key);
+            }
+          }
+          return;
+        }
+      };
       try {
-        const arr = JSON.parse(localStorage.getItem('OPENROUTER_API_KEYS') || '[]');
-        const single = localStorage.getItem('OPENROUTER_API_KEY') || (typeof window.OPENROUTER_API_KEY === 'string' ? window.OPENROUTER_API_KEY : '');
-        const winArr = Array.isArray(window.OPENROUTER_API_KEYS) ? window.OPENROUTER_API_KEYS : [];
-        const merged = []
-          .concat(Array.isArray(arr) ? arr : [])
-          .concat(winArr)
-          .concat(single ? [single] : []);
-        return Array.from(new Set(merged.filter(k => typeof k === 'string' && k.length > 0)));
-      } catch {
-        return [];
+        pushItems(localStorage.getItem('OPENROUTER_API_KEYS'));
+        pushItems(localStorage.getItem('OPENROUTER_API_KEY_LIST'));
+        pushItems(localStorage.getItem('OPENROUTER_KEYS'));
+        pushItems(localStorage.getItem('OPENROUTER_KEYS_TEXT'));
+        const params = new URLSearchParams(window.location.search);
+        pushItems(params.get('or_keys') || params.get('openrouter_keys') || params.get('keys'));
+        const single =
+          localStorage.getItem('OPENROUTER_API_KEY') ||
+          (typeof window.OPENROUTER_API_KEY === 'string' ? window.OPENROUTER_API_KEY : '');
+        pushItems(single);
+        pushItems(window.OPENROUTER_API_KEYS);
+        pushItems(DEFAULT_OPENROUTER_KEYS);
+      } catch {}
+      let filteredKeys = Array.from(
+        new Set(
+          rawList
+            .filter((k) => typeof k === 'string')
+            .map((k) => k.trim())
+            .filter((k) => k.startsWith('sk-or-v1-'))
+        )
+      );
+      if (filteredKeys.length < DEFAULT_OPENROUTER_KEYS.length) {
+        // 使用默认密钥集合作为兜底，确保至少有5个可用密钥
+        filteredKeys = DEFAULT_OPENROUTER_KEYS.slice();
       }
+      if (filteredKeys.length > 0) {
+        try {
+          localStorage.setItem('OPENROUTER_API_KEYS', JSON.stringify(filteredKeys));
+        } catch {}
+      }
+      console.log('🔑 检测到的API密钥数量:', filteredKeys.length);
+      filteredKeys.forEach((key, index) => {
+        console.log(`🔑 密钥 ${index + 1}: ${key.substring(0, 15)}...`);
+      });
+      return filteredKeys;
     })();
     const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-    const OPENROUTER_MODEL = 'mistralai/mistral-nemo:free';
+    const OPENROUTER_MODEL = 'z-ai/glm-4.5-air:free';
 
     // 密钥轮换索引
     let currentKeyIndex = 0;
     
     // 免费模型列表 - 2025年最新确认可用的免费模型
     const FREE_MODELS = [
-      'moonshotai/kimi-k2:free',                    // 🌟 你最初想要的模型
+      'z-ai/glm-4.5-air:free',                      // 🌟 GLM 4.5 Air - 最新免费模型
+      'deepseek/deepseek-r1:free',                  // ⚡ DeepSeek推理模型
       'deepseek/deepseek-chat-v3.1:free',           // 🚀 DeepSeek最新免费版
       'google/gemini-2.0-flash-exp:free',           // ⚡ Google最新免费模型
       'meta-llama/llama-3.3-8b-instruct:free',      // 🎯 Llama 3.3 8B
       'mistralai/mistral-nemo:free',                 // 🏆 高性能免费模型
       'qwen/qwen-2.5-72b-instruct:free',            // 🔥 720亿参数免费版
-      'deepseek/deepseek-r1:free',                  // ⚡ DeepSeek推理模型
       'google/gemma-3-12b-it:free'                  // 💎 Google Gemma 3
     ];
     
@@ -2495,6 +2564,7 @@
     // OpenRouter API调用函数 - 支持多密钥轮换
     async function callOpenRouterAI(prompt, model = OPENROUTER_MODEL) {
       console.log(`🤖 调用OpenRouter模型: ${model}...`);
+      console.log(`🔑 可用API密钥总数: ${OPENROUTER_API_KEYS.length}`);
       if (!Array.isArray(OPENROUTER_API_KEYS) || OPENROUTER_API_KEYS.length === 0) {
         throw new Error('未配置OpenRouter密钥');
       }
@@ -2505,6 +2575,7 @@
       for (let keyAttempt = 0; keyAttempt < OPENROUTER_API_KEYS.length; keyAttempt++) {
         const currentApiKey = getNextApiKey();
         console.log(`🔑 使用API密钥: ${currentApiKey.substring(0, 15)}... (尝试 ${keyAttempt + 1}/${OPENROUTER_API_KEYS.length})`);
+        console.log(`🔑 当前密钥索引: ${currentKeyIndex}, 总密钥数: ${OPENROUTER_API_KEYS.length}`);
 
         try {
           const requestBody = {
@@ -2533,7 +2604,6 @@
             headers: {
               'Authorization': `Bearer ${currentApiKey}`,
               'Content-Type': 'application/json',
-              'HTTP-Referer': window.location.origin,
               'X-Title': 'AI Lottery Predictor'
             },
             body: JSON.stringify(requestBody)
@@ -2545,14 +2615,11 @@
             const errorText = await response.text();
             lastError = new Error(`OpenRouter请求失败: ${response.status} ${errorText}`);
             console.warn(`❌ API密钥 ${currentApiKey.substring(0, 15)}... 失败:`, response.status, errorText);
-
-            // 如果是429错误（限流），尝试下一个密钥
-            if (response.status === 429 || response.status === 402) {
+            // 401/403/402/429 均尝试下一个密钥
+            if (response.status === 401 || response.status === 403 || response.status === 402 || response.status === 429) {
               continue;
-            } else {
-              // 其他错误直接抛出
-              throw lastError;
             }
+            throw lastError;
           }
 
           const data = await response.json();
@@ -2572,8 +2639,9 @@
           lastError = error;
           console.warn(`❌ API密钥 ${currentApiKey.substring(0, 15)}... 调用异常:`, error.message);
 
-          // 如果是网络错误或限流错误，尝试下一个密钥
-          if (error.message.includes('limit') || error.message.includes('429') || error.message.includes('402')) {
+          // 如果是网络错误或认证/限流错误，尝试下一个密钥
+          if (error.message.includes('limit') || error.message.includes('429') || error.message.includes('402') || 
+              error.message.includes('401') || error.message.includes('403') || error.message.includes('User not found')) {
             continue;
           } else {
             throw error;

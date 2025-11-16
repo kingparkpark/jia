@@ -2596,16 +2596,25 @@
             ],
             max_tokens: 300,
             temperature: 0.7,
-            stream: false
+            stream: false,
+            site_url: window.location.origin
           };
+
+          const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+          const headers = {
+            'Authorization': `Bearer ${currentApiKey}`,
+            'Content-Type': 'application/json',
+            'X-Title': 'AI Number Recommender'
+          };
+          if (!isLocal) {
+            headers['HTTP-Referer'] = window.location.origin;
+            headers['Referer'] = window.location.origin;
+            headers['Origin'] = window.location.origin;
+          }
 
           const response = await fetch(OPENROUTER_API_URL, {
             method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${currentApiKey}`,
-              'Content-Type': 'application/json',
-              'X-Title': 'AI Number Recommender'
-            },
+            headers,
             body: JSON.stringify(requestBody)
           });
 

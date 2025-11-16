@@ -1223,7 +1223,7 @@
 
     <!-- 开奖资讯模块 -->
     <div class="card">
-      <h3>🧧 开奖资讯</h3>
+      <h3>🎭 数字娱乐资讯</h3>
       <label for="gameSelect">选择游戏：</label>
       <select id="gameSelect">
         <option value="1">香港</option>
@@ -1234,22 +1234,22 @@
       
       <!-- AI预测功能 -->
       <div class="ai-prediction-section">
-        <h4>🤖 AI智能预测</h4>
-        <p class="prediction-disclaimer">⚠️ 仅供娱乐参考，不构成投注建议</p>
+        <h4>🤖 AI智能推荐</h4>
+        <p class="prediction-disclaimer">⚠️ 仅供娱乐参考，不涉及投注或引流</p>
         
         <!-- 预测彩种选择 -->
         <div class="prediction-type-selector">
-          <label>选择预测彩种：</label>
+          <label>选择推荐类型：</label>
           <div class="prediction-tabs">
-            <button id="hkPredictTab" class="prediction-tab active" data-type="hk">🇭🇰 香港数字预测</button>
-                <button id="macauPredictTab" class="prediction-tab" data-type="macau">🇲🇴 澳门数字预测</button>
+            <button id="hkPredictTab" class="prediction-tab active" data-type="hk">🇭🇰 香港数字推荐</button>
+                <button id="macauPredictTab" class="prediction-tab" data-type="macau">🇲🇴 澳门数字推荐</button>
           </div>
         </div>
         
         <!-- 香港数字预测 -->
         <div id="hkPrediction" class="prediction-panel active">
           <div class="prediction-info">
-            <div class="current-period">当前预测期号: <span id="hkCurrentPeriod">-</span></div>
+            <div class="current-period">当前推荐期号: <span id="hkCurrentPeriod">-</span></div>
             <div class="prediction-strategy">
               <div>当前策略: <span id="hkCurrentStrategy" style="font-weight: bold; color: #2196F3;">AI智能分析</span></div>
               <div class="strategy-details" id="hkStrategyDetails" style="font-size: 12px; color: #666; margin-top: 4px;">
@@ -1268,23 +1268,23 @@
               </div>
             </div>
           </div>
-          <div class="auto-prediction-status" id="hkAutoPredictionStatus">⏰ 等待自动预测...</div>
-          <button id="hkManualPredictBtn" class="manual-predict-btn" style="margin-top: 10px;">🔮 手动预测香港</button>
+          <div class="auto-prediction-status" id="hkAutoPredictionStatus">⏰ 等待自动推荐...</div>
+          <button id="hkManualPredictBtn" class="manual-predict-btn" style="margin-top: 10px;">🔮 手动生成香港推荐</button>
           <div id="hkPredictionResult" class="prediction-result" style="display: none;"></div>
           <div id="hkPredictionLoading" class="prediction-loading" style="display: none;">
             <div class="loading-spinner"></div>
             <div class="ai-analysis-steps" id="hkAnalysisSteps">
-              <h6>🤖 AI预测分析过程:</h6>
+              <h6>🤖 AI推荐分析过程:</h6>
               <div class="analysis-step" id="hkStep1">⏳ 准备开始智能分析...</div>
               <div class="analysis-step" id="hkStep2" style="opacity: 0.3;">📊 数据预处理中...</div>
               <div class="analysis-step" id="hkStep3" style="opacity: 0.3;">🔍 统计分析中...</div>
-              <div class="analysis-step" id="hkStep4" style="opacity: 0.3;">🧠 机器学习预测中...</div>
+              <div class="analysis-step" id="hkStep4" style="opacity: 0.3;">🧠 机器学习推荐中...</div>
               <div class="analysis-step" id="hkStep5" style="opacity: 0.3;">🎯 优化号码组合...</div>
-              <div class="analysis-step" id="hkStep6" style="opacity: 0.3;">✅ 生成最终预测...</div>
+              <div class="analysis-step" id="hkStep6" style="opacity: 0.3;">✅ 生成最终推荐...</div>
             </div>
           </div>
           <div class="prediction-history">
-            <h5>📊 预测历史记录</h5>
+            <h5>📊 推荐历史记录</h5>
             <div class="performance-trend" id="hkPerformanceTrend" style="margin-bottom: 12px; padding: 8px; background: #f8f9fa; border-radius: 4px; font-size: 12px;">
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span>最近10期准确率趋势:</span>
@@ -1294,9 +1294,9 @@
             </div>
             <div id="hkPredictionHistory" class="history-list"></div>
             <div class="auto-verification-info">
-              <h6>🤖 自动开奖验证</h6>
+              <h6>🤖 自动结果验证</h6>
               <p style="color: #666; font-size: 12px; margin: 8px 0;">
-                系统会自动获取官方开奖结果进行验证，无需手动输入
+                系统会自动获取官方公布的结果进行验证，无需手动输入
               </p>
               <div id="hkAutoVerificationStatus" class="verification-status">
                 等待自动验证...
@@ -1327,23 +1327,23 @@
               </div>
             </div>
           </div>
-          <div class="auto-prediction-status" id="macauAutoPredictionStatus">⏰ 等待自动预测...</div>
-          <button id="macauManualPredictBtn" class="manual-predict-btn" style="margin-top: 10px;">🔮 手动预测澳门</button>
+          <div class="auto-prediction-status" id="macauAutoPredictionStatus">⏰ 等待自动推荐...</div>
+          <button id="macauManualPredictBtn" class="manual-predict-btn" style="margin-top: 10px;">🔮 手动生成澳门推荐</button>
           <div id="macauPredictionResult" class="prediction-result" style="display: none;"></div>
           <div id="macauPredictionLoading" class="prediction-loading" style="display: none;">
             <div class="loading-spinner"></div>
             <div class="ai-analysis-steps" id="macauAnalysisSteps">
-              <h6>🤖 AI预测分析过程:</h6>
+              <h6>🤖 AI推荐分析过程:</h6>
               <div class="analysis-step" id="macauStep1">⏳ 准备开始智能分析...</div>
               <div class="analysis-step" id="macauStep2" style="opacity: 0.3;">📊 数据预处理中...</div>
               <div class="analysis-step" id="macauStep3" style="opacity: 0.3;">🔍 统计分析中...</div>
-              <div class="analysis-step" id="macauStep4" style="opacity: 0.3;">🧠 机器学习预测中...</div>
+              <div class="analysis-step" id="macauStep4" style="opacity: 0.3;">🧠 机器学习推荐中...</div>
               <div class="analysis-step" id="macauStep5" style="opacity: 0.3;">🎯 优化号码组合...</div>
-              <div class="analysis-step" id="macauStep6" style="opacity: 0.3;">✅ 生成最终预测...</div>
+              <div class="analysis-step" id="macauStep6" style="opacity: 0.3;">✅ 生成最终推荐...</div>
             </div>
           </div>
           <div class="prediction-history">
-            <h5>📊 预测历史记录</h5>
+            <h5>📊 推荐历史记录</h5>
             <div class="performance-trend" id="macauPerformanceTrend" style="margin-bottom: 12px; padding: 8px; background: #f8f9fa; border-radius: 4px; font-size: 12px;">
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span>最近10期准确率趋势:</span>
@@ -1353,9 +1353,9 @@
             </div>
             <div id="macauPredictionHistory" class="history-list"></div>
             <div class="auto-verification-info">
-              <h6>🤖 自动开奖验证</h6>
+              <h6>🤖 自动结果验证</h6>
               <p style="color: #666; font-size: 12px; margin: 8px 0;">
-                系统会自动获取官方开奖结果进行验证，无需手动输入
+                系统会自动获取官方公布的结果进行验证，无需手动输入
               </p>
               <div id="macauAutoVerificationStatus" class="verification-status">
                 等待自动验证...
@@ -2261,7 +2261,7 @@
               </div>
               ${last3?`
                 <div class="lottery-history">
-                  <h4>📊 最近三期开奖</h4>
+                  <h4>📊 最近三期历史</h4>
                   <ul>${last3}</ul>
                 </div>
               `:''}
@@ -2296,7 +2296,7 @@
       }
     }
 
-    // —— 开奖倒计时 ——
+    // —— 时间提示 ——
     let lotteryTimer = null;
     function startLotteryCountdown(){
       if(lotteryTimer) clearTimeout(lotteryTimer);
@@ -2312,8 +2312,8 @@
         
         const diff = target.getTime() - now.getTime();
         if(diff <= 0){
-          countdownEl.textContent = '🎉 正在开奖中！';
-          // 开奖后1分钟重新计算下期时间
+          countdownEl.textContent = '🎉 官方结果发布中！';
+          // 发布后1分钟重新计算下一次时间
           lotteryTimer = setTimeout(tick, 60000);
         } else {
           const h = Math.floor(diff / 3600000);
@@ -2321,9 +2321,9 @@
           const s = Math.floor((diff % 60000) / 1000);
           
           if (h > 0) {
-            countdownEl.textContent = `⏳ 距离开奖：${h}小时${m}分${s}秒`;
+            countdownEl.textContent = `⏳ 距离官方结果：${h}小时${m}分${s}秒`;
           } else {
-            countdownEl.textContent = `⏳ 距离开奖：${m}分${s}秒`;
+            countdownEl.textContent = `⏳ 距离官方结果：${m}分${s}秒`;
           }
           lotteryTimer = setTimeout(tick, 1000);
         }
@@ -2583,7 +2583,7 @@
             messages: [
               {
                 role: 'system',
-                content: '你是一个彩票预测分析助手。只返回JSON格式的预测结果，不包含任何解释、分析过程或额外文字。用户输入历史数据，你返回预测结果。'
+                content: '你是一个数字娱乐分析助手。只返回JSON格式的推荐结果，不包含任何解释、分析过程或额外文字。用户输入历史数据，你返回数字推荐。'
               },
               {
                 role: 'user',
@@ -2604,7 +2604,7 @@
             headers: {
               'Authorization': `Bearer ${currentApiKey}`,
               'Content-Type': 'application/json',
-              'X-Title': 'AI Lottery Predictor'
+              'X-Title': 'AI Number Recommender'
             },
             body: JSON.stringify(requestBody)
           });

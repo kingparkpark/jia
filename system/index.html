@@ -1221,9 +1221,9 @@
       <div id="presence" class="presence" style="margin-top:8px;"></div>
     </div>
 
-    <!-- 数据资讯模块 -->
+    <!-- 开奖资讯模块 -->
     <div class="card">
-      <h3>🧧 数据资讯</h3>
+      <h3>🧧 开奖资讯</h3>
       <label for="gameSelect">选择游戏：</label>
       <select id="gameSelect">
         <option value="1">香港</option>
@@ -1234,15 +1234,15 @@
       
       <!-- AI预测功能 -->
       <div class="ai-prediction-section">
-        <h4>🤖 AI智能分析</h4>
-        <p class="prediction-disclaimer">⚠️ 仅供娱乐与教育用途，不构成任何交易或决策建议</p>
+        <h4>🤖 AI智能预测</h4>
+        <p class="prediction-disclaimer">⚠️ 仅供娱乐参考，不构成参考建议</p>
         
-        <!-- 分析类型选择 -->
+        <!-- 预测彩种选择 -->
         <div class="prediction-type-selector">
-          <label>选择分析类型：</label>
+          <label>选择预测彩种：</label>
           <div class="prediction-tabs">
-            <button id="hkPredictTab" class="prediction-tab active" data-type="hk">🇭🇰 香港数字分析</button>
-                <button id="macauPredictTab" class="prediction-tab" data-type="macau">🇲🇴 澳门数字分析</button>
+            <button id="hkPredictTab" class="prediction-tab active" data-type="hk">🇭🇰 香港数字预测</button>
+                <button id="macauPredictTab" class="prediction-tab" data-type="macau">🇲🇴 澳门数字预测</button>
           </div>
         </div>
         
@@ -1269,7 +1269,7 @@
             </div>
           </div>
           <div class="auto-prediction-status" id="hkAutoPredictionStatus">⏰ 等待自动预测...</div>
-          <button id="hkManualPredictBtn" class="manual-predict-btn" style="margin-top: 10px;">🔮 手动分析香港</button>
+          <button id="hkManualPredictBtn" class="manual-predict-btn" style="margin-top: 10px;">🔮 手动预测香港</button>
           <div id="hkPredictionResult" class="prediction-result" style="display: none;"></div>
           <div id="hkPredictionLoading" class="prediction-loading" style="display: none;">
             <div class="loading-spinner"></div>
@@ -1294,9 +1294,9 @@
             </div>
             <div id="hkPredictionHistory" class="history-list"></div>
             <div class="auto-verification-info">
-              <h6>🤖 自动结果验证</h6>
+              <h6>🤖 自动开奖验证</h6>
               <p style="color: #666; font-size: 12px; margin: 8px 0;">
-                系统会自动获取公开数据结果进行验证，无需手动输入
+                系统会自动获取官方开奖结果进行验证，无需手动输入
               </p>
               <div id="hkAutoVerificationStatus" class="verification-status">
                 等待自动验证...
@@ -1328,7 +1328,7 @@
             </div>
           </div>
           <div class="auto-prediction-status" id="macauAutoPredictionStatus">⏰ 等待自动预测...</div>
-          <button id="macauManualPredictBtn" class="manual-predict-btn" style="margin-top: 10px;">🔮 手动分析澳门</button>
+          <button id="macauManualPredictBtn" class="manual-predict-btn" style="margin-top: 10px;">🔮 手动预测澳门</button>
           <div id="macauPredictionResult" class="prediction-result" style="display: none;"></div>
           <div id="macauPredictionLoading" class="prediction-loading" style="display: none;">
             <div class="loading-spinner"></div>
@@ -1353,9 +1353,9 @@
             </div>
             <div id="macauPredictionHistory" class="history-list"></div>
             <div class="auto-verification-info">
-              <h6>🤖 自动结果验证</h6>
+              <h6>🤖 自动开奖验证</h6>
               <p style="color: #666; font-size: 12px; margin: 8px 0;">
-                系统会自动获取公开数据结果进行验证，无需手动输入
+                系统会自动获取官方开奖结果进行验证，无需手动输入
               </p>
               <div id="macauAutoVerificationStatus" class="verification-status">
                 等待自动验证...
@@ -1730,7 +1730,7 @@
           try {
             const text = typeof html === 'string' ? html : '';
             
-            // 尝试匹配香港六合彩数据格式
+            // 尝试匹配香港数字数据格式
             const drawMatch = text.match(/(\d{4})\s+(\d{1,2})\s+(\d{1,2})\s+(\d{1,2})\s+(\d{1,2})\s+(\d{1,2})\s+(\d{1,2})/);
             
             if (drawMatch) {
@@ -2261,7 +2261,7 @@
               </div>
               ${last3?`
                 <div class="lottery-history">
-                  <h4>📊 最近三期记录</h4>
+                  <h4>📊 最近三期开奖</h4>
                   <ul>${last3}</ul>
                 </div>
               `:''}
@@ -2269,7 +2269,7 @@
             </div>
           `;
           
-          // 启动倒计时（固定每晚21:30更新）
+          // 启动倒计时（固定每晚21:30开奖）
           startLotteryCountdown();
           
           showToast(`${api.name}加载成功`, 'success');
@@ -2296,7 +2296,7 @@
       }
     }
 
-    // —— 期次倒计时 ——
+    // —— 开奖倒计时 ——
     let lotteryTimer = null;
     function startLotteryCountdown(){
       if(lotteryTimer) clearTimeout(lotteryTimer);
@@ -2312,7 +2312,7 @@
         
         const diff = target.getTime() - now.getTime();
         if(diff <= 0){
-          countdownEl.textContent = '🎉 正在更新中！';
+          countdownEl.textContent = '🎉 正在开奖中！';
           // 开奖后1分钟重新计算下期时间
           lotteryTimer = setTimeout(tick, 60000);
         } else {
@@ -2321,9 +2321,9 @@
           const s = Math.floor((diff % 60000) / 1000);
           
           if (h > 0) {
-            countdownEl.textContent = `⏳ 距离下一期：${h}小时${m}分${s}秒`;
+            countdownEl.textContent = `⏳ 距离开奖：${h}小时${m}分${s}秒`;
           } else {
-            countdownEl.textContent = `⏳ 距离下一期：${m}分${s}秒`;
+            countdownEl.textContent = `⏳ 距离开奖：${m}分${s}秒`;
           }
           lotteryTimer = setTimeout(tick, 1000);
         }
@@ -2336,14 +2336,17 @@
 
     // OpenRouter配置 - 多个API密钥轮换使用
     const OPENROUTER_API_KEYS = (() => {
-      const DEFAULT_OPENROUTER_KEYS = [
-        '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',
-        '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',
-        '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',
-        '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',
-        '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',
-        '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'
-      ];
+      // ✅ 已更新为真实的OpenRouter API密钥 (2025年11月19日更新)
+const DEFAULT_OPENROUTER_KEYS = [
+  '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', // 新账号 - 已验证可用
+  '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',
+  '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',
+  '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',
+  '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',
+  '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',
+  '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',
+  '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' // 新增密钥
+];
       const rawList = [];
       const pushItems = (val) => {
         if (!val) return;
@@ -2404,9 +2407,23 @@
             .filter((k) => k.startsWith('sk-or-v1-'))
         )
       );
+      // 强制使用所有默认密钥，确保有足够的密钥可用
       if (filteredKeys.length < DEFAULT_OPENROUTER_KEYS.length) {
-        // 使用默认密钥集合作为兜底，确保至少有5个可用密钥
+        console.log('🔑 检测到的密钥数量不足，强制使用所有默认密钥');
         filteredKeys = DEFAULT_OPENROUTER_KEYS.slice();
+      }
+      
+      // 确保没有占位符密钥
+      filteredKeys = filteredKeys.filter(key => 
+        key && !key.includes('0000000000000000000000000000000000000000000000000000000000000000')
+      );
+      
+      // 如果过滤后密钥数量仍然不足，使用非占位符的默认密钥
+      if (filteredKeys.length < 6) {
+        console.log('🔑 过滤后密钥数量仍然不足，使用非占位符的默认密钥');
+        filteredKeys = DEFAULT_OPENROUTER_KEYS.filter(key => 
+          !key.includes('0000000000000000000000000000000000000000000000000000000000000000')
+        );
       }
       if (filteredKeys.length > 0) {
         try {
@@ -2420,31 +2437,232 @@
       return filteredKeys;
     })();
     const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-    const OPENROUTER_MODEL = 'z-ai/glm-4.5-air:free';
-    function getEffectiveOpenRouterUrl() {
-      try {
-        const v = (typeof window.OPENROUTER_PROXY_URL === 'string' ? window.OPENROUTER_PROXY_URL : localStorage.getItem('OPENROUTER_PROXY_URL')) || '';
-        return v && v.trim().length > 0 ? v.trim() : OPENROUTER_API_URL;
-      } catch {
-        return OPENROUTER_API_URL;
-      }
-    }
+    const OPENROUTER_MODEL = 'mistralai/mistral-7b-instruct:free'; // 免费模型
 
     // 密钥轮换索引
     let currentKeyIndex = 0;
-    let AI_CALL_IN_FLIGHT = false;
-    let LAST_AI_ERROR_CAT = 'none';
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+    function nowMs() { return Date.now(); }
+    function getKeyCooldowns() { try { const s = localStorage.getItem('OPENROUTER_KEY_COOLDOWNS'); return s ? JSON.parse(s) : {}; } catch { return {}; } }
+    function setKeyCooldown(key, untilMs) { 
+      const cd = getKeyCooldowns(); 
+      cd[key] = untilMs; 
+      const remainingTime = Math.ceil((untilMs - nowMs()) / 1000);
+      console.log(`🔑 设置密钥 ${key.substring(0, 15)}... 冷却 ${remainingTime} 秒`);
+      try { localStorage.setItem('OPENROUTER_KEY_COOLDOWNS', JSON.stringify(cd)); } catch {} 
+    }
+    function getGlobalCooldownUntil() { try { const v = localStorage.getItem('OPENROUTER_GLOBAL_COOLDOWN_UNTIL'); return v ? parseInt(v, 10) : 0; } catch { return 0; } }
+    function setGlobalCooldownUntil(untilMs) { 
+      const remainingTime = Math.ceil((untilMs - nowMs()) / 1000);
+      console.log(`🛑 设置全局冷却 ${remainingTime} 秒`);
+      try { localStorage.setItem('OPENROUTER_GLOBAL_COOLDOWN_UNTIL', String(untilMs)); } catch {} 
+    }
+    function isGlobalCooldownActive() { 
+      const u = getGlobalCooldownUntil(); 
+      const active = u && u > nowMs();
+      if (active) {
+        const remainingTime = Math.ceil((u - nowMs()) / 1000);
+        console.log(`🛑 全局冷却激活中，剩余 ${remainingTime} 秒`);
+      }
+      return active;
+    }
+    function addCooldownForStatus(key, status) { 
+      let ms = 0; 
+      if (status === 429) ms = 120000 + Math.floor(Math.random() * 30000); 
+      else if (status === 402) ms = 600000; 
+      else if (status === 403) {
+        ms = 30000; // 403错误只冷却30秒，可能是临时权限问题
+        console.warn(`⚠️ API密钥 ${key.substring(0, 15)}... 返回403权限错误，临时冷却30秒`);
+      }
+      // 401错误不设置冷却，直接标记为无效密钥
+      else if (status === 401) {
+        console.warn(`❌ API密钥 ${key.substring(0, 15)}... 返回401错误，密钥无效或已过期`);
+        // 不设置冷却，让系统继续尝试其他密钥
+        return;
+      }
+      if (ms > 0) setKeyCooldown(key, nowMs() + ms); 
+    }
+    function isKeyAvailable(key) { 
+      const cd = getKeyCooldowns(); 
+      const available = !cd[key] || cd[key] <= nowMs();
+      if (!available) {
+        const remainingTime = Math.ceil((cd[key] - nowMs()) / 1000);
+        console.log(`🔑 密钥 ${key.substring(0, 15)}... 仍在冷却中，剩余 ${remainingTime} 秒`);
+      }
+      return available;
+    }
+    function getAvailableKeysList() { 
+      const availableKeys = OPENROUTER_API_KEYS.filter(k => isKeyAvailable(k));
+      console.log(`🔑 当前可用密钥数量: ${availableKeys.length}/${OPENROUTER_API_KEYS.length}`);
+      return availableKeys;
+    }
+    function rememberLastGood(key, model) { 
+      console.log(`🎯 记录成功密钥: ${key.substring(0, 15)}... 模型: ${model}`);
+      try { localStorage.setItem('OPENROUTER_LAST_GOOD', JSON.stringify({ key, model, t: nowMs() })); } catch {} 
+    }
+    function getLastGood() { 
+      try { 
+        const s = localStorage.getItem('OPENROUTER_LAST_GOOD'); 
+        const lastGood = s ? JSON.parse(s) : null;
+        if (lastGood) {
+          console.log(`🎯 上次成功密钥: ${lastGood.key.substring(0, 15)}... 模型: ${lastGood.model}`);
+        } else {
+          console.log(`🎯 没有上次成功的密钥记录`);
+        }
+        return lastGood;
+      } catch { return null; } 
+    }
+    function clearAllKeyCooldowns() { try { localStorage.removeItem('OPENROUTER_KEY_COOLDOWNS'); console.log('🔑 已清除所有密钥冷却状态'); } catch {} }
+    function clearAllLocalStorage() { 
+      try { 
+        localStorage.removeItem('OPENROUTER_KEY_COOLDOWNS');
+        localStorage.removeItem('OPENROUTER_LAST_GOOD');
+        localStorage.removeItem('OPENROUTER_API_KEYS');
+        localStorage.removeItem('LAST_WORKING_FREE_MODEL');
+        console.log('🔑 已清除所有OpenRouter相关localStorage数据'); 
+      } catch {} 
+    }
     
-    // 免费模型列表 - 2025年最新确认可用的免费模型
+    // 页面加载时自动清除冷却状态，但保留API密钥配置
+    // 清除所有密钥冷却状态，让密钥可以立即重试
+    clearAllKeyCooldowns();
+    
+    const ENABLE_KEY_PRECHECK = false; // 禁用密钥预检查，避免检测300多个模型
+    if (ENABLE_KEY_PRECHECK) {
+      setTimeout(() => {
+        console.log('🔑 开始验证所有API密钥...');
+        validateAllApiKeys().then(results => {
+          console.log('🔑 API密钥验证完成，结果:', results);
+          const validKeys = results.filter(r => r.valid);
+          const invalidKeys = results.filter(r => !r.valid);
+          console.log(`✅ 有效密钥数量: ${validKeys.length}`);
+          console.log(`❌ 无效密钥数量: ${invalidKeys.length}`);
+          
+          if (invalidKeys.length > 0) {
+            console.log('❌ 无效密钥详情:');
+            invalidKeys.forEach(k => {
+              const detail = typeof k.error === 'string' ? k.error : (k.error?.message || k.error?.error?.message || JSON.stringify(k.error) || '未知错误');
+              console.log(`  - ${k.key.substring(0, 15)}...: ${detail} (status: ${k.status ?? 'unknown'})`);
+            });
+          }
+        });
+      }, 1000);
+    }
+    
+    // API密钥格式验证函数
+    function validateKeyFormat(key) {
+      if (!key || typeof key !== 'string') {
+        return { valid: false, error: '密钥为空或不是字符串' };
+      }
+
+      const prefix = 'sk-or-v1-';
+      if (!key.startsWith(prefix)) {
+        return { valid: false, error: '密钥格式错误：应以sk-or-v1-开头' };
+      }
+
+      const suffix = key.slice(prefix.length);
+      const hex64 = /^[a-f0-9]{64}$/;
+      if (!hex64.test(suffix)) {
+        return { valid: false, error: `密钥格式错误：应为 sk-or-v1- 后跟 64 位十六进制，当前后缀长度为${suffix.length}，内容不符合要求` };
+      }
+
+      if (suffix === '0000000000000000000000000000000000000000000000000000000000000000') {
+        return { valid: false, error: '密钥是占位符，需要替换为真实密钥' };
+      }
+
+      return { valid: true };
+    }
+    
+    // API密钥验证函数 - 使用正确的端点
+    async function validateApiKey(key) {
+      const formatValidation = validateKeyFormat(key);
+      if (!formatValidation.valid) {
+        console.log(`❌ API密钥 ${key.substring(0, 15)}... 格式错误:`, formatValidation.error);
+        return { valid: false, error: formatValidation.error, status: 0 };
+      }
+
+      try {
+        // 使用简单的请求验证密钥，不获取模型列表
+        const response = await fetch('http://localhost:3003/api/openrouter/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${key}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Cache-Control': 'no-cache'
+          },
+          body: JSON.stringify({
+            model: 'mistralai/mistral-7b-instruct:free',
+            messages: [{ role: 'user', content: 'test' }],
+            max_tokens: 1
+          })
+        });
+        
+        if (response.ok || response.status === 401 || response.status === 403 || response.status === 402 || response.status === 429) {
+          // 任何这些状态码都表示密钥格式正确，只是可能额度或权限问题
+          const isValid = response.ok;
+          console.log(`${isValid ? '✅' : '⚠️'} API密钥 ${key.substring(0, 15)}... ${isValid ? '验证成功' : '验证通过但有限制'} (${response.status})`);
+          
+          // 只有在真正需要冷却时才设置冷却（402额度不足、429限流）
+          if (response.status === 402 || response.status === 429) {
+            addCooldownForStatus(key, response.status);
+          }
+          
+          return { valid: true, status: response.status };
+        } else {
+          console.log(`❌ API密钥 ${key.substring(0, 15)}... 验证失败 (${response.status})`);
+          return { valid: false, error: `HTTP ${response.status}`, status: response.status };
+        }
+      } catch (error) {
+        console.log(`❌ API密钥 ${key.substring(0, 15)}... 验证异常:`, error.message);
+        return { valid: false, error: error.message, status: 'network_error' };
+      }
+    }
+    
+    // 验证所有API密钥
+    async function validateAllApiKeys() {
+      console.log('🔑 开始验证所有API密钥...');
+      const results = [];
+      for (const key of OPENROUTER_API_KEYS) {
+        const result = await validateApiKey(key);
+        results.push({ key, ...result });
+        await sleep(300);
+      }
+      console.log('🔑 API密钥验证结果:', results);
+      
+      // 智能排序：有效密钥优先，然后按状态码排序
+      const validKeys = results.filter(r => r.valid).map(r => r.key);
+      const invalidKeys = results.filter(r => !r.valid).sort((a, b) => {
+        // 401/403错误优先级最低（认证问题），429次之（限流），其他再次
+        const priority = { 401: 1, 403: 1, 429: 2, 'network_error': 3 };
+        const aPriority = priority[a.status] || 4;
+        const bPriority = priority[b.status] || 4;
+        return aPriority - bPriority;
+      }).map(r => r.key);
+      
+      // 重新排序API密钥列表，有效密钥在前
+      const sortedKeys = [...validKeys, ...invalidKeys];
+      
+      // 更新全局密钥列表
+      OPENROUTER_API_KEYS.splice(0, OPENROUTER_API_KEYS.length, ...sortedKeys);
+      
+      // 保存排序后的密钥列表
+      try {
+        localStorage.setItem('OPENROUTER_API_KEYS', JSON.stringify(sortedKeys));
+      } catch {}
+      
+      console.log('🔑 密钥已重新排序，有效密钥优先');
+      console.log(`✅ 有效密钥数量: ${validKeys.length}`);
+      console.log(`❌ 无效密钥数量: ${invalidKeys.length}`);
+      
+      return results;
+    }
+    
+    // 免费模型列表 - 只保留最稳定的免费模型
     const FREE_MODELS = [
-      'z-ai/glm-4.5-air:free',                      // 🌟 GLM 4.5 Air - 最新免费模型
-      'deepseek/deepseek-r1:free',                  // ⚡ DeepSeek推理模型
+      'mistralai/mistral-7b-instruct:free',         // ✅ 已验证可用
       'deepseek/deepseek-chat-v3.1:free',           // 🚀 DeepSeek最新免费版
-      'google/gemini-2.0-flash-exp:free',           // ⚡ Google最新免费模型
-      'meta-llama/llama-3.3-8b-instruct:free',      // 🎯 Llama 3.3 8B
-      'mistralai/mistral-nemo:free',                 // 🏆 高性能免费模型
-      'qwen/qwen-2.5-72b-instruct:free',            // 🔥 720亿参数免费版
-      'google/gemma-3-12b-it:free'                  // 💎 Google Gemma 3
+      'z-ai/glm-4.5-air:free'                      // 🌟 GLM 4.5 Air - 最新免费模型
     ];
     
     // API密钥列表 - 您提供的多个密钥
@@ -2568,41 +2786,9 @@
     // 获取下一个可用的API密钥
     function getNextApiKey() {
       const key = OPENROUTER_API_KEYS[currentKeyIndex];
+      console.log(`🔑 获取下一个密钥: ${key.substring(0, 15)}... (索引: ${currentKeyIndex}/${OPENROUTER_API_KEYS.length})`);
       currentKeyIndex = (currentKeyIndex + 1) % OPENROUTER_API_KEYS.length;
       return key;
-    }
-
-    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-    let LAST_AI_CALL_TS = 0;
-    async function ensureRateLimit() {
-      const now = Date.now();
-      const wait = Math.max(0, 8000 - (now - LAST_AI_CALL_TS));
-      if (wait > 0) { await sleep(wait); }
-      LAST_AI_CALL_TS = Date.now();
-    }
-    function hashPrompt(s) {
-      let h = 5381;
-      for (let i = 0; i < s.length; i++) { h = ((h << 5) + h) + s.charCodeAt(i); h = h & 0xffffffff; }
-      return String(h);
-    }
-    function getCachedAIContent(prompt) {
-      try {
-        const cacheStr = localStorage.getItem('AI_CACHE_V1');
-        const cache = cacheStr ? JSON.parse(cacheStr) : {};
-        const key = hashPrompt(prompt);
-        const entry = cache[key];
-        if (entry && typeof entry.content === 'string' && (Date.now() - entry.ts) < 10 * 60 * 1000) { return entry.content; }
-      } catch {}
-      return null;
-    }
-    function setCachedAIContent(prompt, content) {
-      try {
-        const cacheStr = localStorage.getItem('AI_CACHE_V1');
-        const cache = cacheStr ? JSON.parse(cacheStr) : {};
-        const key = hashPrompt(prompt);
-        cache[key] = { content, ts: Date.now() };
-        localStorage.setItem('AI_CACHE_V1', JSON.stringify(cache));
-      } catch {}
     }
 
     // OpenRouter API调用函数 - 支持多密钥轮换
@@ -2613,13 +2799,43 @@
         throw new Error('未配置OpenRouter密钥');
       }
 
-      let lastError = null;
-      let errorCategory = 'none'; // auth | quota | network | none
-      let authFailCount = 0;
+      if (isGlobalCooldownActive()) {
+        throw new Error('OpenRouter全局冷却中，稍后再试');
+      }
+      if (getAvailableKeysList().length === 0) {
+        throw new Error('所有密钥处于冷却中，稍后再试');
+      }
 
-      // 尝试所有API密钥
-      for (let keyAttempt = 0; keyAttempt < OPENROUTER_API_KEYS.length; keyAttempt++) {
-        const currentApiKey = getNextApiKey();
+      let lastError = null;
+      let authErrorCount = 0;
+      let totalAttempts = 0;
+      // 使用所有密钥，而不仅仅是可用密钥
+      // 清除所有401错误的冷却状态，让密钥可以重试
+      clearAllKeyCooldowns();
+      let attemptKeys = OPENROUTER_API_KEYS.slice();
+      if (ENABLE_KEY_PRECHECK) {
+        try {
+          const validationResults = await validateAllApiKeys();
+          const validKeys = validationResults.filter(r => r.valid).map(r => r.key);
+          if (validKeys.length > 0) {
+            console.log(`🔒 通过验证的密钥数量: ${validKeys.length}`);
+            attemptKeys = validKeys;
+          } else {
+            console.warn('❌ 所有密钥均未通过OpenRouter验证，将继续尝试全部密钥以防误判');
+          }
+        } catch (e) {
+          console.warn('⚠️ 密钥验证过程发生异常，忽略验证直接尝试', e.message);
+        }
+      }
+      
+      // 优先使用上次成功的密钥
+      const lastGood = getLastGood();
+      if (lastGood && typeof lastGood.key === 'string' && attemptKeys.includes(lastGood.key)) {
+        attemptKeys = [lastGood.key].concat(attemptKeys.filter(k => k !== lastGood.key));
+      }
+
+      for (let keyAttempt = 0; keyAttempt < attemptKeys.length; keyAttempt++) {
+        const currentApiKey = attemptKeys[keyAttempt];
         console.log(`🔑 使用API密钥: ${currentApiKey.substring(0, 15)}... (尝试 ${keyAttempt + 1}/${OPENROUTER_API_KEYS.length})`);
         console.log(`🔑 当前密钥索引: ${currentKeyIndex}, 总密钥数: ${OPENROUTER_API_KEYS.length}`);
 
@@ -2629,15 +2845,11 @@
             messages: [
               {
                 role: 'system',
-                content: '你是一个数字娱乐分析助手。只返回JSON格式的推荐结果，不包含任何解释、分析过程或额外文字。用户输入历史数据，你返回组合推荐。'
+                content: '你是一个数字预测分析助手。只返回JSON格式的预测结果，不包含任何解释、分析过程或额外文字。用户输入历史数据，你返回预测结果。'
               },
               {
                 role: 'user',
                 content: prompt
-              },
-              {
-                role: 'assistant',
-                content: '{"analysis": "示例分析", "predictions": {"recommended": [01, 02, 03, 04, 05, 06, 07], "alternative": [08, 09, 10, 11, 12, 13, 14], "confidence": 80}}'
               }
             ],
             max_tokens: 300,
@@ -2645,44 +2857,113 @@
             stream: false
           };
 
-          const response = await fetch(getEffectiveOpenRouterUrl(), {
+          // 使用代理服务器发送请求
+          console.log(`📡 准备发送请求到代理服务器: http://localhost:3003/api/openrouter/chat/completions`);
+          console.log(`📡 请求体:`, JSON.stringify({
+            apiKey: currentApiKey.substring(0, 15) + '...',
+            model: model,
+            messages: requestBody.messages,
+            max_tokens: requestBody.max_tokens,
+            temperature: requestBody.temperature
+          }, null, 2));
+          
+          const response = await fetch('http://localhost:3003/api/openrouter/chat/completions', {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${currentApiKey}`,
-              'Content-Type': 'application/json',
-              'X-Title': 'AI Lottery Predictor'
+              'Content-Type': 'application/json'
             },
-            body: JSON.stringify(requestBody)
+            body: JSON.stringify({
+              apiKey: currentApiKey,
+              model: model,
+              messages: requestBody.messages,
+              max_tokens: requestBody.max_tokens,
+              temperature: requestBody.temperature
+            })
           });
 
           console.log(`📡 API密钥 ${currentApiKey.substring(0, 15)}... 响应状态:`, response.status);
+          console.log(`📡 响应头:`, JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2));
 
           if (!response.ok) {
-            const errorText = await response.text();
-            lastError = new Error(`OpenRouter请求失败: ${response.status} ${errorText}`);
-          console.warn(`❌ API密钥 ${currentApiKey.substring(0, 15)}... 失败:`, response.status, errorText);
-          const delayByStatus = {401: 1200, 403: 1200, 402: 6000, 429: 5000};
-          const jitter = 300 + Math.floor(Math.random() * 700);
-          const delay = (delayByStatus[response.status] || (1000 * (keyAttempt + 1))) + jitter;
-          await sleep(delay);
-          // 分类错误类型并延迟重试；401/403 视为认证/浏览器受限，402/429 视为额度/限流
-          if (response.status === 401 || response.status === 403) { errorCategory = 'auth'; }
-          else if (response.status === 402 || response.status === 429) { errorCategory = 'quota'; }
-          if (errorCategory === 'auth') { authFailCount++; }
-          window.LAST_AI_ERROR_CAT = errorCategory;
-          // 401/403/402/429 均尝试下一个密钥
-          if (response.status === 401 || response.status === 403 || response.status === 402 || response.status === 429) {
+            let errorData = null;
+            let errorMessage = '';
+            let responseText = '';
+            try {
+              responseText = await response.text();
+              console.log(`📡 完整响应文本: ${responseText}`);
+              errorData = JSON.parse(responseText);
+              errorMessage = errorData?.error?.message || errorData?.error || JSON.stringify(errorData);
+            } catch (e) {
+              errorMessage = responseText || '未知错误';
+            }
+            
+            // 详细记录错误信息
+            console.error(`❌ API密钥 ${currentApiKey.substring(0, 15)}... 失败详情:`);
+            console.error(`   - 状态码: ${response.status}`);
+            console.error(`   - 状态文本: ${response.statusText}`);
+            console.error(`   - 错误信息: ${errorMessage}`);
+            console.error(`   - 响应类型: ${response.headers.get('content-type')}`);
+            console.error(`   - 完整响应: ${responseText}`);
+            
+            lastError = new Error(`OpenRouter请求失败: ${response.status} ${errorMessage}`);
+            console.warn(`❌ API密钥 ${currentApiKey.substring(0, 15)}... 失败 (${response.status}):`, errorMessage);
+            
+            // 针对401错误提供更详细的信息
+            if (response.status === 401) {
+              console.error(`🔑 401错误详情 - 密钥: ${currentApiKey.substring(0, 15)}...`);
+              console.error(`🔑 错误信息: ${errorMessage}`);
+              console.error(`🔑 可能原因: 1.密钥无效或已过期 2.密钥格式不正确 3.密钥额度已用完 4.密钥被禁用或删除 5.前端环境限制`);
+            }
+            
+            totalAttempts += 1;
+            if (response.status === 401 || response.status === 403) authErrorCount += 1;
+            addCooldownForStatus(currentApiKey, response.status);
+            
+            // 针对429速率限制错误，使用更长的等待时间
+            if (response.status === 429) {
+              const waitTime = Math.min(1000 * Math.pow(2, totalAttempts - 1), 10000); // 指数退避，最大10秒
+              console.warn(`⏰ 速率限制，等待 ${waitTime}ms 后重试...`);
+              await sleep(waitTime);
+            } else {
+              // 对于其他错误状态，都继续尝试下一个密钥，而不是立即抛出异常
+              await sleep(300);
+            }
             continue;
           }
-          throw lastError;
-        }
 
-          const data = await response.json();
-          console.log(`✅ API密钥 ${currentApiKey.substring(0, 15)}... 响应成功`);
+          const responseText = await response.text();
+          console.log(`📡 API密钥 ${currentApiKey.substring(0, 15)}... 成功响应完整文本: ${responseText}`);
+          console.log(`✅ API密钥 ${currentApiKey.substring(0, 15)}... 请求成功，状态码: ${response.status}`);
+          
+          let data;
+          try {
+            data = JSON.parse(responseText);
+            console.log(`✅ 成功解析JSON响应数据`);
+          } catch (e) {
+            console.error(`❌ 解析成功响应JSON失败:`, e.message);
+            throw new Error(`解析响应JSON失败: ${e.message}`);
+          }
+          
+          console.log(`✅ API密钥 ${currentApiKey.substring(0, 15)}... 响应成功，停止轮换其他密钥`);
+          console.log(`📊 完整响应数据:`, JSON.stringify(data, null, 2));
+          console.log(`📊 响应数据类型:`, typeof data);
+          console.log(`📊 响应数据键:`, data ? Object.keys(data) : 'null');
+          console.log(`📊 choices字段:`, data && data.choices ? `存在，长度${data.choices.length}` : '不存在');
+          console.log(`📊 choices[0]字段:`, data && data.choices && data.choices[0] ? Object.keys(data.choices[0]) : '不存在');
+          console.log(`📊 message字段:`, data && data.choices && data.choices[0] && data.choices[0].message ? Object.keys(data.choices[0].message) : '不存在');
+          
+          rememberLastGood(currentApiKey, model);
 
           // 提取内容
           const content = extractAIContent(data);
-          console.log('📝 OpenRouter提取的内容:', content);
+          console.log(`📝 提取的内容:`, content);
+          
+          // 成功后返回提取到的字符串内容，而不是原始数据对象
+          if (content && typeof content === 'string' && content.trim() !== '') {
+            console.log('✅ 返回提取的内容字符串');
+            return content;
+          }
+          console.log('📝 OpenRouter提取的内容为空或非字符串:', typeof content);
 
           if (!content || content.trim() === '') {
             throw new Error('OpenRouter返回内容为空');
@@ -2694,105 +2975,161 @@
           lastError = error;
           console.warn(`❌ API密钥 ${currentApiKey.substring(0, 15)}... 调用异常:`, error.message);
 
-          // 如果是网络错误或认证/限流错误，尝试下一个密钥
-          if (error.message.includes('limit') || error.message.includes('429') || error.message.includes('402') || 
-              error.message.includes('401') || error.message.includes('403') || error.message.includes('User not found')) {
-            if (error.message.includes('401') || error.message.includes('403') || error.message.includes('User not found')) { errorCategory = 'auth'; }
-            else if (error.message.includes('402') || error.message.includes('429') || error.message.includes('limit')) { errorCategory = 'quota'; }
-            const jitter = 300 + Math.floor(Math.random() * 700);
-            const delay = 2000 * (keyAttempt + 1) + jitter;
-            await sleep(delay);
-            if (errorCategory === 'auth') { authFailCount++; }
-            window.LAST_AI_ERROR_CAT = errorCategory;
-            continue;
-          } else {
-            throw error;
-          }
+          // 对于所有错误，都继续尝试下一个密钥，而不是立即抛出异常
+          await sleep(300);
+          continue;
         }
       }
 
       // 所有密钥都失败了
+      if (authErrorCount > 0 && authErrorCount === totalAttempts) {
+        setGlobalCooldownUntil(nowMs() + 10 * 60 * 1000);
+      }
       console.error('❌ 所有API密钥都已用完');
-      LAST_AI_ERROR_CAT = errorCategory;
-      const msg = errorCategory === 'auth'
-        ? '所有密钥均返回认证失败（401/403）。这通常是浏览器直连受限或密钥未启用前端使用；请在平台添加允许域名或为本页配置代理URL(OPENROUTER_PROXY_URL)。'
-        : errorCategory === 'quota'
-          ? '当前触发额度/限流（402/429）。已自动退避重试，请稍后再试或减少调用频率。'
-          : '所有密钥都无法访问，请稍后再试';
-      throw lastError || new Error(msg);
+      throw lastError || new Error('所有API密钥都无法访问，请稍后再试');
     }
 
     // 智能免费模型切换函数
     async function callAIWithFreeModelFallback(prompt) {
+      console.log(`🚀 开始智能免费模型切换，提示词长度: ${prompt.length}`);
+      console.log(`🔑 可用密钥总数: ${OPENROUTER_API_KEYS.length}`);
+      console.log(`🤖 免费模型列表: ${FREE_MODELS.join(', ')}`);
+      console.log(`🎯 当前主模型: ${OPENROUTER_MODEL}`);
+      // 在尝试调用前进行代理服务健康检查
+      try {
+        const healthResp = await fetch('http://localhost:3003/api/test/auth', { method: 'GET' });
+        if (!healthResp.ok) {
+          console.warn(`⚠️ 代理健康检查失败: ${healthResp.status} ${healthResp.statusText}`);
+        } else {
+          console.log('✅ 代理服务健康检查通过');
+        }
+      } catch (e) {
+        console.error('❌ 无法连接到代理服务器 http://localhost:3003 ，请先启动代理服务 (npm start)', e.message);
+        throw new Error('无法连接到代理服务器，请启动本地代理服务后重试');
+      }
+      
+      // 若全局冷却中，直接停止
+      if (isGlobalCooldownActive()) {
+        const cooldownEnd = getGlobalCooldownUntil();
+        const remainingTime = Math.max(0, cooldownEnd - nowMs());
+        console.log(`⏰ 全局冷却中，剩余时间: ${Math.ceil(remainingTime / 1000)}秒`);
+        throw new Error('OpenRouter全局冷却中，稍后再试');
+      }
+      
+      // 跟踪鉴权错误次数和总尝试次数
+      let authErrorCount = 0;
+      let totalAttempts = 0;
+      let lastErrorMsg = '';
+      
       // 尝试当前配置的模型
       try {
         return await callOpenRouterAI(prompt, OPENROUTER_MODEL);
       } catch (error) {
+        const msg = String(error && error.message || '');
+        lastErrorMsg = msg;
+        totalAttempts += 1;
+        
+        // 记录鉴权错误但不立即设置全局冷却
+        if (msg.includes('401') || msg.includes('Unauthorized') || msg.includes('User not found')) {
+          authErrorCount += 1;
+          console.warn(`❌ 主模型 ${OPENROUTER_MODEL} 鉴权失败 (${authErrorCount}/${totalAttempts})，继续尝试其他选项...`);
+        } else if (msg.includes('429') || msg.includes('rate limit') || msg.includes('too many requests')) {
+          console.warn(`⏰ 主模型 ${OPENROUTER_MODEL} 速率限制，继续尝试其他选项...`);
+        } else if (msg.includes('OpenRouter全局冷却中')) {
+          // 只有全局冷却错误才立即停止
+          throw new Error('OpenRouter全局冷却中，稍后再试');
+        }
+        
+        // 检查是否已经达到全局冷却条件
+        if (isGlobalCooldownActive()) {
+          throw new Error('鉴权错误，已进入全局冷却');
+        }
+        
         console.warn(`❌ 主模型 ${OPENROUTER_MODEL} 失败，尝试其他免费模型...`);
-
-        // 遍历所有免费模型进行尝试
-        for (const model of FREE_MODELS) {
+        const preferred = localStorage.getItem('LAST_WORKING_FREE_MODEL');
+        const modelList = preferred && FREE_MODELS.includes(preferred)
+          ? [preferred].concat(FREE_MODELS.filter(m => m !== preferred && m !== OPENROUTER_MODEL))
+          : FREE_MODELS.filter(m => m !== OPENROUTER_MODEL);
+          
+        console.log(`🔄 备用模型列表: ${modelList.join(', ')}`);
+        console.log(`🔄 上次工作模型: ${preferred || '无'}`);
+        console.log(`🔄 开始尝试 ${modelList.length} 个备用模型...`);
+        
+        for (let i = 0; i < modelList.length; i++) {
+          const model = modelList[i];
           if (model === OPENROUTER_MODEL) continue; // 跳过已经尝试过的主模型
 
+          console.log(`🔄 [${i + 1}/${modelList.length}] 尝试免费模型: ${model}`);
+          console.log(`🔄 模型 ${model} 尝试前，总尝试次数: ${totalAttempts}, 鉴权错误次数: ${authErrorCount}`);
+          
           try {
-            console.log(`🔄 尝试免费模型: ${model}`);
+            // 对于速率限制，增加基础等待时间
+            const baseWaitTime = 300 + (totalAttempts * 200); // 递增等待时间
+            console.log(`⏰ 等待 ${baseWaitTime}ms 后尝试模型 ${model}`);
+            await sleep(baseWaitTime);
+            
+            console.log(`🚀 开始调用模型 ${model}`);
+            console.log(`🚀 调用 callOpenRouterAI 使用模型: ${model}`);
             const result = await callOpenRouterAI(prompt, model);
-            console.log(`✅ 免费模型 ${model} 可用！`);
+            console.log(`✅ 免费模型 ${model} 可用！成功获取响应`);
+            console.log(`✅ 模型切换成功，总尝试次数: ${totalAttempts + 1}`);
             // 可选：保存可用的模型到本地存储
             localStorage.setItem('LAST_WORKING_FREE_MODEL', model);
+            console.log(`💾 保存可用模型: ${model}`);
             return result;
           } catch (modelError) {
-            console.warn(`❌ 模型 ${model} 不可用:`, modelError.message);
-            const cat = window.LAST_AI_ERROR_CAT || LAST_AI_ERROR_CAT || 'none';
-            if (cat === 'auth') { // 如果是认证失败，直接停止模型遍历
-              throw new Error('检测到认证失败（401/403），已停止继续尝试其他模型。请设置允许域名或配置代理URL。');
+            totalAttempts += 1;
+            const modelMsg = String(modelError && modelError.message || '');
+            lastErrorMsg = modelMsg || lastErrorMsg;
+            
+            console.error(`❌ 模型 ${model} 调用失败详情:`);
+            console.error(`   - 错误消息: ${modelMsg}`);
+            console.error(`   - 总尝试次数: ${totalAttempts}`);
+            console.error(`   - 鉴权错误次数: ${authErrorCount}`);
+            
+            // 记录鉴权错误但不立即设置全局冷却
+            if (modelMsg.includes('401') || modelMsg.includes('Unauthorized') || modelMsg.includes('User not found')) {
+              authErrorCount += 1;
+              console.warn(`❌ 模型 ${model} 鉴权失败 (${authErrorCount}/${totalAttempts})，继续尝试下一个模型...`);
+            } else if (modelMsg.includes('429') || modelMsg.includes('rate limit') || modelMsg.includes('too many requests')) {
+              console.warn(`⏰ 模型 ${model} 速率限制，继续尝试下一个模型...`);
+            } else if (modelMsg.includes('OpenRouter全局冷却中')) {
+              // 只有全局冷却错误才立即停止
+              console.log(`🛑 全局冷却触发，停止尝试其他模型`);
+              throw new Error('OpenRouter全局冷却中，稍后再试');
+            } else {
+              console.warn(`❌ 模型 ${model} 其他错误: ${modelMsg}`);
             }
+            
+            console.warn(`❌ 模型 ${model} 不可用，继续尝试下一个...`);
             continue;
           }
         }
 
-        // 如果所有免费模型都失败了
-        const cat = typeof window !== 'undefined' && window.LAST_AI_ERROR_CAT ? window.LAST_AI_ERROR_CAT : 'none';
-        if (cat === 'auth') {
-          throw new Error('当前浏览器直连受限或密钥未被识别（401/403）。请在OpenRouter设置允许域名，或在本地存储设置OPENROUTER_PROXY_URL使用后端代理。');
+        // 只有当所有尝试都是鉴权错误时才设置全局冷却
+        if (authErrorCount === totalAttempts && totalAttempts > 0) {
+          console.warn(`⚠️ 所有 ${totalAttempts} 次尝试都是鉴权错误，设置全局冷却 10 分钟`);
+          setGlobalCooldownUntil(nowMs() + 10 * 60 * 1000);
+          throw new Error('所有API密钥均鉴权失败，已进入全局冷却');
         }
-        if (cat === 'quota') {
-          throw new Error('当前可能触发额度/限流（402/429）。系统已退避重试，建议减少频率或稍后再试。');
+
+        // 检查具体的错误类型，提供准确的错误信息
+        if (authErrorCount === totalAttempts && totalAttempts > 0) {
+          // 所有尝试都是鉴权错误
+          throw new Error(`所有API密钥均鉴权失败 (${totalAttempts}次尝试)，请检查密钥是否有效`);
+        } else if (authErrorCount > 0) {
+          // 部分鉴权错误，部分可能是其他错误
+          throw new Error(`部分API密钥鉴权失败 (${authErrorCount}/${totalAttempts})，其他可能遇到速率限制或网络问题；最后错误: ${lastErrorMsg}`);
+        } else {
+          // 没有鉴权错误，可能是速率限制、网络问题或其他错误
+          throw new Error(`所有免费模型调用失败 (${totalAttempts}次尝试)，可能是速率限制、网络问题或服务器错误；最后错误: ${lastErrorMsg}`);
         }
-        throw new Error('所有免费模型都不可用，请稍后再试或添加付费额度');
       }
     }
 
     // 统一的API调用函数 - 使用OpenRouter
     async function callAI(prompt) {
-      // 熔断器：若近期认证失败，短暂停止调用，避免重复打满
-      try {
-        const cbStr = localStorage.getItem('AI_CIRCUIT_BREAKER');
-        if (cbStr) {
-          const cb = JSON.parse(cbStr);
-          if (cb && cb.type === 'auth' && (Date.now() - cb.ts) < 2 * 60 * 1000) {
-            throw new Error('检测到认证失败（401/403），已暂时停止调用，请稍后再试或配置代理URL。');
-          }
-        }
-      } catch {}
-
-      if (AI_CALL_IN_FLIGHT) { throw new Error('AI分析正在进行中，请稍后再试'); }
-      AI_CALL_IN_FLIGHT = true;
-      try {
-        const cached = getCachedAIContent(prompt);
-        if (cached && cached.length > 0) { return cached; }
-        await ensureRateLimit();
-        const content = await callAIWithFreeModelFallback(prompt);
-        if (content && content.length > 0) { setCachedAIContent(prompt, content); }
-        return content;
-      } catch (e) {
-        if ((window.LAST_AI_ERROR_CAT || LAST_AI_ERROR_CAT) === 'auth') {
-          try { localStorage.setItem('AI_CIRCUIT_BREAKER', JSON.stringify({ type: 'auth', ts: Date.now() })); } catch {}
-        }
-        throw e;
-      } finally {
-        AI_CALL_IN_FLIGHT = false;
-      }
+      return await callAIWithFreeModelFallback(prompt);
     }
     
     // 切换API提供商 - 使用OpenRouter
@@ -2977,27 +3314,44 @@
             console.warn(`⚠️ 未找到香港历史数据API配置`);
           }
         } else {
-          // 使用新澳门API（JSON）获取最新期号
-          const macauApi = LOTTERY_APIS.find(api => api.name === '新澳门API');
-          if (macauApi) {
-            try {
-              const apiUrl = typeof macauApi.url === 'function' ? macauApi.url('2') : macauApi.url;
-              console.log(`尝试访问新澳门API: ${apiUrl}`);
-              const response = await fetchWithTimeout(apiUrl, {}, 15000);
-              console.log(`新澳门API响应状态: ${response.status} ${response.statusText}`);
-              if (response.ok) {
-                const json = await response.json();
-                if (json && json.result === true && Array.isArray(json.data) && json.data.length > 0) {
-                  latestPeriod = String(json.data[0].expect);
-                  console.log(`✅ 从新澳门API获取到最新期号: ${latestPeriod}`);
+          // 澳门：优先使用澳门多期历史（JSON），失败则使用代理或HTML解析回退
+          try {
+            console.log('尝试获取澳门最新期号: momarksix JSON');
+            const url = 'https://momarksix.org/api/lottery/history/omsix';
+            let resp = await fetchWithTimeout(url, {}, 15000);
+            if (resp.ok) {
+              const json = await resp.json();
+              if (json && Array.isArray(json.data) && json.data.length > 0) {
+                latestPeriod = String(json.data[0].issue);
+                console.log(`✅ 从澳门多期历史获取到最新期号: ${latestPeriod}`);
+              }
+            }
+            if (!latestPeriod) {
+              console.log('使用代理重试: r.jina.ai + momarksix');
+              const proxyUrl = 'https://r.jina.ai/https://momarksix.org/api/lottery/history/omsix';
+              const proxied = await fetchWithTimeout(proxyUrl, {}, 15000);
+              const text = await proxied.text();
+              let data; try { data = JSON.parse(text); } catch { const m = text.match(/\{[\s\S]*\}/); data = m ? JSON.parse(m[0]) : null; }
+              if (data && Array.isArray(data.data) && data.data.length > 0) {
+                latestPeriod = String(data.data[0].issue);
+                console.log(`✅ 从代理获取到澳门最新期号: ${latestPeriod}`);
+              }
+            }
+            if (!latestPeriod) {
+              console.log('回退到澳门历史数据(HTML解析，经代理)');
+              const macauHistory = LOTTERY_APIS.find(api => api.name === '澳门历史数据');
+              if (macauHistory) {
+                const htmlResp = await fetchWithTimeout(macauHistory.url(), {}, 15000);
+                const html = await htmlResp.text();
+                const parsed = macauHistory.parser(html);
+                if (parsed && parsed.currentIssue) {
+                  latestPeriod = String(parsed.currentIssue);
+                  console.log(`✅ 从澳门历史数据解析到最新期号: ${latestPeriod}`);
                 }
               }
-            } catch (apiError) {
-              console.error(`❌ 新澳门API调用失败:`, apiError.message);
-              console.error(`错误详情:`, apiError);
             }
-          } else {
-            console.warn(`⚠️ 未找到新澳门API配置`);
+          } catch (apiError) {
+            console.error('❌ 获取澳门最新期号失败:', apiError.message);
           }
         }
         
@@ -3018,12 +3372,12 @@
       const year = now.getFullYear();
       
       if (type === 'hk') {
-        // 香港六合彩：基于实际历史数据校准
+        // 香港数字：基于实际历史数据校准
         // 根据marksixlottery.net历史数据，2025年11月8日实际期号为119期
         const baseDate = new Date('2025-11-08');
         const basePeriod = 119;
         
-        // 香港六合彩每周开奖3次（周二、四、六）
+        // 香港数字每周开奖3次（周二、四、六）
         const daysSinceBase = Math.floor((now - baseDate) / (1000 * 60 * 60 * 24));
         const weeksSinceBase = Math.floor(daysSinceBase / 7);
         const remainingDays = daysSinceBase % 7;
@@ -3059,8 +3413,8 @@
         
         const daysSinceBase = Math.floor((now - baseDate) / (1000 * 60 * 60 * 24));
         
-        // 澳门数字数据更新频率：大约每2-3天
-        // 基于历史数据统计，平均间隔约为2.5天
+        // 澳门数字开奖频率：大约每2-3天开奖一次
+        // 基于历史数据统计，平均开奖间隔约为2.5天
         const periodIncrement = Math.floor(daysSinceBase / 2.5);
         const currentPeriod = basePeriod + periodIncrement;
         
@@ -3163,7 +3517,7 @@
             </div>
           `;
         } else {
-          resultDisplay = '<div class="result-comparison">等待公开结果</div>';
+          resultDisplay = '<div class="result-comparison">等待开奖结果</div>';
         }
         
         return `
@@ -3688,19 +4042,105 @@ function evaluateAndAdjustAIConfig(type, latestAccuracy, options = {}) {
     
     async function fetchRealLotteryResults(type, period) {
       if (type === 'macau') {
-        const macauApi = LOTTERY_APIS.find(api => api.name === '新澳门API');
-        const apiUrl = macauApi.url('2');
-        const resp = await fetch(apiUrl);
-        const data = await resp.json();
-        const match = data.data.find(d => String(d.expect) === String(period));
-        const nums = match.openCode.split(',').map(n => parseInt(n.trim()));
-        return {
-          period: String(match.expect),
-          numbers: nums,
-          zodiac: match.zodiac || '',
-          drawDate: match.openTime || '',
-          dataSource: '新澳门API'
-        };
+        // 方案A：优先使用澳门多期历史（JSON），若浏览器被CORS限制则使用r.jina.ai代理
+        try {
+          let url = 'https://momarksix.org/api/lottery/history/omsix';
+          let resp;
+          try {
+            resp = await fetchWithTimeout(url, {}, 12000);
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            const json = await resp.json();
+            if (json && Array.isArray(json.data)) {
+              const item = json.data.find(d => String(d.issue) === String(period));
+              if (item && Array.isArray(item.num) && item.num.length >= 6) {
+                const nums = item.num.slice(0, 6).map(n => parseInt(n, 10));
+                return {
+                  period: String(item.issue),
+                  numbers: nums,
+                  zodiac: item.zodiac ? item.zodiac.slice(0, 6).join(',') : '',
+                  drawDate: item.kjTime ? new Date(item.kjTime * 1000).toISOString().split('T')[0] : '',
+                  dataSource: '澳门多期历史'
+                };
+              }
+            }
+          } catch (e) {
+            // 使用代理重试并手动解析JSON文本
+            const proxyUrl = 'https://r.jina.ai/https://momarksix.org/api/lottery/history/omsix';
+            const proxied = await fetchWithTimeout(proxyUrl, {}, 12000);
+            const text = await proxied.text();
+            let data;
+            try { data = JSON.parse(text); } catch {
+              const m = text.match(/\{[\s\S]*\}/);
+              data = m ? JSON.parse(m[0]) : null;
+            }
+            if (data && Array.isArray(data.data)) {
+              const item = data.data.find(d => String(d.issue) === String(period));
+              if (item && Array.isArray(item.num) && item.num.length >= 6) {
+                const nums = item.num.slice(0, 6).map(n => parseInt(n, 10));
+                return {
+                  period: String(item.issue),
+                  numbers: nums,
+                  zodiac: item.zodiac ? item.zodiac.slice(0, 6).join(',') : '',
+                  drawDate: item.kjTime ? new Date(item.kjTime * 1000).toISOString().split('T')[0] : '',
+                  dataSource: '澳门多期历史(代理)'
+                };
+              }
+            }
+          }
+
+          // 方案B：回退到澳门历史数据页（HTML解析，经r.jina.ai）
+          const macauHistory = LOTTERY_APIS.find(api => api.name === '澳门历史数据');
+          if (macauHistory) {
+            const htmlResp = await fetchWithTimeout(macauHistory.url(), {}, 12000);
+            const html = await htmlResp.text();
+            const parsed = macauHistory.parser(html);
+            if (parsed && parsed.currentIssue && String(parsed.currentIssue) === String(period)) {
+              const numbers = String(parsed.currentResult).split(',').map(n => parseInt(n.trim(), 10)).filter(n => !isNaN(n));
+              if (numbers.length === 6) {
+                return {
+                  period: String(parsed.currentIssue),
+                  numbers,
+                  zodiac: parsed.currentZodiac || '',
+                  drawDate: parsed.nextTime || '',
+                  dataSource: '澳门历史数据'
+                };
+              }
+            }
+          }
+
+          // 方案C：最后尝试新澳门API，经r.jina.ai代理（原API当前可能500）
+          const newMacauApi = LOTTERY_APIS.find(api => api.name === '新澳门API');
+          if (newMacauApi) {
+            const proxiedUrl = `https://r.jina.ai/https://history.macaumarksix.com/history/macaujc2/y/${new Date().getFullYear()}`;
+            const resp3 = await fetchWithTimeout(proxiedUrl, {}, 12000);
+            const text3 = await resp3.text();
+            let data3;
+            try { data3 = JSON.parse(text3); } catch {
+              const m = text3.match(/\{[\s\S]*\}/);
+              data3 = m ? JSON.parse(m[0]) : null;
+            }
+            if (data3 && Array.isArray(data3.data)) {
+              const match3 = data3.data.find(d => String(d.expect) === String(period));
+              if (match3 && typeof match3.openCode === 'string') {
+                const nums = match3.openCode.split(',').map(n => parseInt(n.trim(), 10)).filter(n => !isNaN(n));
+                if (nums.length >= 6) {
+                  return {
+                    period: String(match3.expect),
+                    numbers: nums.slice(0, 6),
+                    zodiac: match3.zodiac || '',
+                    drawDate: match3.openTime || '',
+                    dataSource: '新澳门API(代理)'
+                  };
+                }
+              }
+            }
+          }
+
+          throw new Error('未能获取澳门真实开奖结果');
+        } catch (e) {
+          console.error('澳门真实数据获取失败:', e.message);
+          throw e;
+        }
       } else {
         // 优先使用香港多期历史API（新的ttc5188 API）
         const hkMultiHistory = LOTTERY_APIS.find(api => api.name === '香港多期历史');
@@ -3819,25 +4259,25 @@ function evaluateAndAdjustAIConfig(type, latestAccuracy, options = {}) {
       try {
         const currentPeriod = await getCurrentPeriod(type);
         
-        // 首先尝试获取真实结果数据
+        // 首先尝试获取真实开奖结果
         let result = await fetchRealLotteryResults(type, currentPeriod);
         
         // 只使用真实数据，不再使用模拟数据
         if (!result) {
-          console.error(`❌ 无法获取期号 ${currentPeriod} 的真实结果数据`);
-          throw new Error(`无法获取${type === 'hk' ? '香港' : '澳门'}期号 ${currentPeriod} 的真实结果数据，请检查接口配置`);
+          console.error(`❌ 无法获取期号 ${currentPeriod} 的真实开奖结果`);
+          throw new Error(`无法获取${type === 'hk' ? '香港' : '澳门'}期号 ${currentPeriod} 的真实开奖数据，请检查API配置`);
         }
         
-        console.log(`✅ 成功获取到期号 ${currentPeriod} 的真实结果数据，数据来源: ${result.dataSource}`);
+        console.log(`✅ 成功获取到期号 ${currentPeriod} 的真实开奖结果，数据来源: ${result.dataSource}`);
         if (Array.isArray(result.numbers)) {
-          console.log(`组合结果: ${result.numbers.join(', ')}`);
+          console.log(`开奖号码: ${result.numbers.join(', ')}`);
         } else {
-          console.log('组合结果: —');
+          console.log('开奖号码: —');
           return;
         }
         
         if (!result || result.period !== currentPeriod) {
-          console.log(`期号 ${currentPeriod} 的结果尚未公布`);
+          console.log(`期号 ${currentPeriod} 的开奖结果尚未公布`);
           return;
         }
         
@@ -3901,31 +4341,26 @@ function evaluateAndAdjustAIConfig(type, latestAccuracy, options = {}) {
       }
     }
     
-    // 获取澳门最近记录数据用于分析频率
+    // 获取澳门最近开奖记录用于分析开奖频率
     async function fetchMacauRecentResults() {
       try {
-        console.log('正在获取澳门最近记录数据...');
+        console.log('正在获取澳门最近开奖记录...');
         
         const recentResults = [];
         const apiUrls = [
-          `https://www.kaijiang.org/api/lottery?code=mc6&period=2025310`, // 昨天310期
-          `https://www.kaijiang.org/api/lottery?code=mc6&period=2025309`, // 前天309期
-          `https://www.kaijiang.org/api/lottery?code=mc6&period=2025308`, // 大前天308期
+          `https://r.jina.ai/https://www.kaijiang.org/api/lottery?code=mc6&period=2025310`,
+          `https://r.jina.ai/https://www.kaijiang.org/api/lottery?code=mc6&period=2025309`,
+          `https://r.jina.ai/https://www.kaijiang.org/api/lottery?code=mc6&period=2025308`,
         ];
         
         for (const url of apiUrls) {
           try {
-            const response = await fetch(url, {
-              headers: {
-                'Content-Type': 'application/json',
-                'User-Agent': 'Lottery-Prediction-Tool/1.0'
-              },
-              timeout: 10000
-            });
-            
+            const response = await fetchWithTimeout(url, { headers: { 'User-Agent': 'Lottery-Prediction-Tool/1.0' } }, 10000);
             if (response.ok) {
-              const data = await response.json();
-              if (data.code === 0 && data.data) {
+              const text = await response.text();
+              let data;
+              try { data = JSON.parse(text); } catch { const m = text.match(/\{[\s\S]*\}/); data = m ? JSON.parse(m[0]) : null; }
+              if (data && data.code === 0 && data.data) {
                 recentResults.push({
                   period: data.data.period,
                   drawDate: data.data.drawDate,
@@ -3935,39 +4370,39 @@ function evaluateAndAdjustAIConfig(type, latestAccuracy, options = {}) {
               }
             }
           } catch (error) {
-            console.warn(`获取记录数据失败: ${url}`, error.message);
+            console.warn(`获取开奖记录失败: ${url}`, error.message);
           }
         }
         
-        // 分析频率
+        // 分析开奖频率
         if (recentResults.length >= 2) {
-          console.log('澳门最近记录数据分析:');
+          console.log('澳门最近开奖记录分析:');
           recentResults.forEach(result => {
-            console.log(`期号: ${result.period}, 记录日期: ${result.drawDate}`);
+            console.log(`期号: ${result.period}, 开奖日期: ${result.drawDate}`);
           });
           
-          // 计算间隔
+          // 计算开奖间隔
           if (recentResults.length >= 2) {
             const date1 = new Date(recentResults[0].drawDate);
             const date2 = new Date(recentResults[1].drawDate);
             const dayDiff = Math.floor((date1 - date2) / (1000 * 60 * 60 * 24));
-            console.log(`最近两期间隔: ${dayDiff} 天`);
+            console.log(`最近两期开奖间隔: ${dayDiff} 天`);
           }
         } else {
-          console.log('警告: 未能获取到澳门最近记录数据，系统将使用模拟数据');
-          console.log('建议: 请提供实际的历史数据接口或公开数据源');
+          console.log('警告: 未能获取到澳门最近开奖记录，系统将使用模拟数据');
+          console.log('建议: 请提供实际的澳门开奖API或历史开奖数据');
         }
         
         return recentResults;
       } catch (error) {
-        console.error('获取澳门最近记录数据失败:', error);
+        console.error('获取澳门最近开奖记录失败:', error);
         return [];
       }
     }
     
     // 启动自动验证定时器
     function startAutoVerification() {
-      // 每30分钟检查一次公开结果数据
+      // 每30分钟检查一次开奖结果
       setInterval(() => {
         autoVerifyResults('hk');
         autoVerifyResults('macau');
@@ -3978,7 +4413,7 @@ function evaluateAndAdjustAIConfig(type, latestAccuracy, options = {}) {
         autoVerifyResults('hk');
         autoVerifyResults('macau');
         
-        // 获取澳门最近记录数据用于分析
+        // 获取澳门最近开奖记录用于分析
         fetchMacauRecentResults();
       }, 5000);
     }
@@ -4082,57 +4517,31 @@ function evaluateAndAdjustAIConfig(type, latestAccuracy, options = {}) {
     const cfg = getAIConfig();
     console.log('⚙️ 使用AI配置:', cfg);
     
-    const prompt = `你是资深的数字娱乐分析师与统计学专家，面向合法合规的娱乐数据分析场景。请基于真实历史数据进行科学的数字组合概率评估与娱乐性推荐（仅供娱乐参考，不提供下注建议）。
+    const prompt = `基于以下历史开奖数据，运用你的分析能力预测下一期最可能的7个号码(1-49)和生肖。
 
-请运用以下专业算法进行深度分析，并按不少于 ${cfg.reasoningDepth} 步进行严谨推理：
-1. **马尔可夫链分析** - 分析号码状态转移概率
-2. **贝叶斯概率模型** - 基于先验概率更新后验概率
-3. **时间序列分析** - 识别号码出现的周期性和趋势性
-4. **机器学习聚类算法** - 发现号码组合的模式特征
-5. **神经网络模式识别** - 识别复杂的非线性关系
-6. **蒙特卡洛模拟** - 通过大量随机模拟评估概率分布
-7. **遗传算法优化** - 优化号码组合的选择策略
-8. **支持向量机分类** - 基于历史特征进行分类预测
+历史数据：
+${JSON.stringify(historyData.slice(-20), null, 2)}
 
-必须基于真实历史数据进行以下统计分析：
-- **频率分布分析** - 每个号码的历史出现频次
-- **遗漏值分析** - 号码未出现的期数和遗漏模式
-- **相关性分析** - 号码之间的相关性和独立性
-- **周期性分析** - 号码出现的时间周期规律
-- **奇偶比例分析** - 历史开奖中的奇偶数分布
-- **大小比例分析** - 小数(1-24)与大数(25-49)的比例
-- **连号分析** - 连续号码出现的概率和模式
-- **生肖分析** - 十二生肖对应号码的历史表现
+请自主选择合适的算法进行分析，包括但不限于：
+- 频率分析和遗漏值统计
+- 趋势识别和模式匹配
+- 概率计算和相关性分析
+- 时间序列预测
 
-分析要求：
-1. 必须引用具体的历史数据和统计结果
-2. 使用科学的概率计算方法
-3. 考虑多种因素的综合影响
-4. 提供详细的推理过程和依据
-5. 给出置信度评估和风险提示
-
-请严格按照以下JSON格式返回预测结果，不要包含任何其他文字或说明：
-
+返回JSON格式：
 {
   "numbers": [1, 15, 23, 28, 35, 42, 49],
   "zodiac": "龙",
   "confidence": "75%",
-  "analysis": "基于统计分析的简要说明",
-  "reasoning": [
-    "基于历史频率筛选种子集",
-    "平衡奇偶与大小比例",
-    "避免重复并控制连号数",
-    "综合趋势与分布优化最终集合"
-  ]
+  "analysis": "简要分析说明",
+  "reasoning": ["关键推理步骤1", "关键推理步骤2", "关键推理步骤3", "关键推理步骤4"]
 }
 
 要求：
-- 只返回JSON格式，不要添加任何解释文字
-- 7个号码必须在1-49范围内且不重复
-- 生肖必须是十二生肖之一：鼠、牛、虎、兔、龙、蛇、马、羊、猴、鸡、狗、猪
-- 置信度用百分比表示
-- 这仅供娱乐参考，不构成投注建议
-- 确保JSON格式正确，可以直接用JSON.parse()解析`;
+- 只返回JSON，无其他文字
+- 号码1-49不重复
+- 生肖为十二生肖之一
+- 置信度用百分比表示`;
     
     console.log('📋 构建的提示词长度:', prompt.length, '字符');
     
@@ -4399,15 +4808,16 @@ function evaluateAndAdjustAIConfig(type, latestAccuracy, options = {}) {
    * 生成详细的错误报告
    */
   function generateErrorReport(aiResponse) {
+      const text = typeof aiResponse === 'string' ? aiResponse : JSON.stringify(aiResponse ?? '', null, 2);
       console.error('📄 === JSON解析失败详细报告 ===');
-      console.error('📏 响应长度:', aiResponse.length);
-      console.error('🔍 响应前500字符:', aiResponse.substring(0, 500));
-      console.error('🔍 响应后500字符:', aiResponse.substring(aiResponse.length - 500));
+      console.error('📏 响应长度:', text.length);
+      console.error('🔍 响应前500字符:', text.substring(0, 500));
+      console.error('🔍 响应后500字符:', text.substring(Math.max(0, text.length - 500)));
 
-      const hasBraces = aiResponse.includes('{') && aiResponse.includes('}');
-      const hasJsonKeywords = aiResponse.includes('numbers') || aiResponse.includes('zodiac');
-      const hasCodeBlock = aiResponse.includes('```');
-      const isHtmlResponse = aiResponse.includes('<html') || aiResponse.includes('<!DOCTYPE');
+      const hasBraces = text.includes('{') && text.includes('}');
+      const hasJsonKeywords = text.includes('numbers') || text.includes('zodiac');
+      const hasCodeBlock = text.includes('```');
+      const isHtmlResponse = text.includes('<html') || text.includes('<!DOCTYPE');
 
       console.error('🔍 响应特征分析:');
       console.error('  - 包含花括号:', hasBraces);
@@ -5256,57 +5666,31 @@ function evaluateAndAdjustAIConfig(type, latestAccuracy, options = {}) {
         ${Object.keys(patterns.zodiacFrequency).length > 0 ? `- 生肖频率: ${Object.entries(patterns.zodiacFrequency).map(([zodiac, count]) => `${zodiac}(${count}次)`).join(', ')}` : ''}
         ` : '';
         
-        const prompt = `你是一个专业的香港数字娱乐数据分析师。请基于真实的${historicalData.length}期历史数据和统计学原理，进行数字组合的娱乐性推荐（1-49，7个不重复）及对应生肖评估。${historicalSummary}
+        const prompt = `基于以下香港六合彩历史数据，预测下一期最可能的7个号码(1-49)和生肖。
 
-        历史策略与胜率摘要（最近${perfSummary.window}期）：
-        总体胜率：${perfSummary.overallAccuracy}%
-        策略使用统计：${perfSummary.strategyStats}
-        最近表现：${perfSummary.recentPerformance}
-        建议：优先考虑胜率较高的策略组合，并避免近期表现持续低迷的策略。
-        
-        本分析仅用于娱乐与教育目的，不涉及任何博彩或下注建议。请基于以上真实历史数据进行严谨的概率评估与组合推荐。
-        
-        请运用以下专业算法进行深度分析，并按不少于 ${cfg.reasoningDepth} 步进行严谨推理：
-        1. **马尔可夫链分析** - 分析香港历史数据中号码状态转移概率
-        2. **贝叶斯概率模型** - 基于香港历史先验概率更新后验概率
-        3. **时间序列分析** - 识别香港号码出现的周期性和趋势性
-        4. **机器学习聚类算法** - 发现香港号码组合的模式特征
-        5. **神经网络模式识别** - 识别香港历史数据中的复杂非线性关系
-        6. **蒙特卡洛模拟** - 通过大量随机模拟评估香港号码概率分布
-        7. **遗传算法优化** - 优化香港号码组合的选择策略
-        8. **支持向量机分类** - 基于香港历史特征进行分类预测
-        
-        必须基于以上真实历史数据和策略胜率表现进行以下统计分析：
-        - **频率分布分析** - 引用具体的热号[${patterns.hotNumbers.join(', ')}]和冷号[${patterns.coldNumbers.join(', ')}]数据
-        - **遗漏值分析** - 分析各号码的遗漏期和遗漏模式
-        - **相关性分析** - 分析香港号码之间的相关性和独立性
-        - **周期性分析** - 识别香港号码出现的时间周期规律
-        - **奇偶比例分析** - 基于${patterns.oddEvenRatio.odd}%:${patterns.oddEvenRatio.even}%的历史分布
-        - **大小比例分析** - 基于低区${patterns.rangeDistribution.low}%/中区${patterns.rangeDistribution.mid}%/高区${patterns.rangeDistribution.high}%的分布
-        - **连号分析** - 基于${patterns.consecutivePatterns.length}次连号出现的概率模式
-        - **生肖分析** - ${Object.keys(patterns.zodiacFrequency).length > 0 ? `基于生肖频率数据: ${Object.entries(patterns.zodiacFrequency).map(([zodiac, count]) => `${zodiac}(${count}次)`).join(', ')}` : '基于传统生肖规律'}
-        
-        分析要求：
-        1. 必须引用具体的历史数据和统计结果，不得虚构数据
-        2. 使用科学的概率计算方法和统计模型
-        3. 综合考虑多种因素的影响和交互作用
-        4. 提供详细的推理过程、计算依据和概率评估
-        5. 给出置信度评估和风险提示，说明预测的不确定性
-        
-        请直接返回JSON格式的预测结果，格式如下：
-        {
-          \"numbers\": [1, 8, 15, 22, 29, 36, 43],
-          \"zodiac\": \"龙\",
-          \"confidence\": \"85%\",
-          \"analysis\": \"基于最近${historicalData.length}期历史数据分析...\",
-          \"reasoning\": [
-            \"根据历史频率分析，热号${patterns.hotNumbers.slice(0, 3).join(',')}出现概率较高\",
-            \"参考近期奇偶比例${patterns.oddEvenRatio.odd}:${patterns.oddEvenRatio.even}，选择相应配比\",
-            \"控制和值在${patterns.sumTrend.average}±10范围内，确保号码分布合理\",
-            \"结合区间分布优化，重点选择${patterns.rangeDistribution.low > 35 ? '低区' : patterns.rangeDistribution.high > 35 ? '高区' : '中区'}号码\",
-            \"基于历史数据交叉验证，最终确定预测组合\"
-          ]
-        }`;
+历史数据：
+${JSON.stringify(historicalData.slice(-20), null, 2)}
+
+统计特征：
+- 热号: [${patterns.hotNumbers.slice(0, 5).join(', ')}]
+- 冷号: [${patterns.coldNumbers.slice(0, 5).join(', ')}]
+- 奇偶比例: 奇数${patterns.oddEvenRatio.odd}%, 偶数${patterns.oddEvenRatio.even}%
+- 和值范围: ${patterns.sumTrend.min}-${patterns.sumTrend.max} (平均${patterns.sumTrend.average})
+
+请自主分析并返回JSON格式：
+{
+  "numbers": [3, 12, 18, 25, 31, 38, 45],
+  "zodiac": "龙",
+  "confidence": "82%",
+  "analysis": "简要分析说明",
+  "reasoning": ["关键推理步骤1", "关键推理步骤2", "关键推理步骤3", "关键推理步骤4"]
+}
+
+要求：
+- 只返回JSON，无其他文字
+- 号码1-49不重复
+- 生肖为十二生肖之一
+- 置信度用百分比表示`;;
         
         console.log('📋 构建香港AI提示词，长度:', prompt.length, '字符');
         
@@ -5341,29 +5725,19 @@ function evaluateAndAdjustAIConfig(type, latestAccuracy, options = {}) {
         
       } catch (error) {
         console.error('❌ 香港数字预测失败:', error);
-        if (typeof thinkingInterval !== 'undefined') { clearInterval(thinkingInterval); }
-        const msg = String(error && error.message || '');
-        if (msg.includes('认证失败') || msg.includes('401') || msg.includes('403')) {
-          showToast('❌ AI认证失败，请检查代理或密钥设置', 'error');
-          document.getElementById('hkPredictionResult').innerHTML = `
-            <div style="color: #ef4444; padding: 20px; border: 1px solid #ef4444; border-radius: 8px; background: #fef2f2;">
-              <strong>❌ 预测失败</strong><br>
-              ${error.message}<br>
-              建议：在本地存储设置 OPENROUTER_PROXY_URL 走后端代理，或为站点域名开通允许列表
-            </div>
-          `;
-          document.getElementById('hkPredictionResult').style.display = 'block';
-        } else {
-          showToast('香港数字预测失败，请稍后重试', 'error');
-          document.getElementById('hkPredictionResult').innerHTML = `
-            <div style="color: #ef4444; padding: 20px; border: 1px solid #ef4444; border-radius: 8px; background: #fef2f2;">
-              <strong>❌ 预测失败</strong><br>
-              ${error.message}<br>
-              请检查网络连接和API配置后重试
-            </div>
-          `;
-          document.getElementById('hkPredictionResult').style.display = 'block';
+        if (typeof thinkingInterval !== 'undefined') {
+          clearInterval(thinkingInterval);
         }
+        showToast('香港数字预测失败，请稍后重试', 'error');
+        // 不再使用智能预测回退，直接显示错误信息
+        document.getElementById('hkPredictionResult').innerHTML = `
+          <div style="color: #ef4444; padding: 20px; border: 1px solid #ef4444; border-radius: 8px; background: #fef2f2;">
+            <strong>❌ 预测失败</strong><br>
+            ${error.message}<br>
+            请检查网络连接和API配置后重试
+          </div>
+        `;
+        document.getElementById('hkPredictionResult').style.display = 'block';
       } finally {
         loadingDiv.style.display = 'none';
         console.log('🎯 香港数字预测结束');
@@ -5423,81 +5797,32 @@ function evaluateAndAdjustAIConfig(type, latestAccuracy, options = {}) {
         console.log('✅ 澳门历史数据分析完成');
         const macauPerfSummary = buildPerformanceSummary('macau');
         
-        const prompt = `你是一个专业的澳门数字娱乐数据分析师。请基于真实的澳门历史数据和统计学原理，进行数字组合的娱乐性推荐（1-49，7个不重复）及对应生肖评估。
-        
-        历史策略与胜率摘要（最近${macauPerfSummary.window}期）：
-        总体胜率：${macauPerfSummary.overallAccuracy}%
-        策略使用统计：${macauPerfSummary.strategyStats}
-        最近表现：${macauPerfSummary.recentPerformance}
-        建议：优先考虑胜率较高的策略组合，并避免近期表现持续低迷的策略。
-        
-        本分析仅用于娱乐与教育目的，不涉及任何博彩或下注建议。请基于以下真实澳门历史数据进行严谨的概率评估与组合推荐。
-        
-        真实澳门历史开奖数据（最近${macauHistoricalData.length}期）：
-        ${macauHistoricalData.map((draw, index) => `${index + 1}. 期号${draw.period}: [${draw.numbers.join(', ')}] 生肖: ${draw.zodiac}`).join('\n        ')}
-        
-        基于真实历史数据的统计分析结果：
-        - **热号分析**: [${macauPatternAnalysis.hotNumbers.join(', ')}] - 基于频率统计的最高出现号码
-        - **冷号分析**: [${macauPatternAnalysis.coldNumbers.join(', ')}] - 基于频率统计的最低出现号码
-        - **奇偶比例**: ${macauPatternAnalysis.oddEvenRatio.odd}:${macauPatternAnalysis.oddEvenRatio.even} - 历史奇偶分布
-        - **和值分析**: 平均${macauPatternAnalysis.sumTrend.average}，范围${macauPatternAnalysis.sumTrend.min}-${macauPatternAnalysis.sumTrend.max}
-        - **区间分布**: 低区${macauPatternAnalysis.rangeDistribution.low}%/中区${macauPatternAnalysis.rangeDistribution.mid}%/高区${macauPatternAnalysis.rangeDistribution.high}%
-        - **连号统计**: ${macauPatternAnalysis.consecutiveCount}次连号出现
-        - **生肖频率**: ${Object.entries(macauPatternAnalysis.zodiacFrequency).map(([zodiac, count]) => `${zodiac}(${count}次)`).join(', ')}
-        - 最近奇偶比例: ${macauPatternAnalysis.oddEvenRatio.odd}:${macauPatternAnalysis.oddEvenRatio.even}
-        - 和值趋势: 平均${macauPatternAnalysis.sumTrend.average}，范围${macauPatternAnalysis.sumTrend.min}-${macauPatternAnalysis.sumTrend.max}
-        - 区间分布: ${JSON.stringify(macauPatternAnalysis.rangeDistribution)}
-        - 连号出现次数: ${macauPatternAnalysis.consecutiveCount}
-        - 生肖频率: ${JSON.stringify(macauPatternAnalysis.zodiacFrequency)}
-        
-        澳门数字特点：
-        1. 开奖频率更高，数据样本更丰富
-        2. 号码分布相对更均匀
-        3. 生肖规律与香港略有不同
-        4. 连号出现频率较低
-        5. 大小号码分布更平衡
+        const prompt = `基于以下澳门历史数据，预测下一期最可能的7个号码(1-49)和生肖。
 
-        请基于以上真实历史数据进行分析，并按不少于 ${cfg.reasoningDepth} 步进行清晰的推理：
-        请运用以下专业算法进行深度分析，并按不少于 ${cfg.reasoningDepth} 步进行严谨推理：
-        1. **马尔可夫链分析** - 分析澳门号码状态转移概率特征
-        2. **贝叶斯概率模型** - 基于澳门历史先验概率更新后验概率
-        3. **时间序列分析** - 识别澳门号码出现的周期性和趋势性
-        4. **机器学习聚类算法** - 发现澳门号码组合的模式特征
-        5. **神经网络模式识别** - 识别澳门历史数据中的复杂非线性关系
-        6. **蒙特卡洛模拟** - 通过大量随机模拟评估澳门号码概率分布
-        7. **遗传算法优化** - 优化澳门号码组合的选择策略
-        8. **支持向量机分类** - 基于澳门历史特征进行分类预测
-        
-        必须基于以上真实历史数据进行以下统计分析：
-        - **频率分布分析** - 引用具体的热号和冷号数据
-        - **遗漏值分析** - 分析各号码的遗漏期和遗漏模式
-        - **相关性分析** - 分析澳门号码之间的相关性和独立性
-        - **周期性分析** - 识别澳门号码出现的时间周期规律
-        - **奇偶比例分析** - 基于${macauPatternAnalysis.oddEvenRatio.odd}:${macauPatternAnalysis.oddEvenRatio.even}的历史分布
-        - **大小比例分析** - 基于低区${macauPatternAnalysis.rangeDistribution.low}%/中区${macauPatternAnalysis.rangeDistribution.mid}%/高区${macauPatternAnalysis.rangeDistribution.high}%的分布
-        - **连号分析** - 基于${macauPatternAnalysis.consecutiveCount}次连号出现的概率模式
-        - **生肖分析** - 基于生肖频率数据: ${Object.entries(macauPatternAnalysis.zodiacFrequency).map(([zodiac, count]) => `${zodiac}(${count}次)`).join(', ')}
-        
-        分析要求：
-        1. 必须引用具体的澳门历史数据和统计结果，不得虚构数据
-        2. 使用科学的概率计算方法和统计模型
-        3. 综合考虑澳门特有的多种因素的影响和交互作用
-        4. 提供详细的推理过程、计算依据和概率评估
-        5. 给出置信度评估和风险提示，说明预测的不确定性
+历史数据：
+${macauHistoricalData.slice(-15).map((draw, index) => `${index + 1}. ${draw.period}: [${draw.numbers.join(', ')}] ${draw.zodiac}`).join('\n')}
 
-        请直接返回JSON格式的预测结果，格式如下：
-        {
-          "numbers": [3, 12, 18, 25, 31, 38, 45],
-          "zodiac": "虎",
-          "confidence": "82%",
-          "analysis": "基于澳门真实历史数据分析...",
-          "reasoning": [
-            "分析最近30期澳门开奖数据的号码频率分布",
-            "平衡大小号码与奇偶比例，参考历史趋势",
-            "根据连号出现概率限制连号数量",
-            "结合生肖频率和周期性规律优化选择"
-          ]
-        }`;
+统计特征：
+- 热号: [${macauPatternAnalysis.hotNumbers.slice(0, 5).join(', ')}]
+- 冷号: [${macauPatternAnalysis.coldNumbers.slice(0, 5).join(', ')}]
+- 奇偶比例: ${macauPatternAnalysis.oddEvenRatio.odd}:${macauPatternAnalysis.oddEvenRatio.even}
+- 和值范围: ${macauPatternAnalysis.sumTrend.min}-${macauPatternAnalysis.sumTrend.max} (平均${macauPatternAnalysis.sumTrend.average})
+- 生肖频率: ${Object.entries(macauPatternAnalysis.zodiacFrequency).slice(0, 5).map(([zodiac, count]) => `${zodiac}(${count}次)`).join(', ')}
+
+请自主分析并返回JSON格式：
+{
+  "numbers": [3, 12, 18, 25, 31, 38, 45],
+  "zodiac": "虎",
+  "confidence": "82%",
+  "analysis": "简要分析说明",
+  "reasoning": ["关键推理步骤1", "关键推理步骤2", "关键推理步骤3", "关键推理步骤4"]
+}
+
+要求：
+- 只返回JSON，无其他文字
+- 号码1-49不重复
+- 生肖为十二生肖之一
+- 置信度用百分比表示`;;
 
         console.log('📋 构建澳门AI提示词，长度:', prompt.length, '字符');
         
@@ -5532,29 +5857,19 @@ function evaluateAndAdjustAIConfig(type, latestAccuracy, options = {}) {
 
       } catch (error) {
         console.error('❌ 澳门数字预测失败:', error);
-        if (typeof thinkingInterval !== 'undefined') { clearInterval(thinkingInterval); }
-        const msg = String(error && error.message || '');
-        if (msg.includes('认证失败') || msg.includes('401') || msg.includes('403')) {
-          showToast('❌ AI认证失败，请检查代理或密钥设置', 'error');
-          document.getElementById('macauPredictionResult').innerHTML = `
-            <div style="color: #ef4444; padding: 20px; border: 1px solid #ef4444; border-radius: 8px; background: #fef2f2;">
-              <strong>❌ 预测失败</strong><br>
-              ${error.message}<br>
-              建议：在本地存储设置 OPENROUTER_PROXY_URL 走后端代理，或为站点域名开通允许列表
-            </div>
-          `;
-          document.getElementById('macauPredictionResult').style.display = 'block';
-        } else {
-          showToast('澳门数字预测失败，请稍后重试', 'error');
-          document.getElementById('macauPredictionResult').innerHTML = `
-            <div style="color: #ef4444; padding: 20px; border: 1px solid #ef4444; border-radius: 8px; background: #fef2f2;">
-              <strong>❌ 预测失败</strong><br>
-              ${error.message}<br>
-              请检查网络连接和API配置后重试
-            </div>
-          `;
-          document.getElementById('macauPredictionResult').style.display = 'block';
+        if (typeof thinkingInterval !== 'undefined') {
+          clearInterval(thinkingInterval);
         }
+        showToast('澳门数字预测失败，请稍后重试', 'error');
+        // 不再使用智能预测回退，直接显示错误信息
+        document.getElementById('macauPredictionResult').innerHTML = `
+          <div style="color: #ef4444; padding: 20px; border: 1px solid #ef4444; border-radius: 8px; background: #fef2f2;">
+            <strong>❌ 预测失败</strong><br>
+            ${error.message}<br>
+            请检查网络连接和API配置后重试
+          </div>
+        `;
+        document.getElementById('macauPredictionResult').style.display = 'block';
       } finally {
         loadingDiv.style.display = 'none';
         console.log('🎯 澳门数字预测结束');
@@ -5642,19 +5957,11 @@ function evaluateAndAdjustAIConfig(type, latestAccuracy, options = {}) {
       }
       
       try {
-        let hkResult, macauResult;
-        try {
-          await predictHKLottery();
-          hkResult = { status: 'fulfilled' };
-        } catch (e) {
-          hkResult = { status: 'rejected', reason: e };
-        }
-        try {
-          await predictMacauLottery();
-          macauResult = { status: 'fulfilled' };
-        } catch (e) {
-          macauResult = { status: 'rejected', reason: e };
-        }
+        // 并行执行香港和澳门预测
+        const [hkResult, macauResult] = await Promise.allSettled([
+          predictHKLottery(),
+          predictMacauLottery()
+        ]);
         
         if (hkResult.status === 'fulfilled') {
           console.log('✅ 香港自动预测完成');
@@ -5731,19 +6038,18 @@ function evaluateAndAdjustAIConfig(type, latestAccuracy, options = {}) {
     async function getLastPeriodResult(type) {
       try {
         const gameid = type === 'hk' ? 'hk6' : 'marksix';
-        const result = await fetchWithTimeout(`https://api.166001.com/lottery/get/${gameid}`, {
-          timeout: 10000
-        });
-        
-        if (result && result.data && result.data.currentResult) {
-          const numbers = result.data.currentResult.split(',').map(n => parseInt(n.trim()));
-          return {
-            period: result.data.currentIssue,
-            numbers: numbers,
-            zodiac: result.data.currentZodiac || ''
-          };
+        const res = await fetchWithTimeout(`https://api.166001.com/lottery/get/${gameid}`, { }, 10000);
+        if (res && res.ok) {
+          const json = await res.json();
+          if (json && json.data && json.data.currentResult) {
+            const numbers = String(json.data.currentResult).split(',').map(n => parseInt(n.trim(), 10)).filter(n => !isNaN(n));
+            return {
+              period: String(json.data.currentIssue),
+              numbers: numbers,
+              zodiac: json.data.currentZodiac || ''
+            };
+          }
         }
-        
         return null;
       } catch (error) {
         console.error(`❌ 获取${type === 'hk' ? '香港' : '澳门'}上一期结果失败:`, error);
@@ -5855,8 +6161,8 @@ function evaluateAndAdjustAIConfig(type, latestAccuracy, options = {}) {
         const providerInfo = getCurrentProviderInfo();
         console.log('🔧 切换到AI提供商:', providerInfo.provider, '模型:', providerInfo.model);
         
-        // 创建一个简单的数字娱乐分析提示
-        const testPrompt = `请为以下历史数字娱乐数据进行分析与组合推荐：
+        // 创建一个简单的数字预测提示
+        const testPrompt = `请为以下历史数字数据进行预测分析：
 历史数据：[01, 05, 12, 18, 23, 30, 08], [03, 07, 11, 19, 24, 29, 12], [02, 08, 15, 20, 25, 31, 05]
 
 请分析这些数据并返回JSON格式的预测结果，格式如下：
@@ -5919,7 +6225,7 @@ function evaluateAndAdjustAIConfig(type, latestAccuracy, options = {}) {
                 '\n模型: ' + providerInfo.model + 
                 '\n响应长度: ' + aiResponse.length + '字符' +
                 '\n解析错误: ' + parseError.message +
-                '\n原始响应: ' + aiResponse.substring(0, 200) + '...');
+                '\n原始响应: ' + String(aiResponse).substring(0, 200) + '...');
           return false;
         }
       } catch (error) {
@@ -5988,14 +6294,14 @@ function evaluateAndAdjustAIConfig(type, latestAccuracy, options = {}) {
           await predictHKLottery();
           btn.textContent = '✅ 预测完成';
            setTimeout(() => {
-            btn.textContent = '🔮 手动分析香港';
+             btn.textContent = '🔮 手动预测香港';
              btn.disabled = false;
            }, 2000);
          } catch (error) {
-          console.error('手动分析香港失败:', error);
+           console.error('手动预测香港失败:', error);
            btn.textContent = '❌ 预测失败';
            setTimeout(() => {
-            btn.textContent = '🔮 手动分析香港';
+             btn.textContent = '🔮 手动预测香港';
              btn.disabled = false;
            }, 2000);
          }
@@ -6011,14 +6317,14 @@ function evaluateAndAdjustAIConfig(type, latestAccuracy, options = {}) {
           await predictMacauLottery();
           btn.textContent = '✅ 预测完成';
            setTimeout(() => {
-            btn.textContent = '🔮 手动分析澳门';
+             btn.textContent = '🔮 手动预测澳门';
              btn.disabled = false;
            }, 2000);
          } catch (error) {
-          console.error('手动分析澳门失败:', error);
+           console.error('手动预测澳门失败:', error);
            btn.textContent = '❌ 预测失败';
            setTimeout(() => {
-            btn.textContent = '🔮 手动分析澳门';
+             btn.textContent = '🔮 手动预测澳门';
              btn.disabled = false;
            }, 2000);
          }

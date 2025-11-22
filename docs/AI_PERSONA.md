@@ -272,7 +272,7 @@ def update_strategy_weights(strategy_performance, threshold=0.40):
 ⚠️ **风险评估**
 - 预测不确定度: [数值]
 - 历史准确率: [百分比]
-- 建议投注比例: [百分比]
+- 建议参考比例: [百分比]
 
 📋 **结论与建议**
 [基于数据的客观分析和建议]

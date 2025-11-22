@@ -50,7 +50,7 @@ plt.rcParams['axes.unicode_minus'] = False
 
 @dataclass
 class LotteryDraw:
-    """彩票开奖结果数据结构"""
+    """数字开奖结果数据结构"""
     period: str
     draw_date: datetime
     numbers: List[int]

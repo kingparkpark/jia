@@ -1212,59 +1212,6 @@
       </div>
     </div>
 
-    <!-- API密钥管理 -->
-    <div class="card">
-      <div class="row" style="justify-content:space-between;">
-        <div class="name">🔑 API密钥管理</div>
-        <div class="muted">管理您的OpenRouter API密钥</div>
-      </div>
-      
-      <div style="margin-top:16px;">
-        <!-- GitHub部署特别提示 -->
-        <div id="github-deploy-notice" style="display:none; background:#fef3c7; border:1px solid #f59e0b; padding:12px; border-radius:8px; margin-bottom:12px;">
-          <div style="color:#92400e; font-weight:600; margin-bottom:6px;">🌐 GitHub部署用户注意</div>
-          <div style="color:#92400e; font-size:14px; line-height:1.4;">
-            检测到您正在使用GitHub部署版本，请配置OpenRouter API密钥以使用AI预测功能。
-            <br><br>
-            <strong>快速配置方法：</strong><br>
-            1. 访问 <a href="https://openrouter.ai/keys" target="_blank" style="color:#1d4ed8;">OpenRouter获取密钥</a><br>
-            2. 复制API密钥 (格式: sk-or-v1-...)<br>
-            3. 在下方输入框粘贴并点击"添加"<br>
-            <strong>或使用URL参数：</strong> <code style="background:#f3f4f6; padding:2px 4px; border-radius:3px;">?api_key=你的密钥</code>
-          </div>
-          <button onclick="document.getElementById('github-deploy-notice').style.display='none'" style="margin-top:8px; padding:4px 8px; background:#f59e0b; color:white; border:none; border-radius:4px; cursor:pointer; font-size:12px;">知道了</button>
-        </div>
-
-        <div style="margin-bottom:12px;">
-          <label style="display:block; margin-bottom:6px; font-weight:500;">添加新API密钥</label>
-          <div style="display:flex; gap:8px;">
-            <input type="password" id="new-api-key-input" placeholder="sk-or-v1-..." style="flex:1; padding:10px; border:1px solid #e2e8f0; border-radius:8px;">
-            <button id="add-api-key-btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color:white; border:none; padding:10px 16px; border-radius:8px; cursor:pointer;">添加</button>
-          </div>
-        </div>
-        
-        <div style="margin-bottom:12px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <span style="font-weight:500;">当前密钥列表</span>
-            <div style="display:flex; gap:6px;">
-              <button id="clear-cooldown-btn" style="background:#f59e0b; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px;">清除冷却</button>
-              <button id="test-keys-btn" style="background:#10b981; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px;">测试</button>
-            </div>
-          </div>
-          <div id="api-keys-list" style="max-height:150px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:8px; padding:12px; background:#f8fafc;">
-            <div style="color:#64748b; text-align:center;">暂无API密钥，请添加新密钥</div>
-          </div>
-        </div>
-        
-        <div id="api-keys-status" style="padding:12px; background:#f1f5f9; border-radius:8px; font-size:14px;">
-          <div>🔑 默认密钥: 0个</div>
-          <div>🔧 自定义密钥: 0个</div>
-          <div>📊 总计密钥: 0个</div>
-          <div style="margin-top:8px; color:#64748b;">💡 提示: 请添加有效的OpenRouter API密钥以使用AI预测功能</div>
-        </div>
-      </div>
-    </div>
-
     <!-- 在线列表 -->
     <div class="card">
       <div class="row" style="justify-content:space-between;">
@@ -1783,7 +1730,7 @@
           try {
             const text = typeof html === 'string' ? html : '';
             
-            // 尝试匹配香港数字数据格式
+            // 尝试匹配香港六合彩数据格式
             const drawMatch = text.match(/(\d{4})\s+(\d{1,2})\s+(\d{1,2})\s+(\d{1,2})\s+(\d{1,2})\s+(\d{1,2})\s+(\d{1,2})/);
             
             if (drawMatch) {
@@ -2387,21 +2334,101 @@
     // —— AI预测功能 ——
     // 使用OpenRouter的moonshotai/kimi-k2:free模型
 
-    // 默认API密钥已移除，请使用自定义API密钥
-    const DEFAULT_OPENROUTER_KEYS = [];
-
     // OpenRouter配置 - 多个API密钥轮换使用
     const OPENROUTER_API_KEYS = (() => {
-      // 只使用customApiKeys中的密钥，确保与API密钥管理界面一致
-      const customKeys = JSON.parse(localStorage.getItem('customApiKeys') || '[]');
-      const defaultKeys = DEFAULT_OPENROUTER_KEYS;
-      let filteredKeys = [...defaultKeys, ...customKeys];
+      // ✅ 已更新为真实的OpenRouter API密钥 (2025年11月19日更新)
+const DEFAULT_OPENROUTER_KEYS = [
+  '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', // 新账号 - 已验证可用
+  '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',
+  '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',
+  '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',
+  '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',
+  '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',
+  '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'
+];
+      const rawList = [];
+      const pushItems = (val) => {
+        if (!val) return;
+        if (Array.isArray(val)) {
+          rawList.push(...val);
+          return;
+        }
+        if (typeof val === 'string') {
+          // 先尝试解析为 JSON 数组
+          try {
+            const parsed = JSON.parse(val);
+            if (Array.isArray(parsed)) {
+              rawList.push(...parsed);
+              return;
+            }
+          } catch {}
+          // 逐词扫描并拼接被空白切断的密钥
+          const tokens = val.split(/[\s,\n\r\t]+/).filter(Boolean);
+          for (let i = 0; i < tokens.length; i++) {
+            const t = tokens[i];
+            if (typeof t === 'string' && t.startsWith('sk-or-v1-')) {
+              let key = t;
+              let j = i + 1;
+              while (
+                j < tokens.length &&
+                !tokens[j].startsWith('sk-or-v1-') &&
+                /^[A-Za-z0-9]+$/.test(tokens[j]) &&
+                key.length < 130
+              ) {
+                key += tokens[j];
+                j++;
+              }
+              rawList.push(key);
+            }
+          }
+          return;
+        }
+      };
+      try {
+        pushItems(localStorage.getItem('OPENROUTER_API_KEYS'));
+        pushItems(localStorage.getItem('OPENROUTER_API_KEY_LIST'));
+        pushItems(localStorage.getItem('OPENROUTER_KEYS'));
+        pushItems(localStorage.getItem('OPENROUTER_KEYS_TEXT'));
+        const params = new URLSearchParams(window.location.search);
+        pushItems(params.get('or_keys') || params.get('openrouter_keys') || params.get('keys'));
+        const single =
+          localStorage.getItem('OPENROUTER_API_KEY') ||
+          (typeof window.OPENROUTER_API_KEY === 'string' ? window.OPENROUTER_API_KEY : '');
+        pushItems(single);
+        pushItems(window.OPENROUTER_API_KEYS);
+        pushItems(DEFAULT_OPENROUTER_KEYS);
+      } catch {}
+      let filteredKeys = Array.from(
+        new Set(
+          rawList
+            .filter((k) => typeof k === 'string')
+            .map((k) => k.trim())
+            .filter((k) => k.startsWith('sk-or-v1-'))
+        )
+      );
+      // 强制使用所有默认密钥，确保有足够的密钥可用
+      if (filteredKeys.length < DEFAULT_OPENROUTER_KEYS.length) {
+        console.log('🔑 检测到的密钥数量不足，强制使用所有默认密钥');
+        filteredKeys = DEFAULT_OPENROUTER_KEYS.slice();
+      }
       
       // 确保没有占位符密钥
       filteredKeys = filteredKeys.filter(key => 
         key && !key.includes('0000000000000000000000000000000000000000000000000000000000000000')
       );
       
+      // 如果过滤后密钥数量仍然不足，使用非占位符的默认密钥
+      if (filteredKeys.length < 6) {
+        console.log('🔑 过滤后密钥数量仍然不足，使用非占位符的默认密钥');
+        filteredKeys = DEFAULT_OPENROUTER_KEYS.filter(key => 
+          !key.includes('0000000000000000000000000000000000000000000000000000000000000000')
+        );
+      }
+      if (filteredKeys.length > 0) {
+        try {
+          localStorage.setItem('OPENROUTER_API_KEYS', JSON.stringify(filteredKeys));
+        } catch {}
+      }
       console.log('🔑 检测到的API密钥数量:', filteredKeys.length);
       filteredKeys.forEach((key, index) => {
         console.log(`🔑 密钥 ${index + 1}: ${key.substring(0, 15)}...`);
@@ -2409,81 +2436,37 @@
       return filteredKeys;
     })();
     const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-    const OPENROUTER_MODEL = 'mistralai/mistral-7b-instruct:free'; // 免费模型
+    const OPENROUTER_MODEL = 'mistralai/mistral-7b-instruct:free'; // 回到原模型
 
     // 密钥轮换索引
     let currentKeyIndex = 0;
     function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
     function nowMs() { return Date.now(); }
     function getKeyCooldowns() { try { const s = localStorage.getItem('OPENROUTER_KEY_COOLDOWNS'); return s ? JSON.parse(s) : {}; } catch { return {}; } }
-    function setKeyCooldown(key, untilMs) { 
-      const cd = getKeyCooldowns(); 
-      cd[key] = untilMs; 
-      const remainingTime = Math.ceil((untilMs - nowMs()) / 1000);
-      console.log(`🔑 设置密钥 ${key.substring(0, 15)}... 冷却 ${remainingTime} 秒`);
-      try { localStorage.setItem('OPENROUTER_KEY_COOLDOWNS', JSON.stringify(cd)); } catch {} 
-    }
+    function setKeyCooldown(key, untilMs) { const cd = getKeyCooldowns(); cd[key] = untilMs; try { localStorage.setItem('OPENROUTER_KEY_COOLDOWNS', JSON.stringify(cd)); } catch {} }
     function getGlobalCooldownUntil() { try { const v = localStorage.getItem('OPENROUTER_GLOBAL_COOLDOWN_UNTIL'); return v ? parseInt(v, 10) : 0; } catch { return 0; } }
-    function setGlobalCooldownUntil(untilMs) { 
-      const remainingTime = Math.ceil((untilMs - nowMs()) / 1000);
-      console.log(`🛑 设置全局冷却 ${remainingTime} 秒`);
-      try { localStorage.setItem('OPENROUTER_GLOBAL_COOLDOWN_UNTIL', String(untilMs)); } catch {} 
-    }
-    function isGlobalCooldownActive() { 
-      const u = getGlobalCooldownUntil(); 
-      const active = u && u > nowMs();
-      if (active) {
-        const remainingTime = Math.ceil((u - nowMs()) / 1000);
-        console.log(`🛑 全局冷却激活中，剩余 ${remainingTime} 秒`);
-      }
-      return active;
-    }
+    function setGlobalCooldownUntil(untilMs) { try { localStorage.setItem('OPENROUTER_GLOBAL_COOLDOWN_UNTIL', String(untilMs)); } catch {} }
+    function isGlobalCooldownActive() { const u = getGlobalCooldownUntil(); return u && u > nowMs(); }
     function addCooldownForStatus(key, status) { 
       let ms = 0; 
       if (status === 429) ms = 120000 + Math.floor(Math.random() * 30000); 
       else if (status === 402) ms = 600000; 
-      else if (status === 403) {
-        ms = 30000; // 403错误只冷却30秒，可能是临时权限问题
-        console.warn(`⚠️ API密钥 ${key.substring(0, 15)}... 返回403权限错误，临时冷却30秒`);
-      }
-      // 401错误不设置冷却，直接标记为无效密钥
-      else if (status === 401) {
-        console.warn(`❌ API密钥 ${key.substring(0, 15)}... 返回401错误，密钥无效或已过期`);
-        // 不设置冷却，让系统继续尝试其他密钥
-        return;
+      else if (status === 401 || status === 403) {
+        ms = 60000; // 减少冷却时间到1分钟
+        // 对于401错误，提供准确的提示信息
+        console.warn(`⚠️ API密钥 ${key.substring(0, 15)}... 返回401错误。这通常意味着:`, [
+          '1. 密钥无效或已过期',
+          '2. 密钥格式不正确（应为 sk-or-v1- 后跟 64 位十六进制）',
+          '3. 密钥额度已用完',
+          '4. 密钥被禁用或删除'
+        ]);
       }
       if (ms > 0) setKeyCooldown(key, nowMs() + ms); 
     }
-    function isKeyAvailable(key) { 
-      const cd = getKeyCooldowns(); 
-      const available = !cd[key] || cd[key] <= nowMs();
-      if (!available) {
-        const remainingTime = Math.ceil((cd[key] - nowMs()) / 1000);
-        console.log(`🔑 密钥 ${key.substring(0, 15)}... 仍在冷却中，剩余 ${remainingTime} 秒`);
-      }
-      return available;
-    }
-    function getAvailableKeysList() { 
-      const availableKeys = OPENROUTER_API_KEYS.filter(k => isKeyAvailable(k));
-      console.log(`🔑 当前可用密钥数量: ${availableKeys.length}/${OPENROUTER_API_KEYS.length}`);
-      return availableKeys;
-    }
-    function rememberLastGood(key, model) { 
-      console.log(`🎯 记录成功密钥: ${key.substring(0, 15)}... 模型: ${model}`);
-      try { localStorage.setItem('OPENROUTER_LAST_GOOD', JSON.stringify({ key, model, t: nowMs() })); } catch {} 
-    }
-    function getLastGood() { 
-      try { 
-        const s = localStorage.getItem('OPENROUTER_LAST_GOOD'); 
-        const lastGood = s ? JSON.parse(s) : null;
-        if (lastGood) {
-          console.log(`🎯 上次成功密钥: ${lastGood.key.substring(0, 15)}... 模型: ${lastGood.model}`);
-        } else {
-          console.log(`🎯 没有上次成功的密钥记录`);
-        }
-        return lastGood;
-      } catch { return null; } 
-    }
+    function isKeyAvailable(key) { const cd = getKeyCooldowns(); return !cd[key] || cd[key] <= nowMs(); }
+    function getAvailableKeysList() { return OPENROUTER_API_KEYS.filter(k => isKeyAvailable(k)); }
+    function rememberLastGood(key, model) { try { localStorage.setItem('OPENROUTER_LAST_GOOD', JSON.stringify({ key, model, t: nowMs() })); } catch {} }
+    function getLastGood() { try { const s = localStorage.getItem('OPENROUTER_LAST_GOOD'); return s ? JSON.parse(s) : null; } catch { return null; } }
     function clearAllKeyCooldowns() { try { localStorage.removeItem('OPENROUTER_KEY_COOLDOWNS'); console.log('🔑 已清除所有密钥冷却状态'); } catch {} }
     function clearAllLocalStorage() { 
       try { 
@@ -2495,23 +2478,10 @@
       } catch {} 
     }
     
-    // 清除全局冷却功能
-    function clearGlobalCooldown() {
-      try {
-        localStorage.removeItem('OPENROUTER_GLOBAL_COOLDOWN_UNTIL');
-        console.log('🛑 已清除全局冷却状态');
-        alert('全局冷却已清除，可以重新尝试API调用');
-      } catch (e) {
-        console.error('清除全局冷却失败:', e);
-        alert('清除全局冷却失败');
-      }
-    }
-    
     // 页面加载时自动清除冷却状态，但保留API密钥配置
-    // 清除所有密钥冷却状态，让密钥可以立即重试
-    clearAllKeyCooldowns();
+    // clearAllLocalStorage();
     
-    const ENABLE_KEY_PRECHECK = false; // 禁用密钥预检查，避免检测300多个模型
+    const ENABLE_KEY_PRECHECK = true;
     if (ENABLE_KEY_PRECHECK) {
       setTimeout(() => {
         console.log('🔑 开始验证所有API密钥...');
@@ -2566,36 +2536,28 @@
       }
 
       try {
-        // 使用简单的请求验证密钥，不获取模型列表
-        const response = await fetch('http://localhost:3003/api/openrouter/chat/completions', {
-          method: 'POST',
+        // 使用代理服务器验证密钥
+        const response = await fetch('http://localhost:3001/api/openrouter/models', {
+          method: 'GET',
           headers: {
             'Authorization': `Bearer ${key}`,
-            'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Cache-Control': 'no-cache'
-          },
-          body: JSON.stringify({
-            model: 'mistralai/mistral-7b-instruct:free',
-            messages: [{ role: 'user', content: 'test' }],
-            max_tokens: 1
-          })
-        });
-        
-        if (response.ok || response.status === 401 || response.status === 403 || response.status === 402 || response.status === 429) {
-          // 任何这些状态码都表示密钥格式正确，只是可能额度或权限问题
-          const isValid = response.ok;
-          console.log(`${isValid ? '✅' : '⚠️'} API密钥 ${key.substring(0, 15)}... ${isValid ? '验证成功' : '验证通过但有限制'} (${response.status})`);
-          
-          // 只有在真正需要冷却时才设置冷却（402额度不足、429限流）
-          if (response.status === 402 || response.status === 429) {
-            addCooldownForStatus(key, response.status);
           }
-          
-          return { valid: true, status: response.status };
+        });
+        let data = null;
+        try {
+          data = await response.json();
+        } catch (_) {
+          data = null;
+        }
+        if (response.ok) {
+          console.log(`✅ API密钥 ${key.substring(0, 15)}... 验证成功，可用模型数量:`, data?.data?.length || 0);
+          return { valid: true, data, status: response.status };
         } else {
-          console.log(`❌ API密钥 ${key.substring(0, 15)}... 验证失败 (${response.status})`);
-          return { valid: false, error: `HTTP ${response.status}`, status: response.status };
+          const msg = data && (data.error?.message || data.error) ? (data.error?.message || data.error) : (data ? JSON.stringify(data) : `HTTP ${response.status}`);
+          console.log(`❌ API密钥 ${key.substring(0, 15)}... 验证失败 (${response.status}):`, msg);
+          return { valid: false, error: msg, status: response.status };
         }
       } catch (error) {
         console.log(`❌ API密钥 ${key.substring(0, 15)}... 验证异常:`, error.message);
@@ -2642,11 +2604,18 @@
       return results;
     }
     
-    // 免费模型列表 - 只保留最稳定的免费模型
+    // 免费模型列表 - 2025年最新确认可用的免费模型
     const FREE_MODELS = [
       'mistralai/mistral-7b-instruct:free',         // ✅ 已验证可用
+      'meta-llama/llama-3.2-3b-instruct:free',      // ⚡ 有时限流
+      'z-ai/glm-4.5-air:free',                      // 🌟 GLM 4.5 Air - 最新免费模型
+      'deepseek/deepseek-r1:free',                  // ⚡ DeepSeek推理模型
       'deepseek/deepseek-chat-v3.1:free',           // 🚀 DeepSeek最新免费版
-      'z-ai/glm-4.5-air:free'                      // 🌟 GLM 4.5 Air - 最新免费模型
+      'google/gemini-2.0-flash-exp:free',           // ⚡ Google最新免费模型
+      'meta-llama/llama-3.3-8b-instruct:free',      // 🎯 Llama 3.3 8B
+      'mistralai/mistral-nemo:free',                 // 🏆 高性能免费模型
+      'qwen/qwen-2.5-72b-instruct:free',            // 🔥 720亿参数免费版
+      'google/gemma-3-12b-it:free'                  // 💎 Google Gemma 3
     ];
     
     // API密钥列表 - 您提供的多个密钥
@@ -2704,39 +2673,13 @@
       
       if (!ch) {
         console.log('❌ 没有找到有效的choice');
-        // 尝试直接从data中提取内容
-        if (typeof data.content === 'string') {
-          console.log('✅ 从data.content直接提取内容');
-          return data.content;
-        }
-        if (typeof data.text === 'string') {
-          console.log('✅ 从data.text直接提取内容');
-          return data.text;
-        }
         return '';
       }
       
       // 尝试多种可能的响应格式
       if (ch && ch.message && typeof ch.message.content === 'string') {
-        const content = ch.message.content.trim();
-        console.log('✅ 找到message.content格式:', content.substring(0, 100));
-        
-        // 检查是否是空响应或异常响应
-        if (content === '[]' || content === '{}' || content.length === 0) {
-          console.warn('⚠️ 检测到空响应或异常响应:', content);
-          
-          // 尝试从其他字段获取内容
-          if (ch.message.reasoning_content && typeof ch.message.reasoning_content === 'string') {
-            console.log('✅ 使用reasoning_content作为备用内容');
-            return ch.message.reasoning_content;
-          }
-          
-          // 如果是空响应，生成一个默认的错误响应
-          console.log('❌ 无法从message.content获取有效内容，返回错误信息');
-          return '{"error": "API返回空响应，请检查API密钥是否有效或稍后重试"}';
-        }
-        
-        return content;
+        console.log('✅ 找到message.content格式');
+        return ch.message.content;
       }
       
       // OpenRouter可能使用reasoning_content字段
@@ -2790,15 +2733,12 @@
       
       console.log('❌ 尝试了所有格式都无法提取内容');
       console.log('📊 完整数据:', JSON.stringify(data, null, 2));
-      
-      // 返回一个错误信息而不是空字符串
-      return '{"error": "无法从API响应中提取有效内容，请检查API响应格式"}';
+      return '';
     }
 
     // 获取下一个可用的API密钥
     function getNextApiKey() {
       const key = OPENROUTER_API_KEYS[currentKeyIndex];
-      console.log(`🔑 获取下一个密钥: ${key.substring(0, 15)}... (索引: ${currentKeyIndex}/${OPENROUTER_API_KEYS.length})`);
       currentKeyIndex = (currentKeyIndex + 1) % OPENROUTER_API_KEYS.length;
       return key;
     }
@@ -2822,8 +2762,6 @@
       let authErrorCount = 0;
       let totalAttempts = 0;
       // 使用所有密钥，而不仅仅是可用密钥
-      // 清除所有401错误的冷却状态，让密钥可以重试
-      clearAllKeyCooldowns();
       let attemptKeys = OPENROUTER_API_KEYS.slice();
       if (ENABLE_KEY_PRECHECK) {
         try {
@@ -2870,7 +2808,7 @@
           };
 
           // 使用代理服务器发送请求
-          console.log(`📡 准备发送请求到代理服务器: http://localhost:3003/api/openrouter/chat/completions`);
+          console.log(`📡 准备发送请求到代理服务器: http://localhost:3001/api/openrouter/chat/completions`);
           console.log(`📡 请求体:`, JSON.stringify({
             apiKey: currentApiKey.substring(0, 15) + '...',
             model: model,
@@ -2879,7 +2817,7 @@
             temperature: requestBody.temperature
           }, null, 2));
           
-          const response = await fetch('http://localhost:3003/api/openrouter/chat/completions', {
+          const response = await fetch('http://localhost:3001/api/openrouter/chat/completions', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -2899,23 +2837,12 @@
           if (!response.ok) {
             let errorData = null;
             let errorMessage = '';
-            let responseText = '';
             try {
-              responseText = await response.text();
-              console.log(`📡 完整响应文本: ${responseText}`);
-              errorData = JSON.parse(responseText);
+              errorData = await response.json();
               errorMessage = errorData?.error?.message || errorData?.error || JSON.stringify(errorData);
             } catch (e) {
-              errorMessage = responseText || '未知错误';
+              errorMessage = await response.text();
             }
-            
-            // 详细记录错误信息
-            console.error(`❌ API密钥 ${currentApiKey.substring(0, 15)}... 失败详情:`);
-            console.error(`   - 状态码: ${response.status}`);
-            console.error(`   - 状态文本: ${response.statusText}`);
-            console.error(`   - 错误信息: ${errorMessage}`);
-            console.error(`   - 响应类型: ${response.headers.get('content-type')}`);
-            console.error(`   - 完整响应: ${responseText}`);
             
             lastError = new Error(`OpenRouter请求失败: ${response.status} ${errorMessage}`);
             console.warn(`❌ API密钥 ${currentApiKey.substring(0, 15)}... 失败 (${response.status}):`, errorMessage);
@@ -2943,78 +2870,28 @@
             continue;
           }
 
-          const responseText = await response.text();
-          console.log(`📡 API密钥 ${currentApiKey.substring(0, 15)}... 成功响应完整文本: ${responseText}`);
-          console.log(`✅ API密钥 ${currentApiKey.substring(0, 15)}... 请求成功，状态码: ${response.status}`);
-          
-          // 检查响应是否为空或异常
-          if (!responseText || responseText.trim() === '') {
-            console.error(`❌ API密钥 ${currentApiKey.substring(0, 15)}... 返回空响应`);
-            throw new Error('API返回空响应，可能是API密钥无效或模型不可用');
-          }
-          
-          // 检查是否是简单的空响应
-          if (responseText === '[]' || responseText === '{}') {
-            console.error(`❌ API密钥 ${currentApiKey.substring(0, 15)}... 返回异常响应: ${responseText}`);
-            throw new Error('API返回异常响应，可能是API密钥无效或模型不可用');
-          }
-          
-          let data;
-          try {
-            data = JSON.parse(responseText);
-            console.log(`✅ 成功解析JSON响应数据`);
-          } catch (e) {
-            console.error(`❌ 解析成功响应JSON失败:`, e.message);
-            console.error(`❌ 响应文本内容: ${responseText}`);
-            throw new Error(`解析响应JSON失败: ${e.message}`);
-          }
-          
+          const data = await response.json();
           console.log(`✅ API密钥 ${currentApiKey.substring(0, 15)}... 响应成功，停止轮换其他密钥`);
           console.log(`📊 完整响应数据:`, JSON.stringify(data, null, 2));
           console.log(`📊 响应数据类型:`, typeof data);
           console.log(`📊 响应数据键:`, data ? Object.keys(data) : 'null');
           console.log(`📊 choices字段:`, data && data.choices ? `存在，长度${data.choices.length}` : '不存在');
-          console.log(`📊 choices[0]字段:`, data && data.choices && data.choices[0] ? Object.keys(data.choices[0]) : '不存在');
-          console.log(`📊 message字段:`, data && data.choices && data.choices[0] && data.choices[0].message ? Object.keys(data.choices[0].message) : '不存在');
-          
           rememberLastGood(currentApiKey, model);
 
           // 提取内容
           const content = extractAIContent(data);
           console.log(`📝 提取的内容:`, content);
           
-          // 检查是否是错误响应
-          if (content && content.includes('API返回空响应')) {
-            console.error(`❌ API密钥 ${currentApiKey.substring(0, 15)}... 返回错误响应: ${content}`);
-            throw new Error('API返回空响应，可能是API密钥无效或模型不可用');
+          // 成功后立即返回，不继续尝试其他密钥
+          if (content) {
+            return data;
           }
-          
-          // 检查内容是否为空或只包含空白字符
-          if (!content || typeof content !== 'string' || content.trim() === '') {
-            console.error(`❌ API密钥 ${currentApiKey.substring(0, 15)}... 返回空内容或无效内容`);
-            console.error(`❌ 内容类型: ${typeof content}, 内容长度: ${content ? content.length : 'null'}, 内容: "${content}"`);
-            
-            // 检查原始响应数据中的choices字段
-            if (data && data.choices && data.choices.length > 0) {
-              const choice = data.choices[0];
-              console.error(`❌ 原始choices数据:`, JSON.stringify(choice, null, 2));
-              
-              if (choice.message && choice.message.content !== undefined) {
-                console.error(`❌ message.content值: "${choice.message.content}" (长度: ${choice.message.content.length})`);
-                
-                // 如果content为空或只有空白字符，视为无效响应
-                if (choice.message.content.trim() === '') {
-                  console.error(`❌ 检测到空白内容，将此API密钥标记为无效`);
-                  throw new Error('API返回空白内容，可能是API密钥无效或模型不可用');
-                }
-              }
-            }
-            
-            throw new Error('OpenRouter返回内容为空，可能是API密钥无效或模型不可用');
+          console.log('📝 OpenRouter提取的内容:', content);
+
+          if (!content || content.trim() === '') {
+            throw new Error('OpenRouter返回内容为空');
           }
-          
-          // 成功后返回提取到的字符串内容，而不是原始数据对象
-          console.log('✅ 返回提取的内容字符串');
+
           return content;
 
         } catch (error) {
@@ -3028,141 +2905,29 @@
       }
 
       // 所有密钥都失败了
-      console.error(`❌ 所有API密钥都已用完，总尝试次数: ${totalAttempts}, 认证错误次数: ${authErrorCount}`);
-      
-      // 只有当所有密钥都因为认证问题（401/403）失败时，才触发全局冷却
-      if (authErrorCount > 0 && authErrorCount === totalAttempts) {
-        console.error('🔥 所有API密钥认证失败，触发全局冷却10分钟');
-        setGlobalCooldownUntil(nowMs() + 10 * 60 * 1000);
-        throw lastError || new Error('所有API密钥认证失败，请检查API密钥有效性后重试');
-      } else {
-        // 如果不是所有密钥都是认证失败，不触发全局冷却
-        console.error('❌ API密钥调用失败，但未触发全局冷却（非全部认证错误）');
-        throw lastError || new Error('所有API密钥都无法访问，请稍后再试');
-      }
-    }
-
-    async function callOpenRouterAIDirect(prompt, model = OPENROUTER_MODEL) {
-      console.log(`🤖 直连OpenRouter模型: ${model}...`);
-      console.log(`🔑 可用API密钥总数: ${OPENROUTER_API_KEYS.length}`);
-      if (!Array.isArray(OPENROUTER_API_KEYS) || OPENROUTER_API_KEYS.length === 0) {
-        throw new Error('未配置OpenRouter密钥');
-      }
-      if (isGlobalCooldownActive()) {
-        throw new Error('OpenRouter全局冷却中，稍后再试');
-      }
-      if (getAvailableKeysList().length === 0) {
-        throw new Error('所有密钥处于冷却中，稍后再试');
-      }
-      let lastError = null;
-      let authErrorCount = 0;
-      let totalAttempts = 0;
-      clearAllKeyCooldowns();
-      let attemptKeys = OPENROUTER_API_KEYS.slice();
-      const lastGood = getLastGood();
-      if (lastGood && typeof lastGood.key === 'string' && attemptKeys.includes(lastGood.key)) {
-        attemptKeys = [lastGood.key].concat(attemptKeys.filter(k => k !== lastGood.key));
-      }
-      for (let keyAttempt = 0; keyAttempt < attemptKeys.length; keyAttempt++) {
-        const currentApiKey = attemptKeys[keyAttempt];
-        console.log(`🔑 使用API密钥(直连): ${currentApiKey.substring(0, 15)}... (尝试 ${keyAttempt + 1}/${OPENROUTER_API_KEYS.length})`);
-        try {
-          const requestBody = {
-            model: model,
-            messages: [
-              { role: 'system', content: '你是一个数字预测分析助手。只返回JSON格式的预测结果，不包含任何解释、分析过程或额外文字。用户输入历史数据，你返回预测结果。' },
-              { role: 'user', content: prompt }
-            ],
-            max_tokens: 300,
-            temperature: 0.7,
-            stream: false
-          };
-          console.log(`📡 准备直连请求: https://openrouter.ai/api/v1/chat/completions`);
-          const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${currentApiKey}`
-            },
-            body: JSON.stringify(requestBody)
-          });
-          console.log(`📡 直连响应状态:`, response.status);
-          if (!response.ok) {
-            let responseText = '';
-            try { responseText = await response.text(); } catch {}
-            lastError = new Error(`OpenRouter直连失败: ${response.status} ${response.statusText} ${responseText}`);
-            totalAttempts += 1;
-            if (response.status === 401 || response.status === 403) authErrorCount += 1;
-            addCooldownForStatus(currentApiKey, response.status);
-            await sleep(response.status === 429 ? 1000 : 300);
-            continue;
-          }
-          const data = await response.json();
-          rememberLastGood(currentApiKey, model);
-          const content = extractAIContent(data);
-          if (!content || typeof content !== 'string' || content.trim() === '') {
-            throw new Error('OpenRouter返回内容为空，可能是API密钥无效或模型不可用');
-          }
-          console.log('✅ 返回提取的内容字符串(直连)');
-          return content;
-        } catch (error) {
-          lastError = error;
-          console.warn(`❌ 直连调用异常:`, error.message);
-          await sleep(300);
-          continue;
-        }
-      }
-      console.error(`❌ 所有API密钥直连均失败，总尝试次数: ${totalAttempts}, 认证错误次数: ${authErrorCount}`);
       if (authErrorCount > 0 && authErrorCount === totalAttempts) {
         setGlobalCooldownUntil(nowMs() + 10 * 60 * 1000);
-        throw lastError || new Error('所有API密钥认证失败，请检查API密钥有效性后重试');
-      } else {
-        throw lastError || new Error('所有API密钥都无法访问，请稍后再试');
       }
+      console.error('❌ 所有API密钥都已用完');
+      throw lastError || new Error('所有API密钥都无法访问，请稍后再试');
     }
 
     // 智能免费模型切换函数
     async function callAIWithFreeModelFallback(prompt) {
-      console.log(`🚀 开始智能免费模型切换，提示词长度: ${prompt.length}`);
-      console.log(`🔑 可用密钥总数: ${OPENROUTER_API_KEYS.length}`);
-      console.log(`🤖 免费模型列表: ${FREE_MODELS.join(', ')}`);
-      console.log(`🎯 当前主模型: ${OPENROUTER_MODEL}`);
-      let proxyAvailable = true;
-      try {
-        const healthResp = await fetch('http://localhost:3003/api/test/auth', { method: 'GET' });
-        if (!healthResp.ok) {
-          console.warn(`⚠️ 代理健康检查失败: ${healthResp.status} ${healthResp.statusText}`);
-          proxyAvailable = false;
-        } else {
-          console.log('✅ 代理服务健康检查通过');
-          proxyAvailable = true;
-        }
-      } catch (e) {
-        console.warn('⚠️ 代理不可用，启用OpenRouter直连回退', e.message);
-        proxyAvailable = false;
-      }
-      
       // 若全局冷却中，直接停止
       if (isGlobalCooldownActive()) {
-        const cooldownEnd = getGlobalCooldownUntil();
-        const remainingTime = Math.max(0, cooldownEnd - nowMs());
-        console.log(`⏰ 全局冷却中，剩余时间: ${Math.ceil(remainingTime / 1000)}秒`);
         throw new Error('OpenRouter全局冷却中，稍后再试');
       }
       
       // 跟踪鉴权错误次数和总尝试次数
       let authErrorCount = 0;
       let totalAttempts = 0;
-      let lastErrorMsg = '';
       
       // 尝试当前配置的模型
       try {
-        return proxyAvailable
-          ? await callOpenRouterAI(prompt, OPENROUTER_MODEL)
-          : await callOpenRouterAIDirect(prompt, OPENROUTER_MODEL);
+        return await callOpenRouterAI(prompt, OPENROUTER_MODEL);
       } catch (error) {
         const msg = String(error && error.message || '');
-        lastErrorMsg = msg;
         totalAttempts += 1;
         
         // 记录鉴权错误但不立即设置全局冷却
@@ -3187,42 +2952,22 @@
           ? [preferred].concat(FREE_MODELS.filter(m => m !== preferred && m !== OPENROUTER_MODEL))
           : FREE_MODELS.filter(m => m !== OPENROUTER_MODEL);
           
-        console.log(`🔄 备用模型列表: ${modelList.join(', ')}`);
-        console.log(`🔄 上次工作模型: ${preferred || '无'}`);
-        console.log(`🔄 开始尝试 ${modelList.length} 个备用模型...`);
-        
-        for (let i = 0; i < modelList.length; i++) {
-          const model = modelList[i];
+        for (const model of modelList) {
           if (model === OPENROUTER_MODEL) continue; // 跳过已经尝试过的主模型
 
-          console.log(`🔄 [${i + 1}/${modelList.length}] 尝试免费模型: ${model}`);
-          console.log(`🔄 模型 ${model} 尝试前，总尝试次数: ${totalAttempts}, 鉴权错误次数: ${authErrorCount}`);
-          
           try {
+            console.log(`🔄 尝试免费模型: ${model}`);
             // 对于速率限制，增加基础等待时间
             const baseWaitTime = 300 + (totalAttempts * 200); // 递增等待时间
-            console.log(`⏰ 等待 ${baseWaitTime}ms 后尝试模型 ${model}`);
             await sleep(baseWaitTime);
-            
-          console.log(`🚀 开始调用模型 ${model}`);
-          const result = proxyAvailable
-            ? await callOpenRouterAI(prompt, model)
-            : await callOpenRouterAIDirect(prompt, model);
-          console.log(`✅ 免费模型 ${model} 可用！成功获取响应`);
-            console.log(`✅ 模型切换成功，总尝试次数: ${totalAttempts + 1}`);
+            const result = await callOpenRouterAI(prompt, model);
+            console.log(`✅ 免费模型 ${model} 可用！`);
             // 可选：保存可用的模型到本地存储
             localStorage.setItem('LAST_WORKING_FREE_MODEL', model);
-            console.log(`💾 保存可用模型: ${model}`);
             return result;
           } catch (modelError) {
             totalAttempts += 1;
             const modelMsg = String(modelError && modelError.message || '');
-            lastErrorMsg = modelMsg || lastErrorMsg;
-            
-            console.error(`❌ 模型 ${model} 调用失败详情:`);
-            console.error(`   - 错误消息: ${modelMsg}`);
-            console.error(`   - 总尝试次数: ${totalAttempts}`);
-            console.error(`   - 鉴权错误次数: ${authErrorCount}`);
             
             // 记录鉴权错误但不立即设置全局冷却
             if (modelMsg.includes('401') || modelMsg.includes('Unauthorized') || modelMsg.includes('User not found')) {
@@ -3232,13 +2977,10 @@
               console.warn(`⏰ 模型 ${model} 速率限制，继续尝试下一个模型...`);
             } else if (modelMsg.includes('OpenRouter全局冷却中')) {
               // 只有全局冷却错误才立即停止
-              console.log(`🛑 全局冷却触发，停止尝试其他模型`);
               throw new Error('OpenRouter全局冷却中，稍后再试');
-            } else {
-              console.warn(`❌ 模型 ${model} 其他错误: ${modelMsg}`);
             }
             
-            console.warn(`❌ 模型 ${model} 不可用，继续尝试下一个...`);
+            console.warn(`❌ 模型 ${model} 不可用:`, modelError.message);
             continue;
           }
         }
@@ -3250,16 +2992,11 @@
           throw new Error('所有API密钥均鉴权失败，已进入全局冷却');
         }
 
-        // 检查具体的错误类型，提供准确的错误信息
-        if (authErrorCount === totalAttempts && totalAttempts > 0) {
-          // 所有尝试都是鉴权错误
-          throw new Error(`所有API密钥均鉴权失败 (${totalAttempts}次尝试)，请检查密钥是否有效`);
-        } else if (authErrorCount > 0) {
-          // 部分鉴权错误，部分可能是其他错误
-          throw new Error(`部分API密钥鉴权失败 (${authErrorCount}/${totalAttempts})，其他可能遇到速率限制或网络问题；最后错误: ${lastErrorMsg}`);
+        // 如果所有尝试都失败了，但不是全部因为鉴权错误（可能是速率限制）
+        if (authErrorCount > 0) {
+          throw new Error(`部分API密钥鉴权失败，其他可能遇到速率限制。请稍后再试`);
         } else {
-          // 没有鉴权错误，可能是速率限制、网络问题或其他错误
-          throw new Error(`所有免费模型调用失败 (${totalAttempts}次尝试)，可能是速率限制、网络问题或服务器错误；最后错误: ${lastErrorMsg}`);
+          throw new Error('所有免费模型都遇到速率限制，请稍后再试或添加付费额度');
         }
       }
     }
@@ -3509,12 +3246,12 @@
       const year = now.getFullYear();
       
       if (type === 'hk') {
-        // 香港数字：基于实际历史数据校准
+        // 香港六合彩：基于实际历史数据校准
         // 根据marksixlottery.net历史数据，2025年11月8日实际期号为119期
         const baseDate = new Date('2025-11-08');
         const basePeriod = 119;
         
-        // 香港数字每周开奖3次（周二、四、六）
+        // 香港六合彩每周开奖3次（周二、四、六）
         const daysSinceBase = Math.floor((now - baseDate) / (1000 * 60 * 60 * 24));
         const weeksSinceBase = Math.floor(daysSinceBase / 7);
         const remainingDays = daysSinceBase % 7;
@@ -4478,10 +4215,10 @@ function evaluateAndAdjustAIConfig(type, latestAccuracy, options = {}) {
       }
     }
     
-    // 获取澳门最近开奖记录用于分析开奖频率
+    // 获取澳门数字最近开奖记录用于分析开奖频率
     async function fetchMacauRecentResults() {
       try {
-        console.log('正在获取澳门最近开奖记录...');
+        console.log('正在获取澳门数字最近开奖记录...');
         
         const recentResults = [];
         const apiUrls = [
@@ -4513,7 +4250,7 @@ function evaluateAndAdjustAIConfig(type, latestAccuracy, options = {}) {
         
         // 分析开奖频率
         if (recentResults.length >= 2) {
-          console.log('澳门最近开奖记录分析:');
+          console.log('澳门数字最近开奖记录分析:');
           recentResults.forEach(result => {
             console.log(`期号: ${result.period}, 开奖日期: ${result.drawDate}`);
           });
@@ -4526,13 +4263,13 @@ function evaluateAndAdjustAIConfig(type, latestAccuracy, options = {}) {
             console.log(`最近两期开奖间隔: ${dayDiff} 天`);
           }
         } else {
-          console.log('警告: 未能获取到澳门最近开奖记录，系统将使用模拟数据');
-          console.log('建议: 请提供实际的澳门开奖API或历史开奖数据');
+          console.log('警告: 未能获取到澳门数字最近开奖记录，系统将使用模拟数据');
+          console.log('建议: 请提供实际的澳门数字开奖API或历史开奖数据');
         }
         
         return recentResults;
       } catch (error) {
-        console.error('获取澳门最近开奖记录失败:', error);
+        console.error('获取澳门数字最近开奖记录失败:', error);
         return [];
       }
     }
@@ -4623,7 +4360,7 @@ function evaluateAndAdjustAIConfig(type, latestAccuracy, options = {}) {
         const dateSeed = new Date().getDate() + new Date().getMonth() * 31;
         
         // 统一使用AI预测
-        prediction = await generateAIPrediction(currentGame, gameType);
+        prediction = await generateAIPrediction(currentGame);
         
         // 验证和修正预测结果
         prediction = validateAndFixPrediction(prediction, gameSelect.value, dateSeed);
@@ -4646,69 +4383,65 @@ function evaluateAndAdjustAIConfig(type, latestAccuracy, options = {}) {
     }
     
     // AI预测算法
-    async function generateAIPrediction(currentGame, type = 'hk') {
+    async function generateAIPrediction(currentGame) {
     console.log('🎯 AI预测算法开始 - generateAIPrediction');
     console.log('🎮 当前游戏:', currentGame);
-    console.log('📍 彩种类型:', type);
-
-    // 获取对应彩种的历史开奖数据
-    console.log(`📊 开始获取${type === 'hk' ? '香港' : '澳门'}历史开奖数据...`);
-    const historicalData = await fetchHistoricalData(type, 30); // 获取最近30期数据
-    console.log('✅ 成功获取历史数据，共', historicalData.length, '期');
-
-    // 分析历史数据模式
-    const patterns = analyzeHistoricalPatterns(historicalData);
-    console.log('📈 历史数据分析完成:', {
-      hotNumbers: patterns.hotNumbers,
-      coldNumbers: patterns.coldNumbers,
-      oddEvenRatio: patterns.oddEvenRatio,
-      sumTrend: patterns.sumTrend
-    });
-
+    
     // 构建AI提示词
     const cfg = getAIConfig();
     console.log('⚙️ 使用AI配置:', cfg);
     
-    const gameTypeText = type === 'hk' ? '香港' : '澳门';
+    const prompt = `你是香港六合彩资深分析师兼统计概率学专家，精通六合彩所有规则和高级统计分析方法。你必须基于真实历史开奖数据进行科学预测。
 
-    // 简化历史数据，减少提示词长度
-    const recentData = historicalData.slice(-10).map(d => ({
-      period: d.period,
-      numbers: d.numbers.slice(0, 6), // 只取前6个号码减少长度
-      zodiac: d.zodiac
-    }));
+请运用以下专业算法进行深度分析，并按不少于 ${cfg.reasoningDepth} 步进行严谨推理：
+1. **马尔可夫链分析** - 分析号码状态转移概率
+2. **贝叶斯概率模型** - 基于先验概率更新后验概率
+3. **时间序列分析** - 识别号码出现的周期性和趋势性
+4. **机器学习聚类算法** - 发现号码组合的模式特征
+5. **神经网络模式识别** - 识别复杂的非线性关系
+6. **蒙特卡洛模拟** - 通过大量随机模拟评估概率分布
+7. **遗传算法优化** - 优化号码组合的选择策略
+8. **支持向量机分类** - 基于历史特征进行分类预测
 
-    const prompt = `作为数据分析师，基于${gameTypeText}历史数据预测下一期7个号码(1-49)和生肖。
+必须基于真实历史数据进行以下统计分析：
+- **频率分布分析** - 每个号码的历史出现频次
+- **遗漏值分析** - 号码未出现的期数和遗漏模式
+- **相关性分析** - 号码之间的相关性和独立性
+- **周期性分析** - 号码出现的时间周期规律
+- **奇偶比例分析** - 历史开奖中的奇偶数分布
+- **大小比例分析** - 小数(1-24)与大数(25-49)的比例
+- **连号分析** - 连续号码出现的概率和模式
+- **生肖分析** - 十二生肖对应号码的历史表现
 
-历史数据(最近10期):
-${recentData.map((d, i) => `${i+1}. ${d.period}: [${d.numbers.join(', ')}] ${d.zodiac}`).join('\n')}
+分析要求：
+1. 必须引用具体的历史数据和统计结果
+2. 使用科学的概率计算方法
+3. 考虑多种因素的综合影响
+4. 提供详细的推理过程和依据
+5. 给出置信度评估和风险提示
 
-统计特征:
-- 热号: ${patterns.hotNumbers.slice(0, 5).join(', ')}
-- 冷号: ${patterns.coldNumbers.slice(0, 5).join(', ')}
-- 奇偶比: ${patterns.oddEvenRatio.odd}:${patterns.oddEvenRatio.even}
-- 和值范围: ${patterns.sumTrend.min}-${patterns.sumTrend.max}
+请严格按照以下JSON格式返回预测结果，不要包含任何其他文字或说明：
 
-使用算法: 马尔可夫链、贝叶斯、时间序列、聚类、神经网络、蒙特卡洛、遗传算法、SVM
-
-返回JSON:
 {
   "numbers": [1, 15, 23, 28, 35, 42, 49],
   "zodiac": "龙",
   "confidence": "75%",
+  "analysis": "基于统计分析的简要说明",
   "reasoning": [
-    "📈 马尔可夫链: 具体分析结果",
-    "🧮 贝叶斯: 具体分析结果",
-    "🔍 时间序列: 具体分析结果",
-    "🤖 聚类分析: 具体分析结果",
-    "🧠 神经网络: 具体分析结果",
-    "🎲 蒙特卡洛: 具体分析结果",
-    "🧬 遗传算法: 具体分析结果",
-    "📊 SVM分类: 具体分析结果"
+    "基于历史频率筛选种子集",
+    "平衡奇偶与大小比例",
+    "避免重复并控制连号数",
+    "综合趋势与分布优化最终集合"
   ]
 }
 
-要求: 只返回JSON，号码1-49不重复，十二生肖之一`;
+要求：
+- 只返回JSON格式，不要添加任何解释文字
+- 7个号码必须在1-49范围内且不重复
+- 生肖必须是十二生肖之一：鼠、牛、虎、兔、龙、蛇、马、羊、猴、鸡、狗、猪
+- 置信度用百分比表示
+- 这仅供娱乐参考，不构成参考建议
+- 确保JSON格式正确，可以直接用JSON.parse()解析`;
     
     console.log('📋 构建的提示词长度:', prompt.length, '字符');
     
@@ -4745,154 +4478,6 @@ ${recentData.map((d, i) => `${i+1}. ${d.period}: [${d.numbers.join(', ')}] ${d.z
   }
 
   /**
-   * 智能修复截断的JSON响应
-   */
-  function fixTruncatedJSON(jsonStr) {
-      console.log('🔧 尝试修复截断的JSON...');
-
-      // 基本清理
-      let fixed = jsonStr.trim();
-
-      // 如果在reasoning数组中截断，尝试智能补全
-      if (fixed.includes('"reasoning": [') && !fixed.includes('"]')) {
-          console.log('🔍 检测到reasoning数组被截断，尝试修复...');
-
-          // 找到最后一个完整的reasoning项
-          const lastQuoteIndex = fixed.lastIndexOf('"');
-          if (lastQuoteIndex > fixed.indexOf('"reasoning": [')) {
-              // 截取到最后一个引号
-              fixed = fixed.substring(0, lastQuoteIndex + 1);
-
-              // 检查是否需要添加逗号和结束括号
-              if (!fixed.endsWith('"]')) {
-                  // 如果最后一项不是完整的，添加结束
-                  if (!fixed.endsWith('",')) {
-                      fixed += '",';
-                  }
-
-                  // 添加reasoning数组的结束
-                  fixed += '\n    ]';
-              }
-          } else {
-              // 如果找不到完整的reasoning项，直接结束数组
-              fixed = fixed.substring(0, fixed.indexOf('"reasoning": [') + '"reasoning": ['.length);
-              fixed += ']\n  }';
-          }
-      }
-
-      // 检查并补全其他常见的截断情况
-      if (fixed.includes('{') && !fixed.includes('}')) {
-          console.log('🔍 检测到JSON对象未关闭，尝试补全...');
-
-          // 计算需要补全的花括号
-          let openBraces = 0;
-          for (const char of fixed) {
-              if (char === '{') openBraces++;
-              if (char === '}') openBraces--;
-          }
-
-          // 添加缺失的右花括号
-          while (openBraces > 0) {
-              fixed += '}';
-              openBraces--;
-          }
-      }
-
-      // 如果在字符串中被截断，尝试智能补全
-      if (fixed.includes('"') && !isQuotedStringComplete(fixed)) {
-          console.log('🔍 检测到字符串未关闭，尝试修复...');
-          const lastQuoteIndex = fixed.lastIndexOf('"');
-          if (lastQuoteIndex > 0) {
-              fixed = fixed.substring(0, lastQuoteIndex);
-              fixed += '"'; // 关闭字符串
-          }
-      }
-
-      console.log('✅ JSON修复完成，修复后长度:', fixed.length);
-      return fixed;
-  }
-
-  /**
-   * 检查引号字符串是否完整
-   */
-  function isQuotedStringComplete(str) {
-      let inString = false;
-      let escaped = false;
-
-      for (let i = 0; i < str.length; i++) {
-          const char = str[i];
-
-          if (escaped) {
-              escaped = false;
-              continue;
-          }
-
-          if (char === '\\') {
-              escaped = true;
-              continue;
-          }
-
-          if (char === '"') {
-              inString = !inString;
-          }
-      }
-
-      return !inString;
-  }
-
-  /**
-   * 紧急数据提取函数 - 从截断的响应中提取可用的预测数据
-   */
-  function extractEmergencyPredictionData(aiResponse) {
-      console.log('🚨 开始紧急数据提取...');
-
-      try {
-          // 提取号码数组
-          const numbersMatch = aiResponse.match(/"numbers"\s*:\s*\[(.*?)\]/);
-          let numbers = [];
-          if (numbersMatch) {
-              numbers = numbersMatch[1].split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n) && n >= 1 && n <= 49);
-          }
-
-          // 提取生肖
-          const zodiacMatch = aiResponse.match(/"zodiac"\s*:\s*"([^"]+)"/);
-          const zodiac = zodiacMatch ? zodiacMatch[1] : '未知';
-
-          // 提取置信度
-          const confidenceMatch = aiResponse.match(/"confidence"\s*:\s*"([^"]+)"/);
-          const confidence = confidenceMatch ? confidenceMatch[1] : '50%';
-
-          // 如果至少有号码，构建基本预测结果
-          if (numbers.length >= 6) {
-              console.log('✅ 紧急提取到号码:', numbers);
-
-              // 确保有7个号码
-              while (numbers.length < 7) {
-                  // 填充缺失的号码（1-49范围内不重复）
-                  for (let i = 1; i <= 49; i++) {
-                      if (!numbers.includes(i)) {
-                          numbers.push(i);
-                          break;
-                      }
-                  }
-              }
-
-              return {
-                  numbers: numbers.slice(0, 7),
-                  zodiac: zodiac,
-                  confidence: confidence,
-                  analysis: '紧急提取的预测数据（AI响应被截断）',
-                  reasoning: ['AI响应被截断，使用紧急数据提取', '提取了部分有效的预测信息', '建议重新生成完整预测']
-              };
-          }
-      } catch (error) {
-          console.error('❌ 紧急数据提取失败:', error);
-      }
-
-      return null;
-  }
-
-  /**
    * 增强版JSON解析器，专门处理AI返回的复杂响应格式
    */
   function parseAIResponseEnhanced(aiResponse) {
@@ -4902,63 +4487,11 @@ ${recentData.map((d, i) => `${i+1}. ${d.period}: [${d.numbers.join(', ')}] ${d.z
 
       console.log('🔍 开始增强版JSON解析...');
       console.log('📝 响应长度:', aiResponse.length, '字符');
-      console.log('📝 响应内容前100字符:', aiResponse.substring(0, 100));
 
       let result = null;
       let parseMethod = '';
 
-      // 检查是否是错误响应
-      if (aiResponse.includes('API返回空响应') || aiResponse.includes('无法从API响应中提取有效内容')) {
-          throw new Error('API返回空响应或错误响应，请检查API密钥是否有效');
-      }
-      
-      // 检查是否是空响应或异常响应
-      if (aiResponse === '[]' || aiResponse === '{}' || aiResponse.trim().length === 0) {
-          console.error('❌ 检测到空响应或异常响应:', aiResponse);
-          throw new Error('API返回空响应，可能是API密钥无效或模型不可用');
-      }
-
-      // 先预处理文本，移除特殊标记
-      const preProcessedText = aiResponse
-          .replace(/<s>\[\/INST\]/g, '') // 移除特殊标记
-          .replace(/<s>/g, '') // 移除开始标记
-          .replace(/<\/s>/g, '') // 移除结束标记
-          .replace(/\[INST\]/g, '') // 移除指令标记
-          .replace(/\[\/INST\]/g, ''); // 移除指令结束标记
-
       const parseMethods = [
-          {
-              name: '智能截断修复',
-              method: (text) => {
-                  // 首先尝试提取JSON部分
-                  let jsonContent = text;
-
-                  // 如果在代码块中，先提取代码块内容
-                  if (text.includes('```')) {
-                      const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-                      if (codeBlockMatch) {
-                          jsonContent = codeBlockMatch[1];
-                      } else {
-                          // 如果没有结束代码块标记，提取开始后的所有内容
-                          const startMatch = text.match(/```(?:json)?\s*([\s\S]*)/);
-                          if (startMatch) {
-                              jsonContent = startMatch[1];
-                          }
-                      }
-                  }
-
-                  // 找到JSON开始位置
-                  const firstBrace = jsonContent.indexOf('{');
-                  if (firstBrace !== -1) {
-                      jsonContent = jsonContent.substring(firstBrace);
-
-                      // 使用智能修复函数
-                      return fixTruncatedJSON(jsonContent);
-                  }
-
-                  return null;
-              }
-          },
           {
               name: '精确JSON对象匹配',
               method: (text) => {
@@ -4980,173 +4513,13 @@ ${recentData.map((d, i) => `${i+1}. ${d.period}: [${d.numbers.join(', ')}] ${d.z
           {
               name: '代码块提取',
               method: (text) => {
-                  // 尝试多种代码块匹配模式
-                  const patterns = [
-                      /```(?:json)?\s*([\s\S]*?)\s*```/,  // 标准代码块
-                      /```\s*([\s\S]*?)\s*```/,          // 无语言标识的代码块
-                      /`{1,3}(?:json)?\s*([\s\S]*?)\s*`{1,3}/  // 可能的单反引号
-                  ];
-                  
-                  for (const pattern of patterns) {
-                      const codeBlockMatch = text.match(pattern);
-                      if (codeBlockMatch) {
-                          let content = codeBlockMatch[1].trim();
-                          
-                          // 如果内容不是以花括号开始，尝试提取其中的JSON
-                          if (!content.startsWith('{')) {
-                              const jsonMatch = content.match(/\{[\s\S]*?\}/);
-                              if (jsonMatch) {
-                                  content = jsonMatch[0];
-                              }
-                          }
-                          
-                          // 确保内容以花括号开始和结束
-                          if (content.includes('{') && content.includes('}')) {
-                              const firstBrace = content.indexOf('{');
-                              const lastBrace = content.lastIndexOf('}');
-                              if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-                                  return content.substring(firstBrace, lastBrace + 1);
-                              }
-                          }
+                  const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+                  if (codeBlockMatch) {
+                      const content = codeBlockMatch[1].trim();
+                      if (content.startsWith('{') && content.endsWith('}')) {
+                          return content;
                       }
                   }
-                  
-                  // 处理截断的代码块 - 没有结束标记的情况
-                  const truncatedPattern = /```(?:json)?\s*([\s\S]*)/;
-                  const truncatedMatch = text.match(truncatedPattern);
-                  if (truncatedMatch) {
-                      let content = truncatedMatch[1].trim();
-                      console.log('🔍 检测到截断的代码块，尝试修复...');
-                      
-                      // 如果内容不是以花括号开始，尝试提取其中的JSON
-                      if (!content.startsWith('{')) {
-                          const jsonMatch = content.match(/\{[\s\S]*?\}/);
-                          if (jsonMatch) {
-                              content = jsonMatch[0];
-                          }
-                      }
-                      
-                      // 尝试修复截断的JSON
-                      if (content.includes('{')) {
-                          const firstBrace = content.indexOf('{');
-                          if (firstBrace !== -1) {
-                              let jsonStr = content.substring(firstBrace);
-                              
-                              // 尝试修复常见的截断问题
-                              // 1. 如果reasoning数组被截断，尝试补全
-                              if (jsonStr.includes('"reasoning": [') && !jsonStr.includes('"]')) {
-                                  const reasoningMatch = jsonStr.match(/"reasoning":\s*\[([\s\S]*?)$/);
-                                  if (reasoningMatch) {
-                                      let reasoningContent = reasoningMatch[1];
-                                      
-                                      // 查找所有完整的reasoning项（以引号开始和结束）
-                                      const reasoningItems = [];
-                                      let currentItem = '';
-                                      let inString = false;
-                                      let escaped = false;
-                                      
-                                      for (let i = 0; i < reasoningContent.length; i++) {
-                                          const char = reasoningContent[i];
-                                          
-                                          if (escaped) {
-                                              currentItem += char;
-                                              escaped = false;
-                                              continue;
-                                          }
-                                          
-                                          if (char === '\\') {
-                                              currentItem += char;
-                                              escaped = true;
-                                              continue;
-                                          }
-                                          
-                                          if (char === '"' && !escaped) {
-                                              if (inString) {
-                                                  // 字符串结束
-                                                  currentItem += char;
-                                                  reasoningItems.push(currentItem);
-                                                  currentItem = '';
-                                                  inString = false;
-                                              } else {
-                                                  // 字符串开始
-                                                  currentItem += char;
-                                                  inString = true;
-                                              }
-                                          } else {
-                                              currentItem += char;
-                                          }
-                                      }
-                                      
-                                      // 如果有未完成的字符串，尝试补全
-                                      if (inString && currentItem.trim()) {
-                                          // 检查是否是有意义的内容
-                                          if (currentItem.length > 3) {
-                                              currentItem += '"';
-                                              reasoningItems.push(currentItem);
-                                          }
-                                      }
-                                      
-                                      // 重建reasoning数组
-                                      if (reasoningItems.length > 0) {
-                                          const fixedReasoning = '[' + reasoningItems.join(', ') + ']';
-                                          jsonStr = jsonStr.replace(/"reasoning":\s*\[[\s\S]*?$/, '"reasoning": ' + fixedReasoning);
-                                      } else {
-                                          // 如果无法修复，移除reasoning字段
-                                          jsonStr = jsonStr.replace(/"reasoning":\s*\[[\s\S]*?$/, '"reasoning": ["分析数据不完整"]');
-                                      }
-                                  }
-                              }
-                              
-                              // 2. 如果字符串未闭合，尝试补全
-                              const openQuotes = (jsonStr.match(/"/g) || []).length;
-                              if (openQuotes % 2 !== 0) {
-                                  jsonStr += '"';
-                              }
-                              
-                              // 3. 如果JSON未闭合，尝试补全
-                              if (!jsonStr.endsWith('}')) {
-                                  // 计算未闭合的花括号
-                                  let openCount = 0;
-                                  let inString = false;
-                                  let escaped = false;
-                                  
-                                  for (let i = 0; i < jsonStr.length; i++) {
-                                      const char = jsonStr[i];
-                                      
-                                      if (escaped) {
-                                          escaped = false;
-                                          continue;
-                                      }
-                                      
-                                      if (char === '\\') {
-                                          escaped = true;
-                                          continue;
-                                      }
-                                      
-                                      if (char === '"' && !escaped) {
-                                          inString = !inString;
-                                          continue;
-                                      }
-                                      
-                                      if (!inString) {
-                                          if (char === '{') openCount++;
-                                          else if (char === '}') openCount--;
-                                      }
-                                  }
-                                  
-                                  // 添加缺失的闭合花括号
-                                  while (openCount > 0) {
-                                      jsonStr += '}';
-                                      openCount--;
-                                  }
-                              }
-                              
-                              console.log('🔧 尝试修复截断的JSON:', jsonStr.substring(0, 200) + '...');
-                              return jsonStr;
-                          }
-                      }
-                  }
-                  
                   return null;
               }
           },
@@ -5179,139 +4552,6 @@ ${recentData.map((d, i) => `${i+1}. ${d.period}: [${d.numbers.join(', ')}] ${d.z
                   }
                   return null;
               }
-          },
-          {
-              name: '截断JSON修复',
-              method: (text) => {
-                  // 查找第一个{和最后一个}
-                  const firstBrace = text.indexOf('{');
-                  const lastBrace = text.lastIndexOf('}');
-                  
-                  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-                      let jsonStr = text.substring(firstBrace, lastBrace + 1);
-                      
-                      // 尝试修复常见的截断问题
-                      // 1. 如果reasoning数组被截断，尝试补全
-                      if (jsonStr.includes('"reasoning": [') && !jsonStr.includes('"]')) {
-                          const reasoningMatch = jsonStr.match(/"reasoning":\s*\[([\s\S]*?)$/);
-                          if (reasoningMatch) {
-                              let reasoningContent = reasoningMatch[1];
-                              
-                              // 查找所有完整的reasoning项（以引号开始和结束）
-                              const reasoningItems = [];
-                              let currentItem = '';
-                              let inString = false;
-                              let escaped = false;
-                              
-                              for (let i = 0; i < reasoningContent.length; i++) {
-                                  const char = reasoningContent[i];
-                                  
-                                  if (escaped) {
-                                      currentItem += char;
-                                      escaped = false;
-                                      continue;
-                                  }
-                                  
-                                  if (char === '\\') {
-                                      currentItem += char;
-                                      escaped = true;
-                                      continue;
-                                  }
-                                  
-                                  if (char === '"' && !escaped) {
-                                      if (inString) {
-                                          // 字符串结束
-                                          currentItem += char;
-                                          reasoningItems.push(currentItem);
-                                          currentItem = '';
-                                          inString = false;
-                                      } else {
-                                          // 字符串开始
-                                          currentItem += char;
-                                          inString = true;
-                                      }
-                                  } else {
-                                      currentItem += char;
-                                  }
-                              }
-                              
-                              // 如果有未完成的字符串，尝试补全
-                              if (inString && currentItem.trim()) {
-                                  // 检查是否是有意义的内容
-                                  if (currentItem.length > 3) {
-                                      currentItem += '"';
-                                      reasoningItems.push(currentItem);
-                                  }
-                              }
-                              
-                              // 重建reasoning数组
-                              if (reasoningItems.length > 0) {
-                                  const fixedReasoning = '[' + reasoningItems.join(', ') + ']';
-                                  jsonStr = jsonStr.replace(/"reasoning":\s*\[[\s\S]*?$/, '"reasoning": ' + fixedReasoning);
-                              } else {
-                                  // 如果无法修复，移除reasoning字段
-                                  jsonStr = jsonStr.replace(/"reasoning":\s*\[[\s\S]*?$/, '"reasoning": ["分析数据不完整"]');
-                              }
-                          }
-                      }
-                      
-                      // 2. 如果字符串未闭合，尝试补全
-                      const openQuotes = (jsonStr.match(/"/g) || []).length;
-                      if (openQuotes % 2 !== 0) {
-                          jsonStr += '"';
-                      }
-                      
-                      return jsonStr;
-                  }
-                  return null;
-              }
-          },
-          {
-              name: '多段JSON提取',
-              method: (text) => {
-                  // 查找所有可能的JSON片段
-                  const jsonMatches = text.match(/\{[\s\S]*?\}/g);
-                  if (jsonMatches && jsonMatches.length > 0) {
-                      console.log(`🔍 找到 ${jsonMatches.length} 个JSON片段，逐一测试...`);
-                      
-                      // 尝试每个匹配的JSON片段
-                      for (let i = 0; i < jsonMatches.length; i++) {
-                          const match = jsonMatches[i];
-                          console.log(`🔍 测试片段 ${i + 1}:`, match.substring(0, 100) + '...');
-                          
-                          try {
-                              // 尝试修复常见的JSON问题
-                              let fixedMatch = match;
-                              
-                              // 如果片段被截断，尝试修复
-                              if (!match.endsWith('}')) {
-                                  fixedMatch = match + '}';
-                              }
-                              
-                              // 如果片段开头有问题，尝试修复
-                              if (!match.startsWith('{')) {
-                                  const firstBrace = match.indexOf('{');
-                                  if (firstBrace !== -1) {
-                                      fixedMatch = match.substring(firstBrace);
-                                  }
-                              }
-                              
-                              const test = JSON.parse(preProcessJSON(fixedMatch));
-                              console.log(`✅ 片段 ${i + 1} 解析成功:`, test);
-                              
-                              // 验证是否包含我们需要的字段
-                              if (test.numbers && test.zodiac) {
-                                  console.log(`🎯 片段 ${i + 1} 包含预测数据，使用此片段！`);
-                                  return fixedMatch;
-                              }
-                          } catch (e) {
-                              console.log(`❌ 片段 ${i + 1} 解析失败:`, e.message);
-                              // 继续尝试下一个
-                          }
-                      }
-                  }
-                  return null;
-              }
           }
       ];
 
@@ -5319,7 +4559,7 @@ ${recentData.map((d, i) => `${i+1}. ${d.period}: [${d.numbers.join(', ')}] ${d.z
           try {
               console.log(`🔄 尝试${parseMethodObj.name}...`);
 
-              const jsonCandidate = parseMethodObj.method(preProcessedText);
+              const jsonCandidate = parseMethodObj.method(aiResponse);
               if (!jsonCandidate) {
                   console.log(`⚠️ ${parseMethodObj.name}: 未找到候选JSON`);
                   continue;
@@ -5342,16 +4582,8 @@ ${recentData.map((d, i) => `${i+1}. ${d.period}: [${d.numbers.join(', ')}] ${d.z
       }
 
       if (!result) {
-          console.log('🚨 所有JSON解析方法失败，尝试紧急数据提取...');
-          result = extractEmergencyPredictionData(aiResponse);
-
-          if (result) {
-              console.log('✅ 紧急数据提取成功！');
-              parseMethod = '紧急数据提取';
-          } else {
-              generateErrorReport(aiResponse);
-              throw new Error('所有JSON解析方法都失败，AI响应格式不正确');
-          }
+          generateErrorReport(aiResponse);
+          throw new Error('所有JSON解析方法都失败，AI响应格式不正确');
       }
 
       if (!validatePredictionResult(result)) {
@@ -5476,55 +4708,21 @@ ${recentData.map((d, i) => `${i+1}. ${d.period}: [${d.numbers.join(', ')}] ${d.z
    * 生成详细的错误报告
    */
   function generateErrorReport(aiResponse) {
-      const text = typeof aiResponse === 'string' ? aiResponse : JSON.stringify(aiResponse ?? '', null, 2);
-      
-      // 预处理文本，移除特殊标记
-      const preProcessedText = text
-          .replace(/<s>\[\/INST\]/g, '') // 移除特殊标记
-          .replace(/<s>/g, '') // 移除开始标记
-          .replace(/<\/s>/g, '') // 移除结束标记
-          .replace(/\[INST\]/g, '') // 移除指令标记
-          .replace(/\[\/INST\]/g, ''); // 移除指令结束标记
-      
       console.error('📄 === JSON解析失败详细报告 ===');
-      console.error('📏 原始响应长度:', text.length);
-      console.error('📏 预处理后响应长度:', preProcessedText.length);
-      console.error('🔍 原始响应前500字符:', text.substring(0, 500));
-      console.error('🔍 预处理后响应前500字符:', preProcessedText.substring(0, 500));
+      console.error('📏 响应长度:', aiResponse.length);
+      console.error('🔍 响应前500字符:', aiResponse.substring(0, 500));
+      console.error('🔍 响应后500字符:', aiResponse.substring(aiResponse.length - 500));
 
-      // 修复花括号检测逻辑 - 使用更可靠的方法
-      const hasBraces = text.includes('{') && text.includes('}');
-      const hasJsonKeywords = text.includes('numbers') || text.includes('zodiac');
-      const hasCodeBlock = text.includes('```');
-      const isHtmlResponse = text.includes('<html') || text.includes('<!DOCTYPE');
+      const hasBraces = aiResponse.includes('{') && aiResponse.includes('}');
+      const hasJsonKeywords = aiResponse.includes('numbers') || aiResponse.includes('zodiac');
+      const hasCodeBlock = aiResponse.includes('```');
+      const isHtmlResponse = aiResponse.includes('<html') || aiResponse.includes('<!DOCTYPE');
 
       console.error('🔍 响应特征分析:');
       console.error('  - 包含花括号:', hasBraces);
       console.error('  - 包含JSON关键词:', hasJsonKeywords);
       console.error('  - 包含代码块:', hasCodeBlock);
       console.error('  - 是HTML响应:', isHtmlResponse);
-
-      // 尝试查找所有JSON片段
-      const jsonMatches = text.match(/\{[\s\S]*?\}/g);
-      if (jsonMatches && jsonMatches.length > 0) {
-          console.error(`🔍 找到 ${jsonMatches.length} 个可能的JSON片段:`);
-          jsonMatches.forEach((match, index) => {
-              console.error(`  片段 ${index + 1}: ${match.substring(0, 100)}...`);
-              
-              // 尝试解析每个片段
-              try {
-                  const parsed = JSON.parse(match);
-                  console.error(`    ✅ 片段 ${index + 1} 解析成功:`, parsed);
-                  
-                  // 检查是否包含我们需要的字段
-                  if (parsed.numbers && parsed.zodiac) {
-                      console.error(`    🎯 片段 ${index + 1} 包含预测数据，应该使用这个片段！`);
-                  }
-              } catch (e) {
-                  console.error(`    ❌ 片段 ${index + 1} 解析失败:`, e.message);
-              }
-          });
-      }
 
       if (isHtmlResponse) {
           console.error('❌ 错误原因: 返回了HTML页面而不是JSON数据，可能是API错误或认证失败');
@@ -5533,7 +4731,7 @@ ${recentData.map((d, i) => `${i+1}. ${d.period}: [${d.numbers.join(', ')}] ${d.z
       } else if (!hasJsonKeywords) {
           console.error('❌ 错误原因: 响应中不包含预期的预测数据字段');
       } else {
-          console.error('❌ 错误原因: JSON格式损坏或不完整，或者解析逻辑有问题');
+          console.error('❌ 错误原因: JSON格式损坏或不完整');
       }
 
       console.error('📄 === 错误报告结束 ===');
@@ -6367,53 +5565,10 @@ ${recentData.map((d, i) => `${i+1}. ${d.period}: [${d.numbers.join(', ')}] ${d.z
         ${Object.keys(patterns.zodiacFrequency).length > 0 ? `- 生肖频率: ${Object.entries(patterns.zodiacFrequency).map(([zodiac, count]) => `${zodiac}(${count}次)`).join(', ')}` : ''}
         ` : '';
         
-        const prompt = `基于以下香港六合彩历史数据，运用完整的数学分析方法预测下一期最可能的7个号码(1-49)和生肖。
-
-历史数据：
-${JSON.stringify(historicalData.slice(-20), null, 2)}
-
-统计特征：
-- 热号: [${patterns.hotNumbers.slice(0, 5).join(', ')}]
-- 冷号: [${patterns.coldNumbers.slice(0, 5).join(', ')}]
-- 奇偶比例: 奇数${patterns.oddEvenRatio.odd}%, 偶数${patterns.oddEvenRatio.even}%
-- 和值范围: ${patterns.sumTrend.min}-${patterns.sumTrend.max} (平均${patterns.sumTrend.average})
-
-请必须使用以下所有数学分析方法，并在reasoning字段中明确说明每种方法的具体应用：
-
-1. 📈 马尔可夫链分析 - 分析数字序列状态转移概率特征
-2. 🧮 贝叶斯概率模型 - 基于历史先验概率更新后验概率
-3. 🔍 时间序列分析 - 识别数字序列出现的周期性和趋势性
-4. 🤖 机器学习聚类 - 发现数字组合的模式特征
-5. 🧠 神经网络识别 - 识别历史数据中的复杂非线性关系
-6. 🎲 蒙特卡洛模拟 - 通过大量随机模拟评估数字序列概率分布
-7. 🧬 遗传算法优化 - 优化数字组合的选择策略
-8. 📊 支持向量机分类 - 基于历史特征进行分类预测
-
-返回JSON格式：
-{
-  "numbers": [3, 12, 18, 25, 31, 38, 45],
-  "zodiac": "龙",
-  "confidence": "82%",
-  "analysis": "简要分析说明",
-  "reasoning": [
-    "📈 马尔可夫链分析：具体分析结果",
-    "🧮 贝叶斯概率模型：具体分析结果",
-    "🔍 时间序列分析：具体分析结果",
-    "🤖 机器学习聚类：具体分析结果",
-    "🧠 神经网络识别：具体分析结果",
-    "🎲 蒙特卡洛模拟：具体分析结果",
-    "🧬 遗传算法优化：具体分析结果",
-    "📊 支持向量机分类：具体分析结果"
-  ]
-}
-
-要求：
-- 必须在reasoning数组中包含所有8种数学分析方法的具体应用
-- 每种方法都要有具体的分析结果，不能只是简单提及
-- 只返回JSON，无其他文字
-- 号码1-49不重复
-- 生肖为十二生肖之一
-- 置信度用百分比表示`;;
+        const prompt = `预测7个香港号码(1-49)和生肖。
+热号：${patterns.hotNumbers.slice(0, 3).join(',')}
+冷号：${patterns.coldNumbers.slice(0, 3).join(',')}
+返回JSON格式：{"numbers":[1,2,3,4,5,6,7],"zodiac":"龙","confidence":"80%"}`;
         
         console.log('📋 构建香港AI提示词，长度:', prompt.length, '字符');
         
@@ -6509,23 +5664,118 @@ ${JSON.stringify(historicalData.slice(-20), null, 2)}
           }
         }, 800);
         
-        // 使用统一的AI预测函数，传递澳门类型
-        console.log('🎯 使用统一AI预测函数进行澳门预测...');
-        let prediction = await generateAIPrediction('澳门数字', 'macau');
-        console.log('✅ 澳门AI预测完成');
+        // 获取澳门历史开奖数据
+        console.log('📊 获取澳门历史开奖数据...');
+        const macauHistoricalData = await fetchHistoricalData('macau', 30);
+        console.log('✅ 澳门历史数据获取完成，共', macauHistoricalData.length, '期');
+        
+        // 分析澳门历史数据模式
+        console.log('🔍 分析澳门历史数据模式...');
+        const macauPatternAnalysis = analyzeHistoricalPatterns(macauHistoricalData);
+        console.log('✅ 澳门历史数据分析完成');
+        const macauPerfSummary = buildPerformanceSummary('macau');
+        
+        const prompt = `你是一个专业的澳门数字数据分析师。请基于真实的澳门历史开奖数据和统计学原理，为澳门数字预测最可能的7个号码（1-49）和对应的生肖。
+        
+        历史策略与胜率摘要（最近${macauPerfSummary.window}期）：
+        总体胜率：${macauPerfSummary.overallAccuracy}%
+        策略使用统计：${macauPerfSummary.strategyStats}
+        最近表现：${macauPerfSummary.recentPerformance}
+        建议：优先考虑胜率较高的策略组合，并避免近期表现持续低迷的策略。
+        
+        你是澳门六合彩资深分析师兼统计概率学专家，精通澳门六合彩所有规则和高级统计分析方法。你必须基于以下真实澳门历史开奖数据进行科学预测。
+        
+        真实澳门历史开奖数据（最近${macauHistoricalData.length}期）：
+        ${macauHistoricalData.map((draw, index) => `${index + 1}. 期号${draw.period}: [${draw.numbers.join(', ')}] 生肖: ${draw.zodiac}`).join('\n        ')}
+        
+        基于真实历史数据的统计分析结果：
+        - **热号分析**: [${macauPatternAnalysis.hotNumbers.join(', ')}] - 基于频率统计的最高出现号码
+        - **冷号分析**: [${macauPatternAnalysis.coldNumbers.join(', ')}] - 基于频率统计的最低出现号码
+        - **奇偶比例**: ${macauPatternAnalysis.oddEvenRatio.odd}:${macauPatternAnalysis.oddEvenRatio.even} - 历史奇偶分布
+        - **和值分析**: 平均${macauPatternAnalysis.sumTrend.average}，范围${macauPatternAnalysis.sumTrend.min}-${macauPatternAnalysis.sumTrend.max}
+        - **区间分布**: 低区${macauPatternAnalysis.rangeDistribution.low}%/中区${macauPatternAnalysis.rangeDistribution.mid}%/高区${macauPatternAnalysis.rangeDistribution.high}%
+        - **连号统计**: ${macauPatternAnalysis.consecutiveCount}次连号出现
+        - **生肖频率**: ${Object.entries(macauPatternAnalysis.zodiacFrequency).map(([zodiac, count]) => `${zodiac}(${count}次)`).join(', ')}
+        - 最近奇偶比例: ${macauPatternAnalysis.oddEvenRatio.odd}:${macauPatternAnalysis.oddEvenRatio.even}
+        - 和值趋势: 平均${macauPatternAnalysis.sumTrend.average}，范围${macauPatternAnalysis.sumTrend.min}-${macauPatternAnalysis.sumTrend.max}
+        - 区间分布: ${JSON.stringify(macauPatternAnalysis.rangeDistribution)}
+        - 连号出现次数: ${macauPatternAnalysis.consecutiveCount}
+        - 生肖频率: ${JSON.stringify(macauPatternAnalysis.zodiacFrequency)}
+        
+        澳门数字特点：
+        1. 开奖频率更高，数据样本更丰富
+        2. 号码分布相对更均匀
+        3. 生肖规律与香港略有不同
+        4. 连号出现频率较低
+        5. 大小号码分布更平衡
 
+        请基于以上真实历史数据进行分析，并按不少于 ${cfg.reasoningDepth} 步进行清晰的推理：
+        请运用以下专业算法进行深度分析，并按不少于 ${cfg.reasoningDepth} 步进行严谨推理：
+        1. **马尔可夫链分析** - 分析澳门号码状态转移概率特征
+        2. **贝叶斯概率模型** - 基于澳门历史先验概率更新后验概率
+        3. **时间序列分析** - 识别澳门号码出现的周期性和趋势性
+        4. **机器学习聚类算法** - 发现澳门号码组合的模式特征
+        5. **神经网络模式识别** - 识别澳门历史数据中的复杂非线性关系
+        6. **蒙特卡洛模拟** - 通过大量随机模拟评估澳门号码概率分布
+        7. **遗传算法优化** - 优化澳门号码组合的选择策略
+        8. **支持向量机分类** - 基于澳门历史特征进行分类预测
+        
+        必须基于以上真实历史数据进行以下统计分析：
+        - **频率分布分析** - 引用具体的热号和冷号数据
+        - **遗漏值分析** - 分析各号码的遗漏期和遗漏模式
+        - **相关性分析** - 分析澳门号码之间的相关性和独立性
+        - **周期性分析** - 识别澳门号码出现的时间周期规律
+        - **奇偶比例分析** - 基于${macauPatternAnalysis.oddEvenRatio.odd}:${macauPatternAnalysis.oddEvenRatio.even}的历史分布
+        - **大小比例分析** - 基于低区${macauPatternAnalysis.rangeDistribution.low}%/中区${macauPatternAnalysis.rangeDistribution.mid}%/高区${macauPatternAnalysis.rangeDistribution.high}%的分布
+        - **连号分析** - 基于${macauPatternAnalysis.consecutiveCount}次连号出现的概率模式
+        - **生肖分析** - 基于生肖频率数据: ${Object.entries(macauPatternAnalysis.zodiacFrequency).map(([zodiac, count]) => `${zodiac}(${count}次)`).join(', ')}
+        
+        分析要求：
+        1. 必须引用具体的澳门历史数据和统计结果，不得虚构数据
+        2. 使用科学的概率计算方法和统计模型
+        3. 综合考虑澳门特有的多种因素的影响和交互作用
+        4. 提供详细的推理过程、计算依据和概率评估
+        5. 给出置信度评估和风险提示，说明预测的不确定性
+
+        请直接返回JSON格式的预测结果，格式如下：
+        {
+          "numbers": [3, 12, 18, 25, 31, 38, 45],
+          "zodiac": "虎",
+          "confidence": "82%",
+          "analysis": "基于澳门真实历史数据分析...",
+          "reasoning": [
+            "分析最近30期澳门开奖数据的号码频率分布",
+            "平衡大小号码与奇偶比例，参考历史趋势",
+            "根据连号出现概率限制连号数量",
+            "结合生肖频率和周期性规律优化选择"
+          ]
+        }`;
+
+        console.log('📋 构建澳门AI提示词，长度:', prompt.length, '字符');
+        
+        let content;
+        try {
+          content = await callAI(prompt);
+          console.log('✅ 澳门AI调用成功，返回内容长度:', content.length, '字符');
+        } catch (error) {
+          console.error('❌ 澳门AI调用失败:', error);
+          throw error;
+        }
+        
         clearInterval(thinkingInterval);
 
+        let prediction;
         try {
-          console.log('🔍 验证澳门AI预测结果...');
-          // prediction已经从generateAIPrediction函数获得，不需要再解析
-          if (!prediction || !prediction.numbers || !prediction.zodiac) {
-            throw new Error('澳门AI预测结果格式不正确');
-          }
-          console.log('✅ 澳门AI预测结果验证成功:', prediction);
-        } catch (error) {
-          console.error('❌ 澳门AI预测结果验证失败:', error);
-          throw new Error('澳门AI预测结果无效: ' + error.message);
+          console.log('🔍 开始解析澳门AI返回的JSON...');
+          // 使用增强版JSON解析器替换简单正则匹配
+          prediction = parseAIResponseEnhanced(content);
+          console.log('✅ 澳门AI JSON解析成功:', prediction);
+        } catch (parseError) {
+          console.error('❌ 澳门AI JSON解析失败:', parseError);
+          console.log('📝 澳门AI原始响应:', content);
+          // 生成详细的错误报告以便调试
+          generateErrorReport(content);
+          throw new Error('澳门AI预测响应格式错误，无法解析为有效的JSON格式');
         }
 
         const dateSeed = new Date().getDate() + new Date().getMonth() * 31;
@@ -6902,7 +6152,7 @@ ${JSON.stringify(historicalData.slice(-20), null, 2)}
                 '\n模型: ' + providerInfo.model + 
                 '\n响应长度: ' + aiResponse.length + '字符' +
                 '\n解析错误: ' + parseError.message +
-                '\n原始响应: ' + String(aiResponse).substring(0, 200) + '...');
+                '\n原始响应: ' + aiResponse.substring(0, 200) + '...');
           return false;
         }
       } catch (error) {
@@ -6916,255 +6166,8 @@ ${JSON.stringify(historicalData.slice(-20), null, 2)}
       }
     }
 
-    // API密钥管理功能 - 直接集成到主页
-    function initApiKeyManager() {
-      // 添加事件监听器
-      document.getElementById('add-api-key-btn').addEventListener('click', addApiKey);
-      document.getElementById('test-keys-btn').addEventListener('click', testApiKeys);
-      document.getElementById('clear-cooldown-btn').addEventListener('click', clearGlobalCooldown);
-      
-      // 初始化密钥列表
-      updateApiKeyList();
-      updateApiKeyStatus();
-      
-      console.log('✅ API密钥管理器已初始化');
-    }
-    
-    // 添加API密钥
-    function addApiKey() {
-      const newKey = document.getElementById('new-api-key-input').value.trim();
-      if (!newKey) {
-        alert('请输入有效的API密钥');
-        return;
-      }
-      
-      if (!newKey.startsWith('sk-or-v1-')) {
-        alert('API密钥格式不正确，应以sk-or-v1-开头');
-        return;
-      }
-      
-      // 验证密钥长度（OpenRouter密钥通常有51个字符）
-      if (newKey.length < 40) {
-        alert('API密钥长度不足，请检查是否完整');
-        return;
-      }
-      
-      // 检查是否是测试密钥（测试密钥通常无效）
-      if (newKey.includes('test') || newKey.includes('demo')) {
-        alert('检测到测试密钥，测试密钥通常无法用于实际API调用。请使用从OpenRouter获取的真实API密钥。');
-        return;
-      }
-      
-      // 获取当前存储的密钥
-      let storedKeys = JSON.parse(localStorage.getItem('customApiKeys') || '[]');
-      
-      // 检查是否已存在
-      if (storedKeys.includes(newKey)) {
-        alert('该API密钥已存在');
-        return;
-      }
-      
-      // 添加新密钥
-      storedKeys.push(newKey);
-      localStorage.setItem('customApiKeys', JSON.stringify(storedKeys));
-      
-      // 更新OPENROUTER_API_KEYS数组，使其与customApiKeys保持一致
-      const defaultKeys = DEFAULT_OPENROUTER_KEYS;
-      const allKeys = [...defaultKeys, ...storedKeys];
-      try {
-        localStorage.setItem('OPENROUTER_API_KEYS', JSON.stringify(allKeys));
-      } catch {}
-      
-      // 清空输入框
-      document.getElementById('new-api-key-input').value = '';
-      
-      // 更新列表和状态
-      updateApiKeyList();
-      updateApiKeyStatus();
-      
-      alert('API密钥添加成功！');
-    }
-    
-    // 更新API密钥列表显示
-    function updateApiKeyList() {
-      const defaultKeys = DEFAULT_OPENROUTER_KEYS;
-      const customKeys = JSON.parse(localStorage.getItem('customApiKeys') || '[]');
-      const allKeys = [...defaultKeys, ...customKeys];
-      
-      const listContainer = document.getElementById('api-keys-list');
-      if (!listContainer) return;
-      
-      listContainer.innerHTML = '';
-      
-      allKeys.forEach((key, index) => {
-        const keyItem = document.createElement('div');
-        keyItem.style.cssText = `
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 8px;
-          margin-bottom: 8px;
-          background: #f8fafc;
-          border-radius: 6px;
-        `;
-        
-        const isCustom = index >= defaultKeys.length;
-        const keyDisplay = key.substring(0, 12) + '...' + key.substring(key.length - 4);
-        
-        keyItem.innerHTML = `
-          <span>${isCustom ? '🔧' : '🔑'} ${keyDisplay}</span>
-          ${isCustom ? `<button onclick="removeApiKey('${key}')" style="background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">删除</button>` : ''}
-        `;
-        
-        listContainer.appendChild(keyItem);
-      });
-    }
-    
-    // 删除API密钥
-    function removeApiKey(keyToRemove) {
-      if (!confirm('确定要删除此API密钥吗？')) return;
-      
-      let customKeys = JSON.parse(localStorage.getItem('customApiKeys') || '[]');
-      customKeys = customKeys.filter(key => key !== keyToRemove);
-      localStorage.setItem('customApiKeys', JSON.stringify(customKeys));
-      
-      // 更新OPENROUTER_API_KEYS数组，使其与customApiKeys保持一致
-      const defaultKeys = DEFAULT_OPENROUTER_KEYS;
-      const allKeys = [...defaultKeys, ...customKeys];
-      try {
-        localStorage.setItem('OPENROUTER_API_KEYS', JSON.stringify(allKeys));
-      } catch {}
-      
-      updateApiKeyList();
-      updateApiKeyStatus();
-    }
-    
-    // 更新API密钥状态
-    function updateApiKeyStatus() {
-      const statusContainer = document.getElementById('api-keys-status');
-      if (!statusContainer) return;
-      
-      const defaultKeys = DEFAULT_OPENROUTER_KEYS;
-      const customKeys = JSON.parse(localStorage.getItem('customApiKeys') || '[]');
-      const totalKeys = defaultKeys.length + customKeys.length;
-      
-      statusContainer.innerHTML = `
-        <div>🔑 默认密钥: ${defaultKeys.length}个</div>
-        <div>🔧 自定义密钥: ${customKeys.length}个</div>
-        <div>📊 总计密钥: ${totalKeys}个</div>
-        <div style="margin-top: 8px; color: #64748b;">💡 提示: 当API密钥暴露或失效时，请及时添加新密钥</div>
-      `;
-    }
-    
-    // 测试API密钥
-    async function testApiKeys() {
-      const statusContainer = document.getElementById('api-keys-status');
-      statusContainer.innerHTML = '🔄 正在测试API密钥...';
-      
-      try {
-        const defaultKeys = DEFAULT_OPENROUTER_KEYS;
-        const customKeys = JSON.parse(localStorage.getItem('customApiKeys') || '[]');
-        const allKeys = [...defaultKeys, ...customKeys];
-        
-        if (allKeys.length === 0) {
-          statusContainer.innerHTML = `<div style="color: #ef4444;">❌ 没有可用的API密钥，请先添加</div>`;
-          return;
-        }
-        
-        let workingKeys = 0;
-        let failedKeys = 0;
-        
-        for (const key of allKeys) {
-          try {
-            // 使用代理服务器测试API密钥
-            const response = await fetch('http://localhost:3003/api/keys/validate', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({ apiKey: key })
-            });
-            
-            const result = await response.json();
-            if (result.valid) {
-              workingKeys++;
-            } else {
-              failedKeys++;
-            }
-          } catch (error) {
-            failedKeys++;
-          }
-        }
-        
-        statusContainer.innerHTML = `
-          <div>✅ 可用密钥: ${workingKeys}个</div>
-          <div>❌ 失效密钥: ${failedKeys}个</div>
-          <div style="margin-top: 8px; color: ${workingKeys > 0 ? '#10b981' : '#ef4444'};">
-            ${workingKeys > 0 ? '🎉 系统可以正常使用' : '⚠️ 请添加有效的API密钥'}
-          </div>
-        `;
-      } catch (error) {
-        statusContainer.innerHTML = `<div style="color: #ef4444;">❌ 测试失败: ${error.message}</div>`;
-      }
-    }
-    
-    // 获取所有可用的API密钥（包括自定义的）
-    function getAllApiKeys() {
-      const defaultKeys = DEFAULT_OPENROUTER_KEYS;
-      const customKeys = JSON.parse(localStorage.getItem('customApiKeys') || '[]');
-      return [...defaultKeys, ...customKeys];
-    }
-
-    // 检查URL参数中的API密钥（GitHub部署兼容）
-    function checkUrlApiKey() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const urlApiKey = urlParams.get('api_key');
-
-      if (urlApiKey && urlApiKey.startsWith('sk-or-v1-')) {
-        console.log('🔑 从URL参数检测到API密钥');
-        let storedKeys = JSON.parse(localStorage.getItem('customApiKeys') || '[]');
-
-        if (!storedKeys.includes(urlApiKey)) {
-          storedKeys.push(urlApiKey);
-          localStorage.setItem('customApiKeys', JSON.stringify(storedKeys));
-          updateApiKeyList();
-          updateApiKeyStatus();
-
-          // 清理URL，避免密钥暴露在地址栏
-          const newUrl = window.location.pathname;
-          window.history.replaceState({}, document.title, newUrl);
-
-          alert('✅ API密钥已从URL参数自动配置！现在可以使用AI预测功能了。');
-        }
-      }
-    }
-
-    // 检测是否为GitHub部署并显示提示
-    function checkGitHubDeployment() {
-      const hostname = window.location.hostname;
-      if (hostname.includes('github.io')) {
-        console.log('🌐 检测到GitHub部署环境');
-
-        // 检查是否已有API密钥
-        const storedKeys = JSON.parse(localStorage.getItem('customApiKeys') || '[]');
-        if (storedKeys.length === 0) {
-          // 显示GitHub部署提示
-          const notice = document.getElementById('github-deploy-notice');
-          if (notice) {
-            notice.style.display = 'block';
-          }
-        }
-      }
-    }
-
     // 页面加载完成后启动倒计时
     window.addEventListener('DOMContentLoaded', async function() {
-      // 检查URL参数中的API密钥
-      checkUrlApiKey();
-
-      // 检测GitHub部署环境
-      checkGitHubDeployment();
-
       startLotteryCountdown();
 
       // 输出2025年生肖岁数对应关系并验证
@@ -7262,18 +6265,7 @@ ${JSON.stringify(historicalData.slice(-20), null, 2)}
       
       // 立即执行一次验证
       setTimeout(enhancedAutoVerification, 5000);
-      
-      // 初始化API密钥管理器
-      initApiKeyManager();
     });
-    
-    // 将关键函数暴露到全局作用域
-    window.removeApiKey = removeApiKey;
-    window.getAllApiKeys = getAllApiKeys;
-    window.addApiKey = addApiKey;
-    window.testApiKeys = testApiKeys;
-    window.updateApiKeyList = updateApiKeyList;
-    window.updateApiKeyStatus = updateApiKeyStatus;
     
     // 将关键函数暴露到全局作用域，供配置面板访问
     window.fetchRealLotteryResults = fetchRealLotteryResults;

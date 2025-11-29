@@ -1680,6 +1680,8 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <!-- Prediction Engine -->
+  <script src="../js/prediction-engine.js"></script>
   <script>
     // —— 用户 & 密码映射 ——
     const USERS = {
@@ -2251,7 +2253,16 @@
           }
           console.log('✅ AI分析步骤完成');
         }
-      }, 1500); // 每1.5秒切换一个步骤
+        }, 1500); // 每1.5秒切换一个步骤
+    }
+
+    const analysisStartTimes = { hk: 0, macau: 0 };
+    function markAnalysisStart(type) { analysisStartTimes[type === 'hk' ? 'hk' : 'macau'] = Date.now(); }
+    async function ensureMinimumAnalysisTime(type, minMs = 8500) {
+      const key = type === 'hk' ? 'hk' : 'macau';
+      const elapsed = Date.now() - (analysisStartTimes[key] || 0);
+      const remaining = Math.max(0, minMs - elapsed);
+      if (remaining > 0) await new Promise(r => setTimeout(r, remaining));
     }
 
     // 重置分析步骤显示
@@ -4558,12 +4569,20 @@
     // 本地算法备选方案
     async function fallbackToLocalAI(prompt, type = 'hk') {
       if (!localEngine) {
-        localEngine = new LocalPredictionEngine();
+        // 使用AdvancedPredictionEngine而不是LocalPredictionEngine
+        if (window.AdvancedPredictionEngine) {
+          localEngine = new AdvancedPredictionEngine();
+          console.log('✅ 使用AdvancedPredictionEngine进行预测');
+        } else {
+          // 如果AdvancedPredictionEngine不可用，回退到LocalPredictionEngine
+          localEngine = new LocalPredictionEngine();
+          console.log('⚠️ AdvancedPredictionEngine不可用，使用LocalPredictionEngine');
+        }
       }
 
       // 获取历史数据
       console.log(`📊 开始为${type === 'hk' ? '香港' : '澳门'}获取历史数据...`);
-      const historyData = getHistoryDataForPrediction(type);
+      const historyData = await getHistoryDataForPrediction(type);
 
       // 🔴 验证获取到的数据
       console.log(`🔴 ${type === 'hk' ? '香港' : '澳门'}预测实际使用的数据前3期:`);
@@ -4577,7 +4596,16 @@
 
       try {
         console.log(`🔮 使用本地算法预测${type === 'hk' ? '香港' : '澳门'}，数据量: ${historyData.length}期`);
-        const result = await localEngine.predict(historyData);
+        console.log(`🔍 开始执行预测算法，引擎类型: ${localEngine.constructor.name}`);
+        console.log(`📊 历史数据详情: 数据源=${historyData[0]?.dataSource || '未知'}, 最新期号=${historyData[0]?.period || '未知'}`);
+        
+        // 记录预测开始时间
+        const predictionStartTime = Date.now();
+        const result = await localEngine.predict(historyData, { lotteryType: type });
+        const predictionEndTime = Date.now();
+        
+        console.log(`⏱️ 预测算法执行耗时: ${predictionEndTime - predictionStartTime}ms`);
+        console.log(`🎯 预测结果原始数据:`, result);
 
         // 生成符合AI响应格式的标准JSON
         const aiFormatResult = {
@@ -4635,53 +4663,25 @@
     }
 
     // 获取历史数据用于预测（修复版本）
-    function getHistoryDataForPrediction(type = 'hk') {
+    async function getHistoryDataForPrediction(type = 'hk') {
       try {
-        // 优先从缓存的历史数据中获取
-        const cachedData = realHistoricalDataStore[type];
-
-        if (cachedData && cachedData.length > 0) {
-          console.log(`✅ 从缓存获取${type === 'hk' ? '香港' : '澳门'}历史数据: ${cachedData.length}期`);
-
-          // 🔴 数据验证：输出缓存中的前3期数据
-          console.log(`🔴 ${type === 'hk' ? '香港' : '澳门'}缓存数据前3期:`);
-          cachedData.slice(0, 3).forEach((numbers, i) => {
-            console.log(`  [${numbers.join(', ')}]`);
-          });
-
-          // 转换为本地引擎需要的格式
-          return cachedData.map(numbers => ({
-            period: '', // 本地引擎对期号要求不高
-            date: new Date(),
-            numbers: numbers
-          }));
+        const data = await fetchHistoricalData(type, 30);
+        const mapped = (data || []).map(d => ({ period: d.period || '', date: new Date(d.drawDate || Date.now()), numbers: d.numbers || [] }));
+        
+        // 生成数据签名用于验证
+        if (mapped.length > 0) {
+          const dataSignature = mapped.slice(0, 5).map(d => d.numbers.join('-')).join('|');
+          console.log(`🔍 ${type === 'hk' ? '香港' : '澳门'}历史数据签名: ${dataSignature}`);
+          
+          // 验证数据是否足够差异化
+          if (window.lastDataSignature && window.lastDataSignature === dataSignature && window.lastDataType !== type) {
+            console.warn(`⚠️ 警告：${type === 'hk' ? '香港' : '澳门'}数据与之前的数据签名相同，可能存在数据源混用问题！`);
+          }
+          window.lastDataSignature = dataSignature;
+          window.lastDataType = type;
         }
-
-        // 备用方案：从localStorage获取
-        const STORAGE_KEY = 'lottery_predictions';
-        const stored = localStorage.getItem(STORAGE_KEY);
-
-        if (!stored) {
-          console.warn('localStorage中没有历史数据，使用备用方案...');
-          return generateLocalFallbackData(type);
-        }
-
-        const data = JSON.parse(stored);
-        const predictions = data.predictions || [];
-
-        const historyData = predictions.map(item => ({
-          period: item.period,
-          date: new Date(item.timestamp),
-          numbers: item.predictions.predicted || []
-        })).sort((a, b) => a.date - b.date);
-
-        if (historyData.length < 5) {
-          console.warn(`历史数据不足(${historyData.length}期)，生成备用数据...`);
-          return generateLocalFallbackData(type);
-        }
-
-        console.log(`✅ 从localStorage获取${type === 'hk' ? '香港' : '澳门'}历史数据: ${historyData.length}期`);
-        return historyData;
+        
+        return mapped.length > 0 ? mapped : generateLocalFallbackData(type);
 
       } catch (error) {
         console.warn('获取历史数据失败:', error);
@@ -6985,7 +6985,7 @@
 
         // 验证和修正预测结果
         const dateSeed = new Date().getDate() + new Date().getMonth() * 31;
-        const validatedPrediction = validateAndFixPrediction(academicPrediction, gameSelect.value, dateSeed);
+        const validatedPrediction = await validateAndFixPrediction(academicPrediction, gameSelect.value, dateSeed);
 
         // 显示预测结果
         await displayPredictionResult(validatedPrediction);
@@ -7001,7 +7001,7 @@
           // 备选方案：AI预测
           const dateSeed = new Date().getDate() + new Date().getMonth() * 31;
           const aiPrediction = await generateAIPrediction(currentGame);
-          const validatedAIPrediction = validateAndFixPrediction(aiPrediction, gameSelect.value, dateSeed);
+          const validatedAIPrediction = await validateAndFixPrediction(aiPrediction, gameSelect.value, dateSeed);
           await displayPredictionResult(validatedAIPrediction);
         } catch (aiError) {
           console.error('AI预测也失败:', aiError);
@@ -7009,7 +7009,7 @@
 
           // 最后的备选方案：智能预测
           const dateSeed = new Date().getDate() + new Date().getMonth() * 31;
-          const intelligentPrediction = generateIntelligentPrediction(gameSelect.value, 'intelligent', dateSeed);
+          const intelligentPrediction = await generateIntelligentPrediction(gameSelect.value, 'intelligent', dateSeed);
           await displayPredictionResult(intelligentPrediction);
         }
 
@@ -7025,20 +7025,37 @@
 
       // 初始化本地预测引擎（如果尚未初始化）
       if (!localEngine) {
-        localEngine = new LocalPredictionEngine();
+        // 使用AdvancedPredictionEngine而不是LocalPredictionEngine
+        if (window.AdvancedPredictionEngine) {
+          localEngine = new AdvancedPredictionEngine();
+          console.log('✅ 学术级算法使用AdvancedPredictionEngine');
+        } else {
+          // 如果AdvancedPredictionEngine不可用，回退到LocalPredictionEngine
+          localEngine = new LocalPredictionEngine();
+          console.log('⚠️ AdvancedPredictionEngine不可用，学术级算法使用LocalPredictionEngine');
+        }
       }
 
       // 获取对应地区的历史数据
-      const historyData = getHistoryDataForPrediction(gameType);
+      const historyData = await getHistoryDataForPrediction(gameType);
 
       if (historyData.length < 5) {
         throw new Error(`${gameType === 'hk' ? '香港' : '澳门'}历史数据不足(${historyData.length}期)，需要至少5期数据`);
       }
 
       console.log(`📊 使用${historyData.length}期${gameType === 'hk' ? '香港' : '澳门'}历史数据进行学术级算法分析`);
-
+      console.log(`🔍 学术级算法开始执行，引擎类型: ${localEngine.constructor.name}`);
+      console.log(`📊 历史数据详情: 数据源=${historyData[0]?.dataSource || '未知'}, 最新期号=${historyData[0]?.period || '未知'}`);
+      
+      // 记录预测开始时间
+      const predictionStartTime = Date.now();
+      
       // 🚀 真正执行8种学术级算法
-      const result = await localEngine.predict(historyData);
+      const result = await localEngine.predict(historyData, { lotteryType: gameType });
+      
+      const predictionEndTime = Date.now();
+      console.log(`⏱️ 学术级算法执行耗时: ${predictionEndTime - predictionStartTime}ms`);
+      console.log(`🎯 学术级算法原始结果:`, result);
 
       // 格式化为标准预测结果
       const academicResult = {
@@ -8023,13 +8040,13 @@
     }
 
     // 预测结果缓存
-    const predictionCache = {};
-    const predictionTimestamp = {};
+    const predictionCache = null;
+    const predictionTimestamp = null;
 
     // 智能预测算法
-    function generateIntelligentPrediction(type = 'hk', strategy = 'intelligent', dateSeed = new Date().getDate() + new Date().getMonth() * 31) {
+    async function generateIntelligentPrediction(type = 'hk', strategy = 'intelligent', dateSeed = new Date().getDate() + new Date().getMonth() * 31) {
       // 获取真实历史数据（至少30期）
-      const history = getHistoryDataForPrediction(type);
+      const history = await getHistoryDataForPrediction(type);
       if (!history || history.length < 30) {
         console.warn(`历史数据不足，仅有${history?.length || 0}期，需要至少30期`);
         // 回退到简单算法
@@ -8041,22 +8058,13 @@
       const gameType = type === 'hk' ? '1' : '2';
       const today = new Date().toDateString();
       const cacheKey = `${type}_${strategy}_${today}`;
-      const cacheExpiry = 24 * 60 * 60 * 1000;
-      const now = Date.now();
-
-      // 检查缓存
-      if (predictionCache[cacheKey] && predictionTimestamp[cacheKey] &&
-        (now - predictionTimestamp[cacheKey]) < cacheExpiry) {
-        console.log(`使用缓存的${type === 'hk' ? '香港' : '澳门'}高级算法预测结果`);
-        return predictionCache[cacheKey];
-      }
 
       // 为不同彩种添加选择偏好
       const gameTypePreference = type === 'hk' ?
         { smallNumbers: 0.6, oddNumbers: 0.55, highWeights: 0.7 } :
         { smallNumbers: 0.4, oddNumbers: 0.45, highWeights: 0.5 };
-      // 基于日期生成固定的策略种子，确保当天结果一致
-      const strategySeed = strategy === 'ai_fallback' ? dateSeed % 7 : strategy === 'validation_fix' ? dateSeed % 5 : dateSeed % 3;
+      const typeSeed = type === 'hk' ? 17 : 39;
+      const strategySeed = (strategy === 'ai_fallback' ? dateSeed % 7 : strategy === 'validation_fix' ? dateSeed % 5 : dateSeed % 3) + typeSeed;
 
       // 创建加权号码池
       const weightedPool = [];
@@ -8206,7 +8214,7 @@
       const baseConfidence = type === 'hk' ? 75 : 72;
       const strategyBonus = strategy === 'ai_fallback' ? 8 : strategy === 'validation_fix' ? 5 : 6;
       // 基于日期的确定性调整因子，替代随机因子
-      const deterministicAdjustment = (dateSeed % 8) - 4; // -4到+3的确定性调整
+        const deterministicAdjustment = ((dateSeed + typeSeed) % 8) - 4;
 
       confidence = Math.max(60, Math.min(88, baseConfidence + strategyBonus + deterministicAdjustment + Math.round(avgWeight * 10)));
 
@@ -8221,17 +8229,15 @@
         analysis: `基于${type === 'hk' ? '香港' : '澳门'}数字历史数据的${(type === 'hk' ? realHistoricalDataStore.hk.length : realHistoricalDataStore.macau.length)}期统计分析，综合考虑号码频率、冷热分布、近期趋势等多维度因素`
       };
 
-      // 缓存预测结果
-      predictionCache[cacheKey] = prediction;
-      predictionTimestamp[cacheKey] = now;
+      // 禁用缓存：始终返回新计算结果
 
       return prediction;
     }
 
     // 验证和修正预测结果
-    function validateAndFixPrediction(prediction, gameType, dateSeed = new Date().getDate() + new Date().getMonth() * 31) {
+    async function validateAndFixPrediction(prediction, gameType, dateSeed = new Date().getDate() + new Date().getMonth() * 31) {
       if (!Array.isArray(prediction.numbers)) {
-        return generateIntelligentPrediction(gameType, 'validation_fix');
+        return await generateIntelligentPrediction(gameType, 'validation_fix');
       }
 
       if (prediction.numbers.length === 6) {
@@ -8246,7 +8252,7 @@
       }
 
       if (prediction.numbers.length !== 7) {
-        return generateIntelligentPrediction(gameType, 'validation_fix');
+        return await generateIntelligentPrediction(gameType, 'validation_fix');
       }
 
       // 确保所有号码在1-49范围内且不重复
@@ -8255,7 +8261,7 @@
       );
 
       if (validNumbers.length !== 7 || new Set(validNumbers).size !== 7) {
-        return generateIntelligentPrediction(gameType, 'validation_fix');
+        return await generateIntelligentPrediction(gameType, 'validation_fix');
       }
 
       // 排序号码
@@ -8310,6 +8316,7 @@
         '<span style="color: #059669; font-weight: 600;">✓ AI预测验证</span>' :
         '<span style="color: #0ea5e9; font-weight: 600;">📊 统计分析</span>';
 
+      await ensureMinimumAnalysisTime(type);
       resultDiv.innerHTML = `
         <h5>🎯 ${typeName}智能预测结果 (期号: ${currentPeriod})</h5>
         <div class="prediction-numbers">${numbersHtml}</div>
@@ -8384,75 +8391,7 @@
       showToast(`${typeName}预测完成！期号${currentPeriod}建议号码已生成`, 'success');
     }
 
-    function renderLastPrediction(type = 'hk') {
-      const history = getPredictionHistory(type);
-      if (!Array.isArray(history) || history.length === 0) return;
-      const record = history[0];
-      const resultDiv = document.getElementById(`${type}PredictionResult`);
-      const loadingDiv = document.getElementById(`${type}PredictionLoading`);
-      const strategyInfo = PREDICTION_STRATEGIES[record.strategy] || { name: record.strategy, description: '' };
-      const typeName = type === 'hk' ? '香港数字' : '澳门数字';
-      const prediction = {
-        numbers: Array.isArray(record.numbers) ? record.numbers.slice() : (record.prediction?.numbers || []),
-        zodiac: record.zodiac || record.prediction?.zodiac || '',
-        confidence: typeof record.accuracy === 'number' ? `${record.accuracy}%` : (record.prediction?.confidence || '-'),
-        analysis: record.prediction?.analysis || strategyInfo.description,
-        reasoning: Array.isArray(record.prediction?.reasoning) ? record.prediction.reasoning : []
-      };
-      if (!Array.isArray(prediction.numbers) || prediction.numbers.length === 0) return;
-      const numbersHtml = prediction.numbers.map((num, index) =>
-        `<div class="prediction-number ${getNumberColor(num)}" style="animation-delay: ${index * 0.1}s">${num}</div>`
-      ).join('');
-      const specialNumber = Math.max(...prediction.numbers);
-      const specialZodiac = getZodiacByAge(specialNumber);
-      const currentZodiacEmoji = zodiacEmoji[prediction.zodiac] || '🐲';
-      const oddCount = prediction.numbers.filter(n => n % 2 === 1).length;
-      const evenCount = 7 - oddCount;
-      const smallCount = prediction.numbers.filter(n => n <= 24).length;
-      const bigCount = 7 - smallCount;
-      const span = Math.max(...prediction.numbers) - Math.min(...prediction.numbers);
-      let consecutiveCount = 0;
-      for (let i = 1; i < prediction.numbers.length; i++) {
-        if (prediction.numbers[i] - prediction.numbers[i - 1] === 1) {
-          consecutiveCount++;
-        }
-      }
-      const aiVerification = '<span style="color: #64748b; font-weight: 600;">缓存展示</span>';
-      const currentPeriod = record.period || '';
-      resultDiv.innerHTML = `
-        <h5>🎯 ${typeName}智能预测结果 (期号: ${currentPeriod})</h5>
-        <div class="prediction-numbers">${numbersHtml}</div>
-        <div class="prediction-zodiac">
-           <strong>特码生肖：</strong>${currentZodiacEmoji} ${prediction.zodiac}
-         </div>
-        
-        <div style="margin-top: 16px; padding: 12px; background: #f8fafc; border-radius: 8px; border-left: 4px solid #3b82f6;">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px;">
-            <div><strong>预测策略：</strong>${strategyInfo.name}</div>
-            <div><strong>验证方式：</strong>${aiVerification}</div>
-            <div><strong>置信度：</strong><span style="color: #059669;">${prediction.confidence}</span></div>
-            <div><strong>奇偶比：</strong>${oddCount}:${evenCount}</div>
-            <div><strong>大小比：</strong>${bigCount}:${smallCount}</div>
-            <div><strong>号码跨度：</strong>${span}</div>
-            <div><strong>连号数：</strong>${consecutiveCount}</div>
-            <div><strong>和值：</strong>${prediction.numbers.reduce((a, b) => a + b, 0)}</div>
-          </div>
-        </div>
-        
-        ${Array.isArray(prediction.reasoning) && prediction.reasoning.length ? `
-        <div style="margin-top: 12px; padding: 12px; background: #eef2ff; border-radius: 8px; border-left: 4px solid #6366f1;">
-          <div style="font-size: 13px; color: #1e293b; font-weight: 600; margin-bottom: 6px;">🧠 推理过程</div>
-          <ol style="margin: 0; padding-left: 16px; color: #334155; font-size: 12px; line-height: 1.5;">
-            ${prediction.reasoning.map(step => `<li>${step}</li>`).join('')}
-          </ol>
-        </div>
-        ` : ''}
-      `;
-      resultDiv.style.display = 'block';
-      if (loadingDiv) loadingDiv.style.display = 'none';
-      updateAccuracyDisplay(type);
-      showToast(`${typeName}已载入上次预测结果（缓存）`, 'info');
-    }
+    function renderLastPrediction(type = 'hk') { return; }
 
     // 标签页切换功能
     function initPredictionTabs() {
@@ -8503,6 +8442,7 @@
 
       // 启动详细AI分析步骤显示
       console.log('🤖 启动AI详细分析步骤显示');
+      markAnalysisStart('hk');
       showAIAnalysisSteps('hk');
 
       try {
@@ -8654,7 +8594,8 @@
         }
 
         const dateSeed = new Date().getDate() + new Date().getMonth() * 31;
-        prediction = validateAndFixPrediction(prediction, 'hk', dateSeed);
+        prediction = await validateAndFixPrediction(prediction, 'hk', dateSeed);
+        await ensureMinimumAnalysisTime('hk');
         await displayPredictionResult(prediction, 'hk');
 
       } catch (error) {
@@ -8701,6 +8642,7 @@
 
       // 启动详细AI分析步骤显示
       console.log('🤖 启动AI详细分析步骤显示');
+      markAnalysisStart('macau');
       showAIAnalysisSteps('macau');
 
       try {
@@ -8858,7 +8800,8 @@
         }
 
         const dateSeed = new Date().getDate() + new Date().getMonth() * 31;
-        prediction = validateAndFixPrediction(prediction, 'macau', dateSeed);
+        prediction = await validateAndFixPrediction(prediction, 'macau', dateSeed);
+        await ensureMinimumAnalysisTime('macau');
         await displayPredictionResult(prediction, 'macau');
 
       } catch (error) {
@@ -9284,8 +9227,7 @@
       updatePredictionHistory('macau');
       updateAccuracyDisplay('hk');
       updateAccuracyDisplay('macau');
-      renderLastPrediction('hk');
-      renderLastPrediction('macau');
+      // 禁止在算法执行前展示缓存结果，避免误导
 
       // 仅保留 AI 策略，初始化显示
       currentStrategy.hk = 'ai';

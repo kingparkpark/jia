@@ -1368,11 +1368,10 @@
 
           // 解析结果公布号码（7个号码：6个正选+1个特别数值）
           const numbers = data.openCode.split(',').map(n => parseInt(n.trim()));
-          const mainNumbers = numbers.slice(0, 6); // 前6个是正选号码
-
+          
           return {
             currentIssue: data.expect,
-            currentResult: mainNumbers.join(','),
+            currentResult: numbers.slice(0, 7).join(','), // 修改：显示全部7个号码
             currentZodiac: data.zodiac,
             nextIssue: '',
             nextTime: data.openTime,
@@ -1687,8 +1686,8 @@
             // 转换数据格式
             for (const item of data.data) {
               if (item.issue && item.num && Array.isArray(item.num) && item.num.length >= 6) {
-                // 提取前6个号码作为结果公布号码
-                const numbers = item.num.slice(0, 6);
+                // 提取前7个号码作为结果公布号码
+                const numbers = item.num.slice(0, 7);
 
                 // 验证号码范围
                 if (numbers.every(n => n >= 1 && n <= 49)) {

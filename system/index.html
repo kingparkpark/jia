@@ -5952,7 +5952,7 @@
               const numbers = item.open_code.split(',').map(n => parseInt(n.trim(), 10));
               return {
                 period: String(item.expect),
-                numbers: numbers.slice(0, 6), // 取前6个号码
+                numbers: numbers.slice(0, 7), // 修复：取前7个号码（澳门通常也是7个）
                 zodiac: item.zodiac || '',
                 drawDate: item.open_time ? new Date(item.open_time).toLocaleDateString() : '',
                 dataSource: 'ttc5188 API'
@@ -6003,7 +6003,7 @@
               const numbers = item.open_code.split(',').map(n => parseInt(n.trim(), 10));
               return {
                 period: String(item.expect),
-                numbers: numbers.slice(0, 6), // 取前6个号码
+                numbers: numbers.slice(0, 7), // 修复：取前7个号码（香港有特码）
                 zodiac: item.zodiac || '',
                 drawDate: item.open_time ? new Date(item.open_time).toLocaleDateString() : '',
                 dataSource: 'ttc5188 API'

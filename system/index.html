@@ -1287,6 +1287,22 @@
   <!-- 主视图 -->
   <div id="mainView" class="wrap" style="display:none;">
   </div>
+
+  <!-- AI 分析模态框 -->
+  <div id="aiAnalysisModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:2000; align-items:center; justify-content:center;">
+    <div style="background:#1e1e1e; color:#0f0; font-family:'Consolas', 'Monaco', monospace; width:800px; max-width:95%; height:600px; border-radius:12px; padding:20px; display:flex; flex-direction:column; box-shadow:0 0 30px rgba(139, 92, 246, 0.5); border:1px solid #8b5cf6;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:10px;">
+        <span style="font-size:18px; font-weight:bold; color:#a78bfa;">🤖 AI 深度分析终端 (AI Deep Analysis Terminal)</span>
+        <button onclick="document.getElementById('aiAnalysisModal').style.display='none'" style="background:none; border:none; color:#666; cursor:pointer; font-size:20px;">✖</button>
+      </div>
+      <div id="aiAnalysisLogs" style="flex:1; overflow-y:auto; white-space:pre-wrap; line-height:1.6; color:#ccc; font-size:14px; padding:15px; background:#000; border-radius:8px; margin-bottom:15px; border:1px solid #333;"></div>
+      <div id="aiAnalysisResult" style="border-top:1px solid #333; padding-top:15px; display:none; text-align:center;">
+        <div style="color:#8b5cf6; font-size:16px; margin-bottom:15px; font-weight:bold;">🎯 最终预测结果 (Final Prediction)</div>
+        <div id="aiResultNumbers" style="display:flex; justify-content:center; flex-wrap:wrap; gap:10px; margin-bottom:15px;"></div>
+        <div id="aiResultInfo" style="color:#888; font-size:13px; background:#2d2d2d; padding:8px 15px; border-radius:20px; display:inline-block;"></div>
+      </div>
+    </div>
+  </div>
   <!-- Obfuscated View Loader -->
   <script src="../js/app-view.js"></script>
   <!-- Firebase SDK -->
@@ -1294,7 +1310,137 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <!-- Prediction Engine -->
   <script src="../js/prediction-engine.js"></script>
+  <script src="../js/ai-analyst.js"></script>
   <script>
+    // —— AI Analyst Integration ——
+    const _originalInject = window.injectMainView;
+    window.injectMainView = function() {
+      const res = _originalInject ? _originalInject() : false;
+      if (res) {
+        setTimeout(initAIUI, 500); // Wait for DOM to settle
+      }
+      return res;
+    };
+
+    function initAIUI() {
+      // Add AI Button for HK
+      const hkBtn = document.getElementById('hkManualPredictBtn');
+      if (hkBtn && !document.getElementById('hkAIAnalyzeBtn')) {
+        const aiBtn = document.createElement('button');
+        aiBtn.id = 'hkAIAnalyzeBtn';
+        aiBtn.className = 'manual-predict-btn';
+        aiBtn.innerHTML = '🤖 AI 深度分析';
+        aiBtn.style.background = 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)';
+        aiBtn.style.marginLeft = '10px';
+        aiBtn.style.boxShadow = '0 4px 15px rgba(139, 92, 246, 0.4)';
+        aiBtn.onclick = () => runAIAnalysis('hk');
+        
+        // Insert after the manual button
+        if (hkBtn.parentNode) {
+            hkBtn.parentNode.insertBefore(aiBtn, hkBtn.nextSibling);
+        }
+      }
+
+      // Add AI Button for Macau
+      const macauBtn = document.getElementById('macauManualPredictBtn');
+      if (macauBtn && !document.getElementById('macauAIAnalyzeBtn')) {
+        const aiBtn = document.createElement('button');
+        aiBtn.id = 'macauAIAnalyzeBtn';
+        aiBtn.className = 'manual-predict-btn';
+        aiBtn.innerHTML = '🤖 AI 深度分析';
+        aiBtn.style.background = 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)';
+        aiBtn.style.marginLeft = '10px';
+        aiBtn.style.boxShadow = '0 4px 15px rgba(139, 92, 246, 0.4)';
+        aiBtn.onclick = () => runAIAnalysis('macau');
+        
+        if (macauBtn.parentNode) {
+            macauBtn.parentNode.insertBefore(aiBtn, macauBtn.nextSibling);
+        }
+      }
+    }
+
+    async function runAIAnalysis(type) {
+        const modal = document.getElementById('aiAnalysisModal');
+        const logEl = document.getElementById('aiAnalysisLogs');
+        const resultEl = document.getElementById('aiAnalysisResult');
+        const numsEl = document.getElementById('aiResultNumbers');
+        const infoEl = document.getElementById('aiResultInfo');
+
+        if (!modal || !logEl) {
+            console.error("AI Modal elements not found");
+            return;
+        }
+
+        modal.style.display = 'flex';
+        resultEl.style.display = 'none';
+        logEl.innerHTML = ''; // Clear logs
+
+        const printLog = (text) => {
+            const div = document.createElement('div');
+            div.textContent = text;
+            div.style.marginBottom = '5px';
+            if (text.includes('Prompt:')) div.style.color = '#60a5fa';
+            if (text.includes('警告')) div.style.color = '#fbbf24';
+            if (text.includes('策略已升级')) div.style.color = '#34d399';
+            logEl.appendChild(div);
+            logEl.scrollTop = logEl.scrollHeight;
+        };
+
+        printLog("🔄 初始化 AI 分析环境...");
+        
+        try {
+            if (!window.AdvancedPredictionEngine) throw new Error("核心引擎未加载");
+            
+            if (!window.aiAnalystInstance) {
+                window.aiAnalystInstance = new window.AIAnalyst(new window.AdvancedPredictionEngine());
+            }
+
+            printLog(`📊 获取${type === 'hk' ? '香港' : '澳门'}历史数据...`);
+            
+            // 使用现有的数据获取函数
+            const historyData = await getHistoryDataForPrediction(type);
+            
+            if (!historyData || historyData.length < 5) {
+                throw new Error("历史数据不足，无法进行深度分析");
+            }
+            
+            printLog(`✅ 获取到 ${historyData.length} 期历史数据`);
+
+            // 执行分析
+            const { result, logs, mode } = await window.aiAnalystInstance.analyze(historyData, type);
+
+            // 显示日志
+            logs.forEach(l => printLog(l));
+
+            // 显示结果
+            resultEl.style.display = 'block';
+            const nums = result.predictions.recommended;
+            
+            // 生肖计算 (2025蛇年基准)
+            const getZodiac = (n) => ['蛇','龙','兔','虎','牛','鼠','猪','狗','鸡','猴','羊','马'][(n-1)%12];
+
+            numsEl.innerHTML = nums.map(n => 
+                `<div style="display:flex; flex-direction:column; align-items:center; margin:0 5px;">
+                    <span style="display:inline-block; width:45px; height:45px; line-height:45px; text-align:center; background:linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); border-radius:50%; color:white; font-weight:bold; font-size:20px; box-shadow:0 4px 15px rgba(139, 92, 246, 0.5); border:2px solid rgba(255,255,255,0.2);">${n}</span>
+                    <span style="font-size:14px; color:#a78bfa; margin-top:6px; font-weight:bold; text-shadow:0 0 10px rgba(139,92,246,0.3);">${getZodiac(n)}</span>
+                </div>`
+            ).join('');
+            
+            // 记录结果用于后续胜率计算 (模拟)
+            const lastPeriod = historyData[0].period;
+            // 假设下一期还没开，我们只是记录预测
+            // 在实际应用中，应该在开奖后调用 recordResult
+            
+            infoEl.innerHTML = `策略模式: <span style="color:#fff; font-weight:bold;">${window.aiAnalystInstance.getStrategyName(mode)}</span> | 置信度: <span style="color:#34d399; font-weight:bold;">${result.confidence}%</span><br><div style="margin-top:5px; font-style:italic;">${result.reasoning[0]}</div>`;
+            
+            printLog("\n✨ 分析任务完成。");
+
+        } catch (e) {
+            printLog(`❌ 错误: ${e.message}`);
+            console.error(e);
+        }
+    }
+
     // —— 用户 & 密码映射 ——
     const USERS = {
       horse: { id: 'horse', name: '马', avatar: '🐎' },
@@ -4231,8 +4377,8 @@
                 throw new Error(`不支持的API提供商: ${apiCfg.provider}`);
             }
           } catch (aiError) {
-            console.warn('AI调用失败，切换到本地算法:', aiError.message);
-            return await fallbackToLocalAI(prompt, type);
+            console.warn('AI调用失败:', aiError.message);
+            throw new Error(`AI服务不可用: ${aiError.message}`);
           }
         } else {
           // API未配置，直接使用本地算法
@@ -4242,14 +4388,7 @@
 
       } catch (error) {
         console.error('❌ 预测失败:', error.message);
-
-        // 最后的备选：使用本地算法
-        try {
-          console.log('🔮 使用本地算法作为最终备选...');
-          return await fallbackToLocalAI(prompt, type);
-        } catch (localError) {
-          throw new Error('AI和本地算法都失败了: ' + error.message);
-        }
+        throw error; // 直接抛出错误，不使用本地回退
       }
     }
 
@@ -4368,12 +4507,11 @@
           window.lastDataType = type;
         }
         
-        return mapped.length > 0 ? mapped : generateLocalFallbackData(type);
+        return mapped.length > 0 ? mapped : [];
 
       } catch (error) {
         console.warn('获取历史数据失败:', error);
-        console.log('使用备用方案生成数据...');
-        return generateLocalFallbackData(type);
+        throw new Error("无法获取真实历史数据，停止预测 (拒绝使用模拟数据)");
       }
     }
 
@@ -4426,6 +4564,21 @@
 
     // OpenRouter API调用 (增强版本，支持智能模型切换)
     async function callOpenRouterAIV2(prompt, preferredModel = null) {
+      // 优先使用 ai-analyst.js 中的 AIAnalyst 实例进行调用
+      if (window.aiAnalystInstance) {
+        try {
+            const systemPrompt = "你是一个彩票预测分析助手。只返回JSON格式的预测结果，不包含任何解释、分析过程或额外文字。";
+            const response = await window.aiAnalystInstance.callOpenRouter(prompt, systemPrompt);
+            const content = response.content;
+            if (!content || content.trim() === '') {
+                throw new Error('AI 返回内容为空');
+            }
+            return content;
+        } catch (e) {
+            console.warn("AIAnalyst instance call failed, falling back to legacy method:", e);
+        }
+      }
+
       const apiCfg = getCurrentApiConfig();
 
       // 构建模型尝试列表

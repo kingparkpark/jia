@@ -28,7 +28,7 @@
         markov: `【任务目标】执行马尔可夫链(Markov Chain)分析，预测下一期彩票号码。
 【分析要求】
 1.  **状态定义**：将每个号码视为一个独立状态(1-49)。
-2.  **转移矩阵构建**：基于提供的历史数据，构建一个 49x49 的状态转移概率矩阵 $P$，其中 $P_{ij}$ 表示从号码 $i$ 转移到号码 $j$ 的概率。
+2.  **转移矩阵构建**：基于提供的历史数据，构建一个 49x49 的状态转移概率矩阵 $P$，其中 $P_{ij}$ 表示从号码 $i$转移到号码 $j$ 的概率。
 3.  **高阶链分析**：分析二阶及三阶马尔可夫链，识别“号码A -> 号码B -> 号码C”的连续转移模式。
 4.  **稳态分布**：计算转移矩阵的平稳分布 $\pi$，识别长期出现概率最高的号码。
 5.  **吸收态检测**：检查是否存在吸收态或遍历集，排除不可能再次出现的冷门路径。
@@ -125,6 +125,16 @@
          * 获取下一个 API Key
          */
         getNextApiKey() {
+            // 1. 优先尝试从 window.getCurrentApiConfig 获取（如果存在且有效）
+            if (typeof window.getCurrentApiConfig === 'function') {
+                const userConfig = window.getCurrentApiConfig();
+                // 只有当用户配置了非空的 key 时才使用
+                if (userConfig && userConfig.apiKey && userConfig.apiKey.trim() !== '' && userConfig.apiKey.startsWith('sk-or-')) {
+                    return userConfig.apiKey;
+                }
+            }
+            
+            // 2. 如果用户没配置，则使用内置 Key
             const key = OPENROUTER_API_KEYS[this.currentKeyIndex];
             this.currentKeyIndex = (this.currentKeyIndex + 1) % OPENROUTER_API_KEYS.length;
             return key;
@@ -139,9 +149,25 @@
 
             // 尝试所有免费模型
             for (const model of models) {
-                // 尝试所有 API Key
-                for (let i = 0; i < OPENROUTER_API_KEYS.length; i++) {
-                    const apiKey = this.getNextApiKey();
+                // 尝试获取 API Key (优先用户，其次内置)
+                // 我们这里稍微修改逻辑：如果用户配置了 Key，只试用户的；否则轮询内置的。
+                
+                let keysToTry = [];
+                if (typeof window.getCurrentApiConfig === 'function') {
+                     const userConfig = window.getCurrentApiConfig();
+                     if (userConfig && userConfig.apiKey && userConfig.apiKey.startsWith('sk-or-')) {
+                         keysToTry.push(userConfig.apiKey);
+                     }
+                }
+                
+                // 如果没有用户 Key，或者用户 Key 失败了(虽然这里不能动态切换，但在本轮循环中如果 keysToTry 为空则用内置)
+                if (keysToTry.length === 0) {
+                    // 复制一份内置 Key 列表，防止索引问题
+                    keysToTry = [...OPENROUTER_API_KEYS];
+                }
+
+                for (const apiKey of keysToTry) {
+                    if (!apiKey) continue;
                     
                     try {
                         const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -180,6 +206,12 @@
                             if (response.status === 402 || response.status === 400) {
                                 const idx = models.indexOf(model);
                                 if (idx > -1) models.splice(idx, 1);
+                            }
+                            // 401 = Unauthorized (Key invalid)
+                            if (response.status === 401) {
+                                console.warn(`API Key ending in ...${apiKey.slice(-4)} is invalid or expired.`);
+                                // If using built-in keys, try next. If user key, maybe stop?
+                                // Logic continues to next key in loop
                             }
                         }
                     } catch (e) {

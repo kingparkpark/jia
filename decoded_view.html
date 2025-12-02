@@ -1,9 +1,4 @@
 
-window.injectMainView = function() {
-    const mainView = document.getElementById("mainView");
-    if(mainView && !mainView.innerHTML.trim()) {
-        // 直接使用明文 HTML 字符串，不再解码 Base64，方便维护和更新
-        const viewHtml = `
     <!-- 用户信息 -->
     <div class="card">
       <div class="topbar">
@@ -342,10 +337,4 @@ window.injectMainView = function() {
 
     <!-- 留言列表 -->
     <ul id="list"></ul>
-`;
-        mainView.innerHTML = viewHtml;
-        console.log("Main view injected (Plain HTML Mode)");
-        return true;
-    }
-    return false;
-};
+  

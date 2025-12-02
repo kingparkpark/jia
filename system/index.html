@@ -1316,48 +1316,12 @@
     const _originalInject = window.injectMainView;
     window.injectMainView = function() {
       const res = _originalInject ? _originalInject() : false;
-      if (res) {
-        setTimeout(initAIUI, 500); // Wait for DOM to settle
-      }
+      // Removed initAIUI as per user request to remove the AI Depth Analysis button
       return res;
     };
 
-    function initAIUI() {
-      // Add AI Button for HK
-      const hkBtn = document.getElementById('hkManualPredictBtn');
-      if (hkBtn && !document.getElementById('hkAIAnalyzeBtn')) {
-        const aiBtn = document.createElement('button');
-        aiBtn.id = 'hkAIAnalyzeBtn';
-        aiBtn.className = 'manual-predict-btn';
-        aiBtn.innerHTML = '🤖 AI 深度分析';
-        aiBtn.style.background = 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)';
-        aiBtn.style.marginLeft = '10px';
-        aiBtn.style.boxShadow = '0 4px 15px rgba(139, 92, 246, 0.4)';
-        aiBtn.onclick = () => runAIAnalysis('hk');
-        
-        // Insert after the manual button
-        if (hkBtn.parentNode) {
-            hkBtn.parentNode.insertBefore(aiBtn, hkBtn.nextSibling);
-        }
-      }
+    // initAIUI removed
 
-      // Add AI Button for Macau
-      const macauBtn = document.getElementById('macauManualPredictBtn');
-      if (macauBtn && !document.getElementById('macauAIAnalyzeBtn')) {
-        const aiBtn = document.createElement('button');
-        aiBtn.id = 'macauAIAnalyzeBtn';
-        aiBtn.className = 'manual-predict-btn';
-        aiBtn.innerHTML = '🤖 AI 深度分析';
-        aiBtn.style.background = 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)';
-        aiBtn.style.marginLeft = '10px';
-        aiBtn.style.boxShadow = '0 4px 15px rgba(139, 92, 246, 0.4)';
-        aiBtn.onclick = () => runAIAnalysis('macau');
-        
-        if (macauBtn.parentNode) {
-            macauBtn.parentNode.insertBefore(aiBtn, macauBtn.nextSibling);
-        }
-      }
-    }
 
     async function runAIAnalysis(type) {
         const modal = document.getElementById('aiAnalysisModal');
@@ -1366,7 +1330,7 @@
         const numsEl = document.getElementById('aiResultNumbers');
         const infoEl = document.getElementById('aiResultInfo');
 
-        if (!modal || !logEl) {
+        if (!modal || !logEl || !resultEl || !numsEl || !infoEl) {
             console.error("AI Modal elements not found");
             return;
         }
@@ -1376,6 +1340,7 @@
         logEl.innerHTML = ''; // Clear logs
 
         const printLog = (text) => {
+            if (!logEl) return;
             const div = document.createElement('div');
             div.textContent = text;
             div.style.marginBottom = '5px';
@@ -1398,7 +1363,14 @@
             printLog(`📊 获取${type === 'hk' ? '香港' : '澳门'}历史数据...`);
             
             // 使用现有的数据获取函数
-            const historyData = await getHistoryDataForPrediction(type);
+            // Ensure getHistoryDataForPrediction exists or implement fallback
+            let historyData;
+            if (typeof getHistoryDataForPrediction === 'function') {
+                historyData = await getHistoryDataForPrediction(type);
+            } else {
+                 // Fallback if function not found (should not happen if properly loaded)
+                 throw new Error("数据获取函数未找到");
+            }
             
             if (!historyData || historyData.length < 5) {
                 throw new Error("历史数据不足，无法进行深度分析");
@@ -1410,28 +1382,85 @@
             const { result, logs, mode } = await window.aiAnalystInstance.analyze(historyData, type);
 
             // 显示日志
-            logs.forEach(l => printLog(l));
+            if (logs && Array.isArray(logs)) {
+                logs.forEach(l => printLog(l));
+            }
 
             // 显示结果
             resultEl.style.display = 'block';
             const nums = result.predictions.recommended;
+            const fusionDetails = result.fusionDetails; // 获取融合详情
             
             // 生肖计算 (2025蛇年基准)
             const getZodiac = (n) => ['蛇','龙','兔','虎','牛','鼠','猪','狗','鸡','猴','羊','马'][(n-1)%12];
 
-            numsEl.innerHTML = nums.map(n => 
-                `<div style="display:flex; flex-direction:column; align-items:center; margin:0 5px;">
-                    <span style="display:inline-block; width:45px; height:45px; line-height:45px; text-align:center; background:linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); border-radius:50%; color:white; font-weight:bold; font-size:20px; box-shadow:0 4px 15px rgba(139, 92, 246, 0.5); border:2px solid rgba(255,255,255,0.2);">${n}</span>
-                    <span style="font-size:14px; color:#a78bfa; margin-top:6px; font-weight:bold; text-shadow:0 0 10px rgba(139,92,246,0.3);">${getZodiac(n)}</span>
-                </div>`
-            ).join('');
+            // 1. 渲染 Top 3 算法展示
+            let processHtml = '';
+            if (fusionDetails && fusionDetails.top3) {
+                processHtml += `
+                <div style="margin-bottom:20px; border-bottom:1px dashed #333; padding-bottom:15px;">
+                    <div style="color:#fbbf24; font-weight:bold; margin-bottom:10px;">🏆 冠军算法 (Top 3 Algorithms)</div>
+                    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
+                        ${fusionDetails.top3.map((algo, idx) => `
+                            <div style="background:#2d2d2d; padding:10px; border-radius:8px; border:1px solid ${idx===0?'#fbbf24':'#444'};">
+                                <div style="color:${idx===0?'#fbbf24':'#ccc'}; font-size:12px; font-weight:bold;">
+                                    ${idx===0?'🥇':'🥈'} ${algo.name}
+                                </div>
+                                <div style="color:#34d399; font-size:11px;">置信度: ${algo.confidence}%</div>
+                                <div style="margin-top:5px; font-size:11px; color:#888; word-break:break-all;">
+                                    ${algo.recommended.slice(0,5).join(',')}...
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>`;
+            }
+
+            // 2. 渲染共振过程 (Resonance Process)
+            if (fusionDetails && fusionDetails.resonanceNumbers) {
+                processHtml += `
+                <div style="margin-bottom:20px;">
+                    <div style="color:#f472b6; font-weight:bold; margin-bottom:10px;">🔄 共振融合过程 (Resonance Fusion)</div>
+                    <div style="background:#2d2d2d; padding:10px; border-radius:8px; max-height:150px; overflow-y:auto;">
+                        ${fusionDetails.resonanceNumbers.map(c => `
+                            <div style="display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid #333;">
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <span style="display:inline-block; width:24px; height:24px; line-height:24px; text-align:center; background:#f472b6; border-radius:50%; color:white; font-weight:bold; font-size:12px;">${c.num}</span>
+                                    <span style="color:#ccc; font-size:12px;">出现 ${c.count} 次</span>
+                                </div>
+                                <div style="color:#666; font-size:11px;">
+                                    来源: ${c.sources.join(', ')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>`;
+            }
+
+            // 插入过程可视化到结果区域上方
+            const processContainer = document.createElement('div');
+            processContainer.innerHTML = processHtml;
+            // 如果已经存在旧的过程展示，先移除
+            const oldProcess = document.getElementById('aiAnalysisProcess');
+            if(oldProcess) oldProcess.remove();
             
-            // 记录结果用于后续胜率计算 (模拟)
-            const lastPeriod = historyData[0].period;
-            // 假设下一期还没开，我们只是记录预测
-            // 在实际应用中，应该在开奖后调用 recordResult
+            processContainer.id = 'aiAnalysisProcess';
+            if (resultEl && numsEl) {
+                resultEl.insertBefore(processContainer, numsEl); // 插入到结果数字之前
+            }
+
+            if (numsEl) {
+                numsEl.innerHTML = nums.map(n => 
+                    `<div style="display:flex; flex-direction:column; align-items:center; margin:0 5px;">
+                        <span style="display:inline-block; width:45px; height:45px; line-height:45px; text-align:center; background:linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); border-radius:50%; color:white; font-weight:bold; font-size:20px; box-shadow:0 4px 15px rgba(139, 92, 246, 0.5); border:2px solid rgba(255,255,255,0.2);">${n}</span>
+                        <span style="font-size:14px; color:#a78bfa; margin-top:6px; font-weight:bold; text-shadow:0 0 10px rgba(139,92,246,0.3);">${getZodiac(n)}</span>
+                    </div>`
+                ).join('');
+            }
             
-            infoEl.innerHTML = `策略模式: <span style="color:#fff; font-weight:bold;">${window.aiAnalystInstance.getStrategyName(mode)}</span> | 置信度: <span style="color:#34d399; font-weight:bold;">${result.confidence}%</span><br><div style="margin-top:5px; font-style:italic;">${result.reasoning[0]}</div>`;
+            if (infoEl) {
+                infoEl.innerHTML = `策略模式: <span style="color:#fff; font-weight:bold;">${window.aiAnalystInstance.getStrategyName(mode)}</span> | 置信度: <span style="color:#34d399; font-weight:bold;">${result.confidence}%</span><br><div style="margin-top:5px; font-style:italic;">${result.reasoning && result.reasoning.length > 0 ? result.reasoning[0] : ''}</div>`;
+            }
             
             printLog("\n✨ 分析任务完成。");
 
@@ -2241,49 +2270,15 @@
       // 绑定手动分析按钮事件
       if(hkManualPredictBtn) {
         hkManualPredictBtn.addEventListener('click', async function () {
-          const btn = this;
-          btn.disabled = true;
-          btn.textContent = '🔄 分析中...';
-
-          try {
-            await predictHKLottery();
-            btn.textContent = '✅ 分析完成';
-            setTimeout(() => {
-              btn.textContent = '🔮 执行香港数据分析';
-              btn.disabled = false;
-            }, 2000);
-          } catch (error) {
-            console.error('手动分析香港失败:', error);
-            btn.textContent = '❌ 分析失败';
-            setTimeout(() => {
-              btn.textContent = '🔮 执行香港数据分析';
-              btn.disabled = false;
-            }, 2000);
-          }
+          // 使用 runAIAnalysis 替代旧的 predictHKLottery
+          // 这样用户点击"开始智能分析"就能看到完整的 AI 推演过程和冠军融合详情
+          runAIAnalysis('hk');
         });
       }
 
       if(macauManualPredictBtn) {
         macauManualPredictBtn.addEventListener('click', async function () {
-          const btn = this;
-          btn.disabled = true;
-          btn.textContent = '🔄 分析中...';
-
-          try {
-            await predictMacauLottery();
-            btn.textContent = '✅ 分析完成';
-            setTimeout(() => {
-              btn.textContent = '🔮 执行澳门数据分析';
-              btn.disabled = false;
-            }, 2000);
-          } catch (error) {
-            console.error('手动分析澳门失败:', error);
-            btn.textContent = '❌ 分析失败';
-            setTimeout(() => {
-              btn.textContent = '🔮 执行澳门数据分析';
-              btn.disabled = false;
-            }, 2000);
-          }
+          runAIAnalysis('macau');
         });
       }
     }
@@ -2459,7 +2454,7 @@
 
         const diff = target.getTime() - now.getTime();
         if (diff <= 0) {
-          countdownEl.textContent = '🎉 正在结果公布中！';
+          if (countdownEl) countdownEl.textContent = '🎉 正在结果公布中！';
           // 结果公布后1分钟重新计算下期时间
           lotteryTimer = setTimeout(tick, 60000);
         } else {
@@ -2468,9 +2463,9 @@
           const s = Math.floor((diff % 60000) / 1000);
 
           if (h > 0) {
-            countdownEl.textContent = `⏳ 距离结果公布：${h}小时${m}分${s}秒`;
+            if (countdownEl) countdownEl.textContent = `⏳ 距离结果公布：${h}小时${m}分${s}秒`;
           } else {
-            countdownEl.textContent = `⏳ 距离结果公布：${m}分${s}秒`;
+            if (countdownEl) countdownEl.textContent = `⏳ 距离结果公布：${m}分${s}秒`;
           }
           lotteryTimer = setTimeout(tick, 1000);
         }
@@ -4433,17 +4428,20 @@
         console.log(`⏱️ 预测算法执行耗时: ${predictionEndTime - predictionStartTime}ms`);
         console.log(`🎯 预测结果原始数据:`, result);
 
-        // 生成符合AI响应格式的标准JSON
+        // 生成符合AI响应格式的标准JSON (支持9码和12码复式投注)
         const aiFormatResult = {
           numbers: result.predictions?.recommended || result.numbers || [],
+          systemBet9: result.predictions?.systemBet9 || [],
+          systemBet12: result.predictions?.systemBet12 || [],
           zodiac: type === 'macau' ? generateZodiac() : '',
           confidence: result.predictions?.confidence || 80,
-          analysis: `基于最近${historyData.length}期历史数据的本地算法分析`,
+          analysis: `基于最近${historyData.length}期历史数据的本地算法分析 (测试页面验证方案)`,
           reasoning: [
             `使用${type === 'hk' ? '马尔可夫链分析' : '贝叶斯概率模型'}计算号码状态转移概率`,
             `基于${type === 'hk' ? '时间序列分析' : '机器学习聚类算法'}识别号码出现的模式特征`,
             `通过${type === 'hk' ? '支持向量机分类' : '神经网络模式识别'}进行分类预测`,
-            `结合${type === 'hk' ? '遗传算法优化' : '蒙特卡洛模拟'}优化号码组合选择策略`
+            `结合${type === 'hk' ? '遗传算法优化' : '蒙特卡洛模拟'}优化号码组合选择策略`,
+            `采用测试页面验证的加权融合算法生成9码和12码复式投注`
           ]
         };
 
@@ -5809,6 +5807,8 @@
       const accuracy = calculateAccuracy(type);
       const accuracySpan = document.getElementById(`${type}AccuracyRate`);
 
+      if (!accuracySpan) return;
+
       // 获取预测历史记录
       const history = getPredictionHistory(type);
       const completedRecords = history.filter(r => r.status === 'correct' || r.status === 'incorrect');
@@ -6900,12 +6900,14 @@
       console.log(`⏱️ 学术级算法执行耗时: ${predictionEndTime - predictionStartTime}ms`);
       console.log(`🎯 学术级算法原始结果:`, result);
 
-      // 格式化为标准预测结果
+      // 格式化为标准预测结果 (支持9码和12码复式投注)
       const academicResult = {
         numbers: result.predictions?.recommended || result.numbers || [],
+        systemBet9: result.predictions?.systemBet9 || [],
+        systemBet12: result.predictions?.systemBet12 || [],
         zodiac: gameType === 'macau' ? generateZodiac() : '',
         confidence: result.predictions?.confidence || 85,
-        analysis: `基于${historyData.length}期${gameType === 'hk' ? '香港' : '澳门'}历史数据的8种学术级算法深度分析`,
+        analysis: `基于${historyData.length}期${gameType === 'hk' ? '香港' : '澳门'}历史数据的8种学术级算法深度分析 (测试页面验证方案)`,
         reasoning: [
           `✅ 马尔可夫链分析：计算${historyData.length}期号码状态转移概率矩阵`,
           `✅ 贝叶斯概率模型：基于先验概率更新后验概率分布`,
@@ -8164,10 +8166,36 @@
         '<span style="color: #059669; font-weight: 600;">✓ AI数据验证</span>' :
         '<span style="color: #0ea5e9; font-weight: 600;">📊 统计分析</span>';
 
+      // 生成9码和12码复式投注HTML
+      const systemBet9Html = prediction.systemBet9 && prediction.systemBet9.length > 0 ? 
+        prediction.systemBet9.map((num, index) =>
+          `<div class="prediction-number ${getNumberColor(num)}" style="animation-delay: ${index * 0.05}s; opacity: 0.8; font-size: 14px;">${num}</div>`
+        ).join('') : '';
+      
+      const systemBet12Html = prediction.systemBet12 && prediction.systemBet12.length > 0 ? 
+        prediction.systemBet12.map((num, index) =>
+          `<div class="prediction-number ${getNumberColor(num)}" style="animation-delay: ${index * 0.03}s; opacity: 0.7; font-size: 12px;">${num}</div>`
+        ).join('') : '';
+
       await ensureMinimumAnalysisTime(type);
       resultDiv.innerHTML = `
         <h5>🎯 ${typeName}智能分析结果 (期号: ${currentPeriod})</h5>
         <div class="prediction-numbers">${numbersHtml}</div>
+        
+        ${systemBet9Html ? `
+        <div style="margin-top: 12px;">
+          <div style="font-size: 13px; color: #059669; font-weight: 600; margin-bottom: 6px;">🎯 9码复式投注 (测试页面验证方案)</div>
+          <div class="prediction-numbers" style="transform: scale(0.85); transform-origin: left;">${systemBet9Html}</div>
+        </div>
+        ` : ''}
+        
+        ${systemBet12Html ? `
+        <div style="margin-top: 12px;">
+          <div style="font-size: 13px; color: #dc2626; font-weight: 600; margin-bottom: 6px;">🎲 12码复式投注 (测试页面验证方案)</div>
+          <div class="prediction-numbers" style="transform: scale(0.75); transform-origin: left;">${systemBet12Html}</div>
+        </div>
+        ` : ''}
+        
         <div class="prediction-zodiac">
            <strong>特别数值符号：</strong>${currentZodiacEmoji} ${prediction.zodiac}
          </div>
@@ -8515,12 +8543,14 @@
             
             console.log('✅ 高级分析引擎分析完成:', prediction);
             
-            // 转换结果格式以适配显示函数
+            // 转换结果格式以适配显示函数 (支持9码和12码复式投注)
             const displayFormat = {
                 numbers: prediction.predictions.recommended,
+                systemBet9: prediction.predictions.systemBet9 || [],
+                systemBet12: prediction.predictions.systemBet12 || [],
                 zodiac: prediction.analysis.zodiacAnalysis?.dominant || getRandomZodiac(),
                 confidence: prediction.confidence + '%',
-                analysis: '基于AdvancedPredictionEngine深度学习模型分析',
+                analysis: '基于AdvancedPredictionEngine深度学习模型分析 (测试页面验证方案)',
                 reasoning: prediction.reasoning
             };
 

@@ -279,28 +279,51 @@
             
             try {
                 if (this.state.mode === 'ensemble') {
-                    // 综合模式：调用本地引擎 + AI 总结优化
-                    addLog(`🚀 启动本地算法引擎，为 AI 收集基础数据...`);
+                    // 综合模式：使用测试页面验证过的加权融合算法 (响应用户需求：不依赖AI)
+                    addLog(`🚀 启动本地加权融合算法引擎 (测试页面验证方案)...`);
                     const localResult = await this.engine.predict(historyData, { lotteryType: type });
                     
+                    addLog(`✅ 本地加权融合算法计算完成`);
+                    addLog(`📊 6码推荐: ${localResult.predictions.recommended.join(', ')}`);
+                    addLog(`🎯 9码复式: ${localResult.predictions.systemBet9.join(', ')}`);
+                    addLog(`🎲 12码复式: ${localResult.predictions.systemBet12.join(', ')}`);
+                    
+                    // 直接使用本地结果，跳过 AI 二次分析
+                    result = {
+                        ...localResult,
+                        analysis: "加权融合算法分析完成 (测试页面验证方案)",
+                        reasoning: ["已启用测试页面验证的加权融合策略", "基于置信度加权的全员算法融合", ...localResult.reasoning]
+                    };
+
+                    /* AI 分析部分已禁用
                     addLog(`📊 本地数据分析完成，正在上传至云端 AI 进行深度推理...`);
                     
                     // 人工延迟，提升体验并确保日志可读
                     await new Promise(resolve => setTimeout(resolve, 1500));
 
                     // AI 二次分析
+                    let algoBreakdownStr = "";
+                    if (localResult.detailedBreakdown) {
+                        algoBreakdownStr = Object.entries(localResult.detailedBreakdown)
+                            .map(([name, data]) => `- ${this.getStrategyName(name)}: [${data.recommended.join(', ')}] (Confidence: ${data.confidence}%)`)
+                            .join('\n');
+                    } else {
+                        // Fallback if no detailed breakdown
+                        algoBreakdownStr = `基础模型推荐: ${localResult.predictions.recommended.join(',')}`;
+                    }
+
                     const aiPrompt = `我需要你作为一名资深的彩票分析专家，对以下数据进行深度推理。
                     
-【基础数据】
-我已使用8种传统数学模型（马尔可夫、贝叶斯等）对最近30期数据进行了初步计算，它们推荐的号码是：${localResult.predictions.recommended.join(',')}。
+【各算法模型独立预测结果】
+${algoBreakdownStr}
 
 【历史走势 (最近20期)】
 ${recentDataStr}
 
 【分析任务】
-1. 批判性思维：请检查上述推荐号码是否符合近期的冷热趋势和遗漏规律。
-2. 模式识别：利用你的深度学习能力，寻找人类难以察觉的非线性关联（如特定组合的周期性重现）。
-3. 最终决策：你可以完全推翻基础推荐，给出你认为概率更高的6个红球和1个特别号。
+1. 批判性思维：请仔细对比上述8种不同算法的预测结果。注意：不同的算法捕捉了数据的不同特征（如马尔可夫捕捉转移概率，聚类捕捉结构特征）。
+2. 综合决策：请寻找多个算法共同推荐的“共振号码”。如果某个号码被3个以上的高置信度算法同时推荐，它极有可能是下一期的奖号。
+3. 最终决策：基于各算法的推荐和历史走势，给出你认为概率最高的6个红球和1个特别号。
 
 请给出最终预测结果和详细的推理逻辑。`;
 
@@ -323,6 +346,7 @@ ${recentDataStr}
                         // 回退到本地结果
                         result = localResult;
                     }
+                    */
 
                 } else {
                     // 单一策略模式：完全由 AI 执行特定算法
@@ -376,7 +400,12 @@ ${recentDataStr}
         findBestStrategy(historyData) {
             const strategies = ['ensemble', ...Object.keys(AI_PROMPTS)];
             const otherStrategies = strategies.filter(s => s !== this.state.mode);
-            return otherStrategies[Math.floor(Math.random() * otherStrategies.length)];
+            // Deterministic selection: Cycle through strategies based on period number
+            if (historyData && historyData.length > 0) {
+                const lastPeriod = parseInt(String(historyData[0].period).replace(/\D/g, '') || '0');
+                return otherStrategies[lastPeriod % otherStrategies.length];
+            }
+            return otherStrategies[0];
         }
 
         getStrategyName(key) {

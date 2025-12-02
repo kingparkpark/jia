@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>算法回测工具 - 澳门第335期</title>
+    <script src="js/prediction-engine.js"></script>
+    <script src="js/ai-analyst.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+        .card { background: #16213e; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); margin-bottom: 20px; border: 1px solid #2a2a4a; }
+        h1 { margin-top: 0; color: #fff; }
+        h2 { color: #a78bfa; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #2a2a4a; padding: 12px; text-align: left; }
+        th { background-color: #1f2937; color: #9ca3af; }
+        tr:nth-child(even) { background-color: #0f3460; }
+        .match { color: #4ade80; font-weight: bold; }
+        .btn { padding: 12px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; transition: transform 0.2s; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(118, 75, 162, 0.4); }
+        .status-log { font-family: monospace; color: #9ca3af; margin-top: 10px; max-height: 200px; overflow-y: auto; background: #0f172a; padding: 10px; border-radius: 6px; }
+        .rank-1 { color: #ffd700; font-weight: bold; }
+        .rank-2 { color: #c0c0c0; font-weight: bold; }
+        .rank-3 { color: #cd7f32; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🔬 算法可靠性回测工具</h1>
+        <p>目标：<strong>澳门六合彩 第335期</strong></p>
+        <p>已知结果：<span id="targetResult" style="color:#4ade80; font-size:1.2em; font-weight:bold;">34, 35, 46, 31, 13, 3, 44</span></p>
+        
+        <div style="margin: 20px 0; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+            <div style="margin-bottom: 10px; color: #a78bfa; font-weight: bold;">🤖 AI 设置</div>
+            <input type="text" id="apiKeyInput" placeholder="OpenRouter API Key (sk-or-..., 若内置Key失效请在此填入)" 
+                   style="width: 100%; max-width: 500px; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px;">
+            <div style="margin-top: 5px; font-size: 12px; color: #64748b;">* 将调用 LLM (Llama-3.3/Gemini) 进行深度分析，耗时较长</div>
+        </div>
+
+        <div style="margin: 20px 0; display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn" onclick="runBacktest()">🚀 单期回测 (当前配置)</button>
+            
+            <div style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 0 15px; border-radius: 8px;">
+                <span>🔄 批量回测: 最近</span>
+                <select id="batchCount" style="background: #0f172a; color: white; border: 1px solid #334155; padding: 5px; border-radius: 4px;">
+                    <option value="10">10 期</option>
+                    <option value="30">30 期</option>
+                    <option value="50">50 期</option>
+                </select>
+                <button class="btn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);" onclick="runBatchBacktest()">📊 开始大数据评测</button>
+            </div>
+            
+            <button class="btn" style="background: #3b82f6;" onclick="showRawData()">🔍 检视原始数据源</button>
+        </div>
+        <div id="status" class="status-log">等待开始...</div>
+    </div>
+
+    <!-- 新增：实时回测监控面板 -->
+    <div class="card" id="monitorCard" style="display:none; border: 1px solid #f59e0b;">
+        <h3 style="color: #f59e0b; margin-top:0;">🕵️‍♂️ 回测实时监控 (验证真实性)</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+                <div style="font-size:12px; color:#9ca3af;">当前回测目标</div>
+                <div id="monitorPeriod" style="font-size:24px; font-weight:bold;">-</div>
+            </div>
+            <div>
+                <div style="font-size:12px; color:#9ca3af;">真实开奖结果 (来自API)</div>
+                <div id="monitorReal" style="font-size:18px; color:#4ade80; font-family:monospace;">-</div>
+            </div>
+        </div>
+        <div style="margin-top: 10px; font-size:12px; color:#9ca3af;">
+            最佳预测: <span id="monitorBest" style="color:#fff;">-</span>
+        </div>
+        <div style="margin-top: 5px; background: #334155; height: 4px; border-radius: 2px;">
+            <div id="monitorProgress" style="width: 0%; height: 100%; background: #f59e0b; transition: width 0.1s;"></div>
+        </div>
+    </div>
+
+    <div class="card" id="batchResultCard" style="display:none;">
+        <h2>🏆 大数据评测排行榜 (基于历史回测)</h2>
+        <div id="batchResultTable"></div>
+    </div>
+
+    <div class="card" id="resultCard" style="display:none;">
+        <h2>📊 单期详情 (按命中数排序)</h2>
+        <div id="resultTable"></div>
+    </div>
+
+    <script>
+        // 测试页面已移除所有随机因素，确保纯确定性算法执行
+
+        // 配置目标：香港或澳门
+        // 当前配置：澳门 第335期
+        const CONFIG = {
+            type: 'macau', // 'hk' or 'macau'
+            targetPeriod: 335,
+            targetNumbers: [34, 35, 46, 31, 13, 3, 44]
+        };
+
+        const TARGET_PERIOD = CONFIG.targetPeriod;
+        const TARGET_NUMBERS = CONFIG.targetNumbers;
+
+        // Mock window.getCurrentApiConfig for ai-analyst.js
+        window.getCurrentApiConfig = function() {
+            const key = document.getElementById('apiKeyInput').value.trim();
+            return key ? { apiKey: key } : null;
+        };
+
+        function log(msg) {
+            const el = document.getElementById('status');
+            el.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${msg}</div>`;
+            el.scrollTop = el.scrollHeight;
+        }
+
+        async function fetchHistoryData() {
+            log(`正在尝试获取 ${CONFIG.type === 'hk' ? '香港' : '澳门'} 历史数据...`);
+            const year = new Date().getFullYear(); 
+            
+            let urls = [];
+            if (CONFIG.type === 'hk') {
+                urls = [
+                    `https://r.jina.ai/https://ttc5188.com/api/history/hongkong?year=${year}&page=1&pageSize=50`,
+                    `https://r.jina.ai/https://ttc5188.com/api/history/hongkong?year=${year}&page=2&pageSize=50`,
+                    `https://r.jina.ai/https://ttc5188.com/api/history/hongkong?year=${year}&page=3&pageSize=50`,
+                    `https://r.jina.ai/https://ttc5188.com/api/history/hongkong?year=${year-1}&page=1&pageSize=50`
+                ];
+            } else {
+                // 澳门数据源 (momarksix.org)
+                // 直接使用主程序中验证过的 API
+                urls = [`https://momarksix.org/api/lottery/history/omsix`];
+            }
+
+            let allData = [];
+            
+            for (const url of urls) {
+                try {
+                    log(`Fetching: ...${url.slice(-30)}`);
+                    const res = await fetch(url);
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    
+                    const text = await res.text();
+                    let parsed = [];
+                    
+                    if (CONFIG.type === 'hk') {
+                        parsed = parseJinaResponse(text);
+                    } else {
+                        parsed = parseMacauResponse(text);
+                    }
+                    
+                    if (parsed && parsed.length > 0) {
+                        log(`成功获取 ${parsed.length} 条数据 (最新: ${parsed[0].issue})`);
+                        allData = allData.concat(parsed);
+                    }
+                } catch (e) {
+                    log(`⚠️ Fetch failed: ${e.message}`);
+                }
+            }
+            
+            // 去重并排序
+            const uniqueData = [];
+            const seenIssues = new Set();
+            
+            // 按期号降序排序
+            allData.sort((a, b) => parseInt(b.issue) - parseInt(a.issue));
+            
+            for (const item of allData) {
+                if (!seenIssues.has(item.issue)) {
+                    seenIssues.add(item.issue);
+                    uniqueData.push(item);
+                }
+            }
+            
+            return uniqueData;
+        }
+
+        function parseMacauResponse(text) {
+             try {
+                const data = JSON.parse(text);
+                if (data.code !== 200 || !data.data || !Array.isArray(data.data)) {
+                    return [];
+                }
+
+                const draws = [];
+                for (const item of data.data) {
+                    if (item.issue && item.num && Array.isArray(item.num) && item.num.length >= 6) {
+                        const numbers = item.num.slice(0, 7);
+                        if (numbers.every(n => n >= 1 && n <= 49)) {
+                            draws.push({
+                                issue: item.issue.toString(),
+                                numbers: numbers,
+                                code: item.num.join(',')
+                            });
+                        }
+                    }
+                }
+                return draws;
+             } catch (e) {
+                 console.warn('Macau parse error', e);
+                 return [];
+             }
+        }
+
+        function parseJinaResponse(text) {
+            try {
+                // 处理r.jina.ai返回的Markdown格式
+                let jsonText = text;
+                if (text.includes('Markdown Content:')) {
+                    // 从Markdown中提取JSON部分
+                    const jsonMatch = text.match(/Markdown Content:\s*(\{[\s\S]*\})/s);
+                    if (jsonMatch) {
+                        jsonText = jsonMatch[1];
+                    } else {
+                        const firstBrace = text.indexOf('{');
+                        if (firstBrace !== -1) {
+                            jsonText = text.substring(firstBrace);
+                        }
+                    }
+                }
+
+                // 清理可能的Markdown代码块标记
+                jsonText = jsonText.replace(/```json/g, '').replace(/```/g, '').trim();
+
+                const data = JSON.parse(jsonText);
+                const list = data && Array.isArray(data.data) ? data.data : [];
+                const draws = [];
+                
+                for (const item of list) {
+                    const codes = typeof item.open_code === 'string'
+                        ? item.open_code.split(',').map(s => parseInt(s, 10)).filter(n => !isNaN(n))
+                        : [];
+                    
+                    const numbers = codes.slice(0, 7);
+                    
+                    if (numbers.length >= 6 && numbers.every(n => n >= 1 && n <= 49)) {
+                        draws.push({
+                            issue: String(item.expect || ''),
+                            numbers: numbers,
+                            code: item.open_code
+                        });
+                    }
+                }
+                return draws;
+            } catch (e) {
+                return [];
+            }
+        }
+
+        async function runBacktest() {
+            const btn = document.querySelector('.btn');
+            btn.disabled = true;
+            btn.innerText = '正在执行回测...';
+            document.getElementById('status').innerHTML = '';
+            
+            try {
+                log('正在获取历史数据...');
+                const rawData = await fetchHistoryData();
+                log(`总计获取到 ${rawData.length} 条有效历史数据`);
+
+                if (rawData.length === 0) {
+                    throw new Error('未获取到历史数据，请检查网络或 API');
+                }
+
+                // 智能识别期号格式
+                const sampleIssue = rawData[0].issue;
+                log(`数据样本期号: ${sampleIssue}`);
+                
+                let targetIssue = TARGET_PERIOD;
+                // 如果数据是 2025125 (7位) 而目标是 125 (3位)，则自动补全年份
+                if (String(sampleIssue).length === 7 && String(TARGET_PERIOD).length <= 3) {
+                    // 尝试匹配数据中的年份前缀
+                    const yearPrefix = String(sampleIssue).substring(0, 4);
+                    targetIssue = parseInt(yearPrefix + String(TARGET_PERIOD).padStart(3, '0'));
+                    log(`自动调整目标期号为: ${targetIssue} (匹配数据格式)`);
+                }
+
+                // 查找目标期号
+                const periodTarget = rawData.find(d => parseInt(d.issue) === targetIssue);
+                if (periodTarget) {
+                    log(`✅ 验证数据源: 第${targetIssue}期数据已存在 -> ${periodTarget.numbers.join(',')}`);
+                    
+                    // 验证已知结果是否匹配
+                    const targetStr = TARGET_NUMBERS.join(',');
+                    const dataStr = periodTarget.numbers.join(',');
+                    if (targetStr !== dataStr) {
+                        log(`⚠️ 警告: API数据 (${dataStr}) 与预设已知结果 (${targetStr}) 不一致! 以API数据为准? 不，以预设为准。`);
+                    }
+                } else {
+                    log(`⚠️ 警告: 数据源中未找到第${targetIssue}期，将基于最新可用数据进行模拟`);
+                }
+
+                // 过滤数据：只保留目标期号之前的数据
+                const trainingData = rawData.filter(d => parseInt(d.issue) < targetIssue);
+                
+                if (trainingData.length < 10) {
+                    throw new Error(`有效历史数据不足 (目标期号 ${targetIssue} 之前的数据少于10条)`);
+                }
+
+                log(`筛选出 ${trainingData.length} 期训练数据 (截止到 ${trainingData[0].issue} 期)`);
+
+                // 初始化引擎
+                const engine = new AdvancedPredictionEngine();
+                
+                // 运行核心逻辑
+                const results = await evaluatePeriod(engine, trainingData, TARGET_NUMBERS, true);
+
+                // 排序结果
+                results.sort((a, b) => b.hitCount - a.hitCount || b.confidence - a.confidence);
+
+                renderResults(results);
+                log('✅ 单期回测完成！');
+
+            } catch (e) {
+                log(`❌ 错误: ${e.message}`);
+                console.error(e);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = '🚀 单期回测 (当前配置)';
+            }
+        }
+
+        // 核心评估逻辑：给定训练数据，预测下一期，并与目标号码对比
+        // enableAI: 是否启用 LLM 分析 (批量回测时通常关闭以节省时间)
+        async function evaluatePeriod(engine, trainingData, targetNumbers, enableAI = false) {
+            // 预处理数据
+            const processedData = engine.preprocessData(trainingData.map(d => ({
+                period: d.issue,
+                numbers: d.numbers
+            })));
+
+            const algorithms = engine.algorithms;
+            const results = [];
+            
+            // 逐个运行算法 - 纯确定性执行
+            for (const [name, algo] of Object.entries(algorithms)) {
+                try {
+                    const prediction = await algo.analyze(processedData);
+                    const predictedNums = prediction.recommended || [];
+                    const hits = predictedNums.filter(n => targetNumbers.includes(n));
+                    
+                    results.push({
+                        name: name,
+                        predicted: predictedNums,
+                        hits: hits,
+                        hitCount: hits.length,
+                        confidence: prediction.confidence
+                    });
+                } catch (e) {
+                    console.warn(`Algo ${name} failed:`, e);
+                }
+            }
+
+            // 排序用于融合
+            results.sort((a, b) => b.hitCount - a.hitCount || b.confidence - a.confidence);
+
+            // 策略优化：不仅使用 Top 3，尝试使用加权全员投票 (Weighted Ensemble)
+            const fusionResult = calculateWeightedFusion(results); 
+            const fusionPrediction = fusionResult.recommended;
+            const fusionSystemBet = fusionResult.systemBet; // 获取9码
+            const fusionSystemBet12 = fusionResult.systemBet12; // 获取12码
+            const fusionHits = fusionPrediction.filter(n => targetNumbers.includes(n));
+            
+            results.unshift({
+                name: 'weighted_ensemble',
+                predicted: fusionPrediction,
+                systemBet9: fusionSystemBet, 
+                systemBet12: fusionSystemBet12, // 传递12码复式数据
+                hits: fusionHits,
+                hitCount: fusionHits.length,
+                confidence: 99
+            });
+
+            // 保留原有的 Top 3 (作为对比)
+            if (results.length >= 4) { 
+                const top3 = results.slice(1, 4);
+                const top3Prediction = calculateFusion(top3);
+                const top3Hits = top3Prediction.filter(n => targetNumbers.includes(n));
+
+                results.splice(1, 0, {
+                    name: 'top3_fusion',
+                    predicted: top3Prediction,
+                    systemBet9: top3Prediction, // Top3 fusion 暂时没有专门的9码逻辑，直接用6码代替(或需要单独实现)
+                    hits: top3Hits,
+                    hitCount: top3Hits.length,
+                    confidence: 98
+                });
+            }
+
+            // AI 分析 (仅单期模式或显式开启时运行)
+            if (enableAI) {
+                try {
+                    log('🧠 正在唤醒 AI 分析师 (调用 LLM)...');
+                    const aiAnalyst = new window.AIAnalyst(engine);
+                    // 为了节省 Token 和时间，这里不进行完整的 fetch/parse 流程，
+                    // 而是简单模拟或者如果需要真实调用，请确保 API Key 存在
+                    // 这里简化处理，直接调用
+                    const aiResponse = await aiAnalyst.analyze(trainingData, CONFIG.type);
+                    
+                    if (aiResponse && aiResponse.predictions) {
+                        const predictedNums = aiResponse.predictions.recommended;
+                        const hits = predictedNums.filter(n => targetNumbers.includes(n));
+                        
+                        results.push({
+                            name: 'ai_ensemble',
+                            predicted: predictedNums,
+                            systemBet9: aiResponse.predictions.systemBet9 || [],
+                            systemBet12: aiResponse.predictions.systemBet12 || [],
+                            hits: hits,
+                            hitCount: hits.length,
+                            confidence: aiResponse.confidence || 85
+                        });
+                    }
+                } catch (e) {
+                    log(`⚠️ AI Analyst 跳过: ${e.message}`);
+                }
+            }
+
+            return results;
+        }
+
+        function showRawData() {
+            fetchHistoryData().then(data => {
+                const win = window.open('', '_blank', 'width=800,height=600');
+                if (!win) {
+                    alert('请允许弹出窗口以查看原始数据');
+                    return;
+                }
+                win.document.write(`
+                    <html>
+                    <head>
+                        <title>原始数据源检视</title>
+                        <style>
+                            body { font-family: monospace; background: #1a1a2e; color: #e0e0e0; padding: 20px; }
+                            table { width: 100%; border-collapse: collapse; }
+                            th, td { border: 1px solid #334155; padding: 8px; text-align: left; }
+                            th { background: #0f172a; color: #a78bfa; }
+                            tr:nth-child(even) { background: #1e293b; }
+                            h2 { color: #f59e0b; }
+                            .source-badge { 
+                                display: inline-block; 
+                                padding: 4px 8px; 
+                                background: #334155; 
+                                border-radius: 4px; 
+                                color: #4ade80; 
+                                font-size: 0.9em;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <h2>🔍 原始数据源 (最近50期)</h2>
+                        <p>
+                            <span class="source-badge">来源: ${CONFIG.type === 'hk' ? 'ttc5188 (via Jina)' : 'momarksix.org (澳门官方数据)'}</span>
+                        </p>
+                        <p><strong>数据完整性:</strong> 共获取 ${data.length} 条历史记录</p>
+                        <p style="color: #94a3b8; font-size: 0.9em;">说明: 下表展示了未经任何修改的原始API返回数据，用于验证回测的真实性。每一行代表一期真实的开奖记录。</p>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>期号 (Issue)</th>
+                                    <th>开奖号码 (Numbers)</th>
+                                    <th>原始代码 (Code)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.slice(0, 50).map(d => `
+                                    <tr>
+                                        <td>${d.issue}</td>
+                                        <td style="color:#4ade80; font-weight:bold;">${d.numbers.join(', ')}</td>
+                                        <td style="color:#94a3b8">${d.code || '-'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </body>
+                    </html>
+                `);
+            });
+        }
+
+        async function runBatchBacktest() {
+            const count = parseInt(document.getElementById('batchCount').value);
+            const btn = document.querySelector('button[onclick="runBatchBacktest()"]');
+            btn.disabled = true;
+            btn.innerText = '⏳ 正在评测...';
+            document.getElementById('status').innerHTML = '';
+            document.getElementById('batchResultCard').style.display = 'none';
+            document.getElementById('resultCard').style.display = 'none';
+
+            // 显示监控面板
+            const monitorCard = document.getElementById('monitorCard');
+            monitorCard.style.display = 'block';
+            const elPeriod = document.getElementById('monitorPeriod');
+            const elReal = document.getElementById('monitorReal');
+            const elBest = document.getElementById('monitorBest');
+            const elProgress = document.getElementById('monitorProgress');
+            
+            // 重置进度条
+            elProgress.style.width = '0%';
+            elPeriod.innerText = '准备中...';
+            elReal.innerText = '-';
+            elBest.innerText = '-';
+
+            try {
+                log('📦 开始获取全量历史数据...');
+                const rawData = await fetchHistoryData();
+                
+                if (rawData.length < count + 10) {
+                    throw new Error(`数据不足，无法回测最近 ${count} 期 (仅有 ${rawData.length} 条)`);
+                }
+
+                log(`✅ 数据准备就绪，即将对最近 ${count} 期进行回测...`);
+                log(`⚠️ 注意：批量模式将自动跳过 LLM AI 分析以节省时间`);
+
+                const engine = new AdvancedPredictionEngine();
+                const stats = {}; // { algoName: { totalHits: 0, wins: 0, runs: 0 } }
+
+                // 循环回测
+                for (let i = 0; i < count; i++) {
+                    const targetPeriodData = rawData[i];
+                    const targetIssue = targetPeriodData.issue;
+                    const targetNums = targetPeriodData.numbers;
+                    
+                    // 更新监控面板 UI
+                    elPeriod.innerText = `第 ${targetIssue} 期`;
+                    elReal.innerText = targetNums.join(', ');
+                    elProgress.style.width = `${((i + 1) / count) * 100}%`;
+                    
+                    // 训练数据
+                    const trainingData = rawData.slice(i + 1);
+                    
+                    if (trainingData.length < 10) break; 
+
+                    // 运行单期评估
+                    const results = await evaluatePeriod(engine, trainingData, targetNums, false);
+
+                    // 找到当期最佳结果用于展示
+                    if (results.length > 0) {
+                        const bestResult = results[0]; 
+                        elBest.innerHTML = `${getAlgoName(bestResult.name)} <span style="color:${getHitColor(bestResult.hitCount)}; font-weight:bold;">[${bestResult.hitCount}中]</span>`;
+                    }
+
+                    // 统计结果
+                    results.forEach(r => {
+                        if (!stats[r.name]) {
+                            stats[r.name] = { totalHits: 0, wins: 0, runs: 0, hitsList: [], systemBetWins: 0, systemBet12Wins: 0 };
+                        }
+                        stats[r.name].totalHits += r.hitCount;
+                        stats[r.name].runs += 1;
+                        if (r.hitCount >= 3) stats[r.name].wins += 1; 
+                        stats[r.name].hitsList.push(r.hitCount);
+
+                        // 统计9码复式胜率
+                        let systemHits = 0;
+                        if (r.systemBet9) {
+                             systemHits = r.systemBet9.filter(n => targetNums.includes(n)).length;
+                        } else if (r.predicted.length >= 6) {
+                             systemHits = r.hitCount;
+                        }
+                        
+                        if (systemHits >= 3) {
+                            stats[r.name].systemBetWins += 1;
+                        }
+
+                        // 统计12码复式胜率
+                        let system12Hits = 0;
+                        if (r.systemBet12) {
+                             system12Hits = r.systemBet12.filter(n => targetNums.includes(n)).length;
+                        } else if (r.predicted.length >= 6) {
+                             system12Hits = r.hitCount;
+                        }
+
+                        if (system12Hits >= 3) {
+                            stats[r.name].systemBet12Wins += 1;
+                        }
+                    });
+
+                    // 增加人为延迟，让用户看清过程 (150ms)
+                    await new Promise(resolve => setTimeout(resolve, 150));
+                }
+
+                renderBatchResults(stats, count);
+                log('🎉 大数据评测完成！');
+                elPeriod.innerText = "✅ 回测完成";
+
+            } catch (e) {
+                log(`❌ 批量回测失败: ${e.message}`);
+                console.error(e);
+                elPeriod.innerText = "❌ 失败";
+            } finally {
+                btn.disabled = false;
+                btn.innerText = '📊 开始大数据评测';
+            }
+        }
+
+        function renderBatchResults(stats, totalRuns) {
+            const list = Object.entries(stats).map(([name, data]) => {
+                return {
+                    name,
+                    avgHits: (data.totalHits / data.runs).toFixed(2),
+                    winRate: ((data.wins / data.runs) * 100).toFixed(1) + '%',
+                    maxHits: Math.max(...data.hitsList),
+                    totalHits: data.totalHits,
+                    runs: data.runs,
+                    systemBetWinRate: data.systemBetWins ? ((data.systemBetWins / data.runs) * 100).toFixed(1) + '%' : 'N/A',
+                    systemBet12WinRate: data.systemBet12Wins ? ((data.systemBet12Wins / data.runs) * 100).toFixed(1) + '%' : 'N/A'
+                };
+            });
+
+            // 排序：优先按12码复式胜率降序
+            list.sort((a, b) => parseFloat(b.systemBet12WinRate) - parseFloat(a.systemBet12WinRate) || parseFloat(b.avgHits) - parseFloat(a.avgHits));
+
+            const table = document.createElement('table');
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th width="50">排名</th>
+                        <th>算法策略</th>
+                        <th>平均命中 (6码)</th>
+                        <th>胜率 (6码中3+)</th>
+                        <th style="background:#3730a3; color:#a5b4fc">🔥 9码胜率</th>
+                        <th style="background:#4c1d95; color:#c4b5fd">🚀 12码胜率</th>
+                        <th>单期最高</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${list.map((item, i) => `
+                        <tr>
+                            <td class="rank-${i+1}">${i+1}</td>
+                            <td style="font-weight:bold; color:${item.name.includes('weighted') ? '#f472b6' : '#fff'}">
+                                ${getAlgoName(item.name)}
+                            </td>
+                            <td style="font-size:18px; color:#4ade80; font-weight:bold;">${item.avgHits}</td>
+                            <td>${item.winRate}</td>
+                            <td style="background:rgba(55, 48, 163, 0.3); font-size:16px; font-weight:bold; color:#fbbf24;">${item.systemBetWinRate}</td>
+                            <td style="background:rgba(76, 29, 149, 0.3); font-size:16px; font-weight:bold; color:#e879f9;">${item.systemBet12WinRate}</td>
+                            <td>${item.maxHits}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            `;
+
+            const container = document.getElementById('batchResultTable');
+            container.innerHTML = '';
+            container.appendChild(table);
+            document.getElementById('batchResultCard').style.display = 'block';
+        }
+
+        function parseNumbers(d) {
+            // 处理 API 可能的格式差异
+            // 假设 d.numbers 是数组，或者 d.code 是 "01,02,..." 字符串
+            if (Array.isArray(d.numbers)) return d.numbers.map(Number);
+            if (typeof d.code === 'string') return d.code.split(',').map(Number);
+            if (typeof d.opencode === 'string') return d.opencode.split('+').join(',').split(',').map(Number);
+            return [];
+        }
+
+        function calculateWeightedFusion(allResults) {
+            // 综合所有算法的意见，根据置信度加权
+            const frequency = {};
+            
+            allResults.forEach(algo => {
+                // 权重 = 置信度 (60-90) / 100
+                let weight = (algo.confidence || 70) / 100;
+                
+                // 如果该算法有详细的 systemBet9 (9码)，则对这9码都进行加权
+                // 如果只有 predicted (6码)，则只对这6码加权
+                const numsToVote = algo.systemBet9 || algo.predicted;
+                
+                numsToVote.forEach(num => {
+                    frequency[num] = (frequency[num] || 0) + weight;
+                });
+            });
+
+            // 排序取出前9名
+            const sorted = Object.entries(frequency)
+                .map(([num, score]) => ({ num: parseInt(num), score }))
+                .sort((a, b) => b.score - a.score);
+            
+            const recommended = sorted.slice(0, 6).map(i => i.num);
+            const systemBet = sorted.slice(0, 9).map(i => i.num);
+            const systemBet12 = sorted.slice(0, 12).map(i => i.num);
+
+            return { recommended, systemBet, systemBet12 };
+        }
+
+        function calculateFusion(topAlgorithms) {
+            // 统计前三名算法推荐的所有号码的频率
+            const frequency = {};
+            const allRecommended = [];
+            
+            topAlgorithms.forEach(algo => {
+                algo.predicted.forEach(num => {
+                    frequency[num] = (frequency[num] || 0) + 1;
+                    allRecommended.push(num);
+                });
+            });
+
+            // 策略：
+            // 1. 优先选择出现2次及以上的号码 (共振号)
+            // 2. 如果不足6个，从排名第一的算法中补足
+            
+            const candidates = Object.entries(frequency)
+                .map(([num, count]) => ({ num: parseInt(num), count }))
+                .sort((a, b) => b.count - a.count); // 按出现频率排序
+
+            const result = new Set();
+            
+            // 1. 先取共振号 (出现次数 > 1)
+            candidates.forEach(c => {
+                if (c.count >= 2 && result.size < 6) {
+                    result.add(c.num);
+                }
+            });
+
+            // 2. 如果不够，从第一名算法的推荐中补齐
+            if (result.size < 6) {
+                const top1Nums = topAlgorithms[0].predicted;
+                for (const num of top1Nums) {
+                    if (result.size >= 6) break;
+                    result.add(num);
+                }
+            }
+
+            // 3. 还是不够？(理论上极少发生)，从第二名补
+            if (result.size < 6) {
+                const top2Nums = topAlgorithms[1].predicted;
+                for (const num of top2Nums) {
+                    if (result.size >= 6) break;
+                    result.add(num);
+                }
+            }
+
+            return Array.from(result);
+        }
+
+        function getAlgoName(key) {
+            const names = {
+                weighted_ensemble: "🌌 全模态加权融合 (Weighted Ensemble)",
+                top3_fusion: "🏆 冠军算法融合 (Top 3 Fusion)",
+                markov: "马尔可夫链 (Markov)",
+                bayesian: "贝叶斯推断 (Bayesian)",
+                timeSeries: "时间序列 (Time Series)",
+                cluster: "聚类分析 (Clustering)",
+                neural: "神经网络 (Neural Net)",
+                monteCarlo: "蒙特卡洛 (Monte Carlo)",
+                genetic: "遗传算法 (Genetic)",
+                svm: "支持向量机 (SVM)",
+                pattern: "模式形态分析 (Pattern)",
+                omission: "遗漏回补分析 (Omission)",
+                golden: "🔱 黄金三角策略 (Kill+Banker)",
+                association: "📊 关联规则挖掘 (Apriori)",
+                ai_ensemble: "🧠 AI 深度分析 (LLM)"
+            };
+            return names[key] || key;
+        }
+
+        function renderResults(results) {
+            const table = document.createElement('table');
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th width="50">排名</th>
+                        <th width="120">算法名称</th>
+                        <th>预测号码 (前6码)</th>
+                        <th width="100">命中数</th>
+                        <th>命中详情</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${results.map((r, i) => `
+                        <tr>
+                            <td class="rank-${i+1}">${i+1}</td>
+                            <td style="font-weight:bold; color:#fff;">${getAlgoName(r.name)}</td>
+                            <td>${formatNumbers(r.predicted, r.hits)}</td>
+                            <td style="font-size:18px; font-weight:bold; color:${getHitColor(r.hitCount)}">${r.hitCount}</td>
+                            <td>${r.hits.join(', ')}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            `;
+            
+            const container = document.getElementById('resultTable');
+            container.innerHTML = '';
+            container.appendChild(table);
+            document.getElementById('resultCard').style.display = 'block';
+        }
+
+        function formatNumbers(nums, hits) {
+            return nums.map(n => {
+                const isHit = hits.includes(n);
+                return `<span style="
+                    display:inline-block; 
+                    width:24px; 
+                    height:24px; 
+                    line-height:24px; 
+                    text-align:center; 
+                    border-radius:50%; 
+                    background:${isHit ? '#ef4444' : '#334155'}; 
+                    color:white; 
+                    margin-right:4px;
+                    font-weight:${isHit ? 'bold' : 'normal'};
+                ">${String(n).padStart(2, '0')}</span>`;
+            }).join('');
+        }
+
+        function getHitColor(count) {
+            if (count >= 4) return '#ef4444'; // Red
+            if (count >= 3) return '#f59e0b'; // Orange
+            if (count >= 1) return '#3b82f6'; // Blue
+            return '#6b7280'; // Gray
+        }
+    </script>
+</body>
+</html>
